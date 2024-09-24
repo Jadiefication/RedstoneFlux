@@ -9,12 +9,12 @@ project.ext {
     targetFolder = file("target/")
 }
 
+group = 'fr.traqueur.energylib'
+version = property('version')
+
 allprojects {
     apply plugin: 'java'
     apply plugin: 'io.github.goooler.shadow'
-
-    group = 'fr.traqueur.factions'
-    version = property('version')
 
     java {
         toolchain {
@@ -71,6 +71,7 @@ repositories {
 
 dependencies {
     implementation(project(":EnergyAPI"))
+    implementation "com.github.Traqueur-dev:CommandsAPI:1.5.1"
 }
 
 jar {
@@ -129,7 +130,6 @@ publish.shouldRunAfter shadowJar
 shadowJar.shouldRunAfter build
 build.shouldRunAfter subprojects.build
 
-shadowJar.dependsOn subprojects.build
 compileJava.dependsOn childProjects.values().shadowJar
 
 compileJava.options.encoding = 'UTF-8'
