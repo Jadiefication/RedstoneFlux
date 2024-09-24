@@ -7,13 +7,13 @@ public enum ComponentsType {
     STORAGE(EnergyStorage.class),
     TRANSPORTER(EnergyTransporter.class);
 
-    private final Class<? extends EnergyComponent> clazz;
+    private final Class<? extends EnergyMechanic> clazz;
 
-    ComponentsType(Class<? extends EnergyComponent> clazz) {
+    ComponentsType(Class<? extends EnergyMechanic> clazz) {
         this.clazz = clazz;
     }
 
-    public Class<? extends EnergyComponent> getClazz() {
+    public Class<? extends EnergyMechanic> getClazz() {
         return clazz;
     }
 }

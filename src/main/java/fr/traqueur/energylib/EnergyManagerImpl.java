@@ -25,12 +25,14 @@ public class EnergyManagerImpl implements EnergyManager {
 
     private static final List<BlockFace> NEIBHORS = List.of(BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST);
 
+    private final EnergyLib api;
     private final NamespacedKey componentClassKey;
     private final NamespacedKey energyTypeKey;
     private final NamespacedKey componentTypeKey;
     private final Set<EnergyNetwork> networks;
 
     public EnergyManagerImpl(EnergyLib energyLib) {
+        this.api = energyLib;
         this.networks = new HashSet<>();
         this.componentTypeKey = new NamespacedKey(energyLib, "component-type");
         this.energyTypeKey = new NamespacedKey(energyLib, "energy-type");
@@ -51,7 +53,7 @@ public class EnergyManagerImpl implements EnergyManager {
 
         if(energyNetworks.isEmpty()) {
             System.out.println("Create new network");
-            EnergyNetwork network = new EnergyNetwork(component, location);
+            EnergyNetwork network = new EnergyNetwork(this.api, component, location);
             this.networks.add(network);
         } else if (energyNetworks.size() == 1) {
             System.out.println("Add component to network");

@@ -1,5 +1,6 @@
 package fr.traqueur.energylib.api.components;
 
+import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyType;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import org.bukkit.Location;
@@ -9,9 +10,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class EnergyNetwork {
 
+    private final EnergyAPI api;
     private final Map<EnergyComponent, Location> components;
 
-    public EnergyNetwork(EnergyComponent component, Location location) {
+    public EnergyNetwork(EnergyAPI api, EnergyComponent component, Location location) {
+        this.api = api;
         this.components = new ConcurrentHashMap<>();
         this.components.put(component, location);
     }
@@ -45,6 +48,8 @@ public class EnergyNetwork {
     }
 
     public void update() {
-        this.components.keySet().forEach(EnergyComponent::update);
+        this.components.forEach((component, location) -> {
+            this.api.getScheduler().runAtLocation(location, (task) -> component.update());
+        });
     }
 }
