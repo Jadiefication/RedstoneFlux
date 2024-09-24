@@ -22,7 +22,12 @@ public class EnergyCommand extends Command<EnergyLib> {
         Player player = (Player) commandSender;
         EnergyManager energyManager = this.getPlugin().getManager();
         ComponentsType componentType = arguments.get("component-type");
-        var item = energyManager.createItemComponent(Material.CHEST, componentType, EnergyTypes.RF, BlockProducer.class);
+        var item = switch (componentType) {
+            case PRODUCER -> energyManager.createItemComponent(Material.FURNACE, componentType, EnergyTypes.RF, BlockProducer.class);
+            case CONSUMER -> energyManager.createItemComponent(Material.DISPENSER, componentType, EnergyTypes.RF, BlockConsumer.class);
+            case STORAGE -> energyManager.createItemComponent(Material.CHEST, componentType, EnergyTypes.RF, BlockStorage.class);
+            case TRANSPORTER -> energyManager.createItemComponent(Material.GRAY_STAINED_GLASS, componentType, EnergyTypes.RF, BlockTransporter.class);
+        };
         player.getInventory().addItem(item);
         player.sendMessage("§aVous avez reçu un composant d'énergie.");
     }

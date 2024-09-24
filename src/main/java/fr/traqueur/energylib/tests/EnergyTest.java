@@ -13,10 +13,6 @@ public class EnergyTest {
         commandManager.registerConverter(ComponentsType.class,"component-type", new ComponentsTypeConverter());
 
         commandManager.registerCommand(new EnergyCommand(energyLib));
-
-        energyLib.getScheduler().runTimerAsync(() -> {
-            energyLib.getManager().getNetworks().forEach(EnergyNetwork::update);
-        }, 20L, 20L);
     }
 
 }

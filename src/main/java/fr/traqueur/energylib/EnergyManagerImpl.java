@@ -44,7 +44,11 @@ public class EnergyManagerImpl implements EnergyManager {
         List<EnergyNetwork> energyNetworks = new ArrayList<>();
         for (BlockFace neibhorFace : NEIBHORS) {
             var neibhor = location.getBlock().getRelative(neibhorFace);
-            this.networks.stream().filter(network -> network.contains(neibhor.getLocation())).findFirst().ifPresent(energyNetworks::add);
+            var networkNeighbor = this.networks.stream().filter(network -> network.contains(neibhor.getLocation())).findFirst();
+            if(networkNeighbor.isPresent()) {
+                if(!energyNetworks.contains(networkNeighbor.get()))
+                    energyNetworks.add(networkNeighbor.get());
+            }
         }
 
         energyNetworks = energyNetworks.stream()
@@ -67,6 +71,24 @@ public class EnergyManagerImpl implements EnergyManager {
                 firstNetwork.mergeWith(network);
                 this.networks.remove(network);
             }
+        }
+    }
+
+    @Override
+    public void breakComponent(Location location) {
+        EnergyNetwork network = this.networks.stream().filter(n -> n.contains(location)).findFirst().orElse(null);
+        if(network == null) {
+            return;
+        }
+        network.removeComponent(location);
+        if(network.isEmpty()) {
+            this.networks.remove(network);
+        }
+
+        try {
+            this.splitNetworkIfNecessary(network);
+        } catch (SameEnergyTypeException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -142,18 +164,8 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     @Override
-    public NamespacedKey getComponentTypeKey() {
-        return this.componentTypeKey;
-    }
-
-    @Override
-    public NamespacedKey getEnergyTypeKey() {
-        return this.energyTypeKey;
-    }
-
-    @Override
-    public NamespacedKey getComponentClassKey() {
-        return this.componentClassKey;
+    public boolean isElectricComponent(Location neighbor) {
+        return this.networks.stream().anyMatch(network -> network.contains(neighbor));
     }
 
     @Override
@@ -175,6 +187,69 @@ public class EnergyManagerImpl implements EnergyManager {
     @Override
     public Set<EnergyNetwork> getNetworks() {
         return this.networks;
+    }
+
+    @Override
+    public NamespacedKey getComponentTypeKey() {
+        return this.componentTypeKey;
+    }
+
+    @Override
+    public NamespacedKey getEnergyTypeKey() {
+        return this.energyTypeKey;
+    }
+
+    @Override
+    public NamespacedKey getComponentClassKey() {
+        return this.componentClassKey;
+    }
+
+    private void splitNetworkIfNecessary(EnergyNetwork network) throws SameEnergyTypeException {
+        Set<Location> visited = new HashSet<>();
+        List<EnergyNetwork> newNetworks = new ArrayList<>();
+
+        for (Location component : network.getComponents().keySet()) {
+            if (!visited.contains(component)) {
+                Set<Map.Entry<Location, EnergyComponent>> subNetworkComponents = discoverSubNetwork(component, visited);
+                if (!subNetworkComponents.isEmpty()) {
+                    EnergyNetwork newNetwork = new EnergyNetwork(this.api);
+                    for (Map.Entry<Location, EnergyComponent> subComponent : subNetworkComponents) {
+                        newNetwork.addComponent(subComponent.getValue(), subComponent.getKey());
+                    }
+                    newNetworks.add(newNetwork);
+                }
+            }
+        }
+
+        this.networks.remove(network);
+        this.networks.addAll(newNetworks);
+    }
+
+    private Set<Map.Entry<Location, EnergyComponent>> discoverSubNetwork(Location startBlock, Set<Location> visited) {
+        Set<Map.Entry<Location, EnergyComponent>> subNetwork = new HashSet<>();
+        Queue<Location> queue = new LinkedList<>();
+        queue.add(startBlock);
+
+        while (!queue.isEmpty()) {
+            Location current = queue.poll();
+            if (!visited.contains(current)) {
+                visited.add(current);
+                subNetwork.add(new AbstractMap.SimpleEntry<>(current, this.networks.stream()
+                        .filter(network -> network.contains(current))
+                        .findFirst()
+                        .map(network -> network.getComponents().get(current))
+                        .orElse(null)));
+
+                for (BlockFace face : NEIBHORS) {
+                    Location neighbor = current.getBlock().getRelative(face).getLocation();
+                    if (isElectricComponent(neighbor) && !visited.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        return subNetwork;
     }
 
     private <C> Optional<C> getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<?,C> type) {

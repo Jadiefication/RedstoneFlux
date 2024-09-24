@@ -16,6 +16,8 @@ public interface EnergyManager {
 
     void placeComponent(EnergyComponent component, Location location) throws SameEnergyTypeException;
 
+    void breakComponent(Location location);
+
     boolean isComponent(ItemStack item);
 
     EnergyComponent createComponent(ItemStack item, Location location);
@@ -35,4 +37,6 @@ public interface EnergyManager {
     ItemStack createItemComponent(Material material, ComponentsType componentType, EnergyType type, Class<? extends EnergyComponent> componentClass);
 
     Set<EnergyNetwork> getNetworks();
+
+    boolean isElectricComponent(Location neighbor);
 }

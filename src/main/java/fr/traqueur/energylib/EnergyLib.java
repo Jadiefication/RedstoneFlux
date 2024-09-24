@@ -4,6 +4,7 @@ import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
 import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
+import fr.traqueur.energylib.api.components.EnergyNetwork;
 import fr.traqueur.energylib.tests.EnergyTest;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
@@ -21,12 +22,16 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
         this.manager = new EnergyManagerImpl(this);
 
         PluginManager pluginManager = this.getServer().getPluginManager();
-        pluginManager.registerEvents(new EnergyListener(this.manager), this);
+        pluginManager.registerEvents(new EnergyListener(this), this);
 
         this.registerProvider(this.manager, EnergyManager.class);
         this.registerProvider(this, EnergyAPI.class);
 
         new EnergyTest(this);
+
+        this.getScheduler().runTimerAsync(() -> {
+            this.manager.getNetworks().forEach(EnergyNetwork::update);
+        }, 20L, 20L);
     }
 
     @Override
