@@ -28,7 +28,7 @@ public class EnergyListener implements Listener {
         }
         Location location = event.getBlockPlaced().getLocation();
         this.api.getScheduler().runAsync((t) -> {
-            var component = this.energyManager.createComponent(item, location);
+            var component = this.energyManager.createComponent(item);
             try {
                 this.energyManager.placeComponent(component, location);
             } catch (SameEnergyTypeException ignored) {}

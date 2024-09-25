@@ -13,7 +13,7 @@ public class EnergyComponent<T extends EnergyMechanic> {
     private final T mechanic;
     private final Set<EnergyComponent<?>> connectedComponents;
 
-    protected EnergyComponent(EnergyType energyType, T mechanic) {
+    public EnergyComponent(EnergyType energyType, T mechanic) {
         this.mechanic = mechanic;
         this.connectedComponents = new HashSet<>();
         this.energyType = energyType;

@@ -1,9 +1,12 @@
 package fr.traqueur.energylib;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.components.EnergyNetwork;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
+import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 import fr.traqueur.energylib.api.persistents.EnergyTypePersistentDataType;
 import fr.traqueur.energylib.api.types.EnergyType;
 import org.bukkit.Location;
@@ -22,13 +25,19 @@ public class EnergyManagerImpl implements EnergyManager {
     private static final List<BlockFace> NEIBHORS = List.of(BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST);
 
     private final EnergyLib api;
+    private final Gson gson;
     private final NamespacedKey energyTypeKey;
+    private final NamespacedKey mechanicClassKey;
+    private final NamespacedKey mechanicKey;
     private final Set<EnergyNetwork> networks;
 
     public EnergyManagerImpl(EnergyLib energyLib) {
         this.api = energyLib;
+        this.gson = this.createGson();
         this.networks = new HashSet<>();
         this.energyTypeKey = new NamespacedKey(energyLib, "energy-type");
+        this.mechanicClassKey = new NamespacedKey(energyLib, "mechanic-class");
+        this.mechanicKey = new NamespacedKey(energyLib, "mechanic");
     }
 
     @Override
@@ -87,18 +96,63 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     @Override
+    public Optional<String> getMechanicClass(ItemStack item) {
+        return this.getPersistentData(item, this.getMechanicClassKey(), PersistentDataType.STRING);
+    }
+
+    @Override
+    public Optional<? extends EnergyMechanic> getMechanic(ItemStack item) {
+        String mechanicClass = this.getMechanicClass(item).orElseThrow();
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(mechanicClass);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Class " + mechanicClass + " not found!");
+        }
+        if(!EnergyMechanic.class.isAssignableFrom(clazz)) {
+            throw new IllegalArgumentException("Class " + mechanicClass + " is not an EnergyMechanic!");
+        }
+        Class<? extends EnergyMechanic> mechanicClazz = clazz.asSubclass(EnergyMechanic.class);
+        var opt = this.getPersistentData(item, this.getMechanicKey(), PersistentDataType.STRING);
+        if(opt.isEmpty()) {
+            return Optional.empty();
+        }
+        String mechanicData = opt.get();
+        return Optional.of(this.gson.fromJson(mechanicData, mechanicClazz));
+    }
+
+    @Override
     public boolean isBlockComponent(Location neighbor) {
         return this.networks.stream().anyMatch(network -> network.contains(neighbor));
     }
 
     @Override
+    public EnergyComponent<?> createComponent(ItemStack item) {
+        EnergyType energyType = this.getEnergyType(item).orElseThrow();
+        EnergyMechanic mechanic = this.getMechanic(item).orElseThrow();
+        return new EnergyComponent<>(energyType, mechanic);
+    }
+
+    @Override
     public boolean isComponent(ItemStack item) {
-        return this.getEnergyType(item).isPresent();
+        return this.getEnergyType(item).isPresent()
+                && this.getMechanicClass(item).isPresent()
+                && this.getMechanic(item).isPresent();
     }
 
     @Override
     public NamespacedKey getEnergyTypeKey() {
         return this.energyTypeKey;
+    }
+
+    @Override
+    public NamespacedKey getMechanicClassKey() {
+        return this.mechanicClassKey;
+    }
+
+    @Override
+    public NamespacedKey getMechanicKey() {
+        return this.mechanicKey;
     }
 
     @Override
@@ -161,6 +215,13 @@ public class EnergyManagerImpl implements EnergyManager {
         }
         PersistentDataContainer persistentDataContainer = meta.getPersistentDataContainer();
         return Optional.ofNullable(persistentDataContainer.get(key, type));
+    }
+
+    private Gson createGson() {
+        return new GsonBuilder()
+                .setPrettyPrinting()
+                .disableHtmlEscaping()
+                .create();
     }
 
 }
