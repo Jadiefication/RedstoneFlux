@@ -56,14 +56,11 @@ public class EnergyManagerImpl implements EnergyManager {
                 .collect(Collectors.toList());
 
         if(energyNetworks.isEmpty()) {
-            System.out.println("Create new network");
             EnergyNetwork network = new EnergyNetwork(this.api, component, location);
             this.networks.add(network);
         } else if (energyNetworks.size() == 1) {
-            System.out.println("Add component to network");
             energyNetworks.getFirst().addComponent(component, location);
         } else {
-            System.out.println("Merge networks");
             EnergyNetwork firstNetwork = energyNetworks.getFirst();
             firstNetwork.addComponent(component, location);
             for (int i = 1; i < energyNetworks.size(); i++) {
