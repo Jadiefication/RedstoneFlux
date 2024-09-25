@@ -161,7 +161,7 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     @Override
-    public boolean isElectricComponent(Location neighbor) {
+    public boolean isBlockComponent(Location neighbor) {
         return this.networks.stream().anyMatch(network -> network.contains(neighbor));
     }
 
@@ -239,7 +239,7 @@ public class EnergyManagerImpl implements EnergyManager {
 
                 for (BlockFace face : NEIBHORS) {
                     Location neighbor = current.getBlock().getRelative(face).getLocation();
-                    if (isElectricComponent(neighbor) && !visited.contains(neighbor)) {
+                    if (isBlockComponent(neighbor) && !visited.contains(neighbor)) {
                         queue.add(neighbor);
                     }
                 }

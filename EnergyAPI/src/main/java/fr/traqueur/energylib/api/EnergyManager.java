@@ -39,5 +39,5 @@ public interface EnergyManager {
 
     Set<EnergyNetwork> getNetworks();
 
-    boolean isElectricComponent(Location neighbor);
+    boolean isBlockComponent(Location neighbor);
 }

@@ -38,7 +38,7 @@ public class EnergyListener implements Listener {
     @EventHandler
     public void onEnergyComponentBreak(BlockBreakEvent event) {
         Location location = event.getBlock().getLocation();
-        if (!this.energyManager.isElectricComponent(location)) {
+        if (!this.energyManager.isBlockComponent(location)) {
             return;
         }
         this.api.getScheduler().runAsync((t) -> this.energyManager.breakComponent(location));
