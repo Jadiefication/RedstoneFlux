@@ -19,9 +19,11 @@ public interface EnergyManager {
 
     Optional<EnergyType> getEnergyType(ItemStack item);
 
+    boolean isBlockComponent(Location neighbor);
+
+    boolean isComponent(ItemStack item);
+
     NamespacedKey getEnergyTypeKey();
 
     Set<EnergyNetwork> getNetworks();
-
-    boolean isBlockComponent(Location neighbor);
 }

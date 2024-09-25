@@ -1,11 +1,11 @@
 package fr.traqueur.energylib.api.persistents;
 
-import fr.traqueur.energylib.api.types.ComponentsTypes;
+import fr.traqueur.energylib.api.types.MechanicTypes;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-public class ComponentTypePersistentDataType implements PersistentDataType<String, ComponentsTypes> {
+public class ComponentTypePersistentDataType implements PersistentDataType<String, MechanicTypes> {
 
     public static final ComponentTypePersistentDataType INSTANCE = new ComponentTypePersistentDataType();
 
@@ -17,19 +17,19 @@ public class ComponentTypePersistentDataType implements PersistentDataType<Strin
 
     @NotNull
     @Override
-    public Class<ComponentsTypes> getComplexType() {
-        return ComponentsTypes.class;
+    public Class<MechanicTypes> getComplexType() {
+        return MechanicTypes.class;
     }
 
     @NotNull
     @Override
-    public String toPrimitive(@NotNull ComponentsTypes components, @NotNull PersistentDataAdapterContext persistentDataAdapterContext) {
+    public String toPrimitive(@NotNull MechanicTypes components, @NotNull PersistentDataAdapterContext persistentDataAdapterContext) {
         return components.name();
     }
 
     @NotNull
     @Override
-    public ComponentsTypes fromPrimitive(@NotNull String s, @NotNull PersistentDataAdapterContext persistentDataAdapterContext) {
-        return ComponentsTypes.valueOf(s);
+    public MechanicTypes fromPrimitive(@NotNull String s, @NotNull PersistentDataAdapterContext persistentDataAdapterContext) {
+        return MechanicTypes.valueOf(s);
     }
 }

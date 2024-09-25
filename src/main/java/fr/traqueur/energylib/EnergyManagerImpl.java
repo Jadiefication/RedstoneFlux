@@ -92,6 +92,11 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     @Override
+    public boolean isComponent(ItemStack item) {
+        return this.getEnergyType(item).isPresent();
+    }
+
+    @Override
     public NamespacedKey getEnergyTypeKey() {
         return this.energyTypeKey;
     }
