@@ -1,8 +1,8 @@
 package fr.traqueur.energylib;
 
 import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.EnergyType;
-import fr.traqueur.energylib.api.components.ComponentsType;
+import fr.traqueur.energylib.api.types.EnergyType;
+import fr.traqueur.energylib.api.types.ComponentsTypes;
 import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.components.EnergyNetwork;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
@@ -118,9 +118,9 @@ public class EnergyManagerImpl implements EnergyManager {
         }
 
         Class<? extends EnergyComponent> componentClass = optComponentClass.get();
-        ComponentsType componentsType = optComponentsType.get();
+        ComponentsTypes componentsTypes = optComponentsType.get();
 
-        if (!componentsType.getClazz().isAssignableFrom(componentClass)) {
+        if (!componentsTypes.getClazz().isAssignableFrom(componentClass)) {
             throw new IllegalArgumentException("The component class is not the same as the item component type.");
         }
 
@@ -141,7 +141,7 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     @Override
-    public Optional<ComponentsType> getComponentType(ItemStack item) {
+    public Optional<ComponentsTypes> getComponentType(ItemStack item) {
         return this.getPersistentData(item, this.getComponentTypeKey(), ComponentTypePersistentDataType.INSTANCE);
     }
 
@@ -169,7 +169,7 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     @Override
-    public ItemStack createItemComponent(Material material, ComponentsType componentType, EnergyType type, Class<? extends EnergyComponent> componentClass) {
+    public ItemStack createItemComponent(Material material, ComponentsTypes componentType, EnergyType type, Class<? extends EnergyComponent> componentClass) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if(meta == null) {

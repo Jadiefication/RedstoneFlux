@@ -1,6 +1,6 @@
 package fr.traqueur.energylib.api.persistents;
 
-import fr.traqueur.energylib.api.EnergyType;
+import fr.traqueur.energylib.api.types.EnergyType;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;

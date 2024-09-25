@@ -1,9 +1,10 @@
 package fr.traqueur.energylib.api;
 
-import fr.traqueur.energylib.api.components.ComponentsType;
+import fr.traqueur.energylib.api.types.ComponentsTypes;
 import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.components.EnergyNetwork;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
+import fr.traqueur.energylib.api.types.EnergyType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -24,7 +25,7 @@ public interface EnergyManager {
 
     Optional<EnergyType> getEnergyType(ItemStack item);
 
-    Optional<ComponentsType> getComponentType(ItemStack item);
+    Optional<ComponentsTypes> getComponentType(ItemStack item);
 
     NamespacedKey getEnergyTypeKey();
 
@@ -34,7 +35,7 @@ public interface EnergyManager {
 
     NamespacedKey getComponentClassKey();
 
-    ItemStack createItemComponent(Material material, ComponentsType componentType, EnergyType type, Class<? extends EnergyComponent> componentClass);
+    ItemStack createItemComponent(Material material, ComponentsTypes componentType, EnergyType type, Class<? extends EnergyComponent> componentClass);
 
     Set<EnergyNetwork> getNetworks();
 

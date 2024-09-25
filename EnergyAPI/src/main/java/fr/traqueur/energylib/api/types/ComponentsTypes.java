@@ -1,6 +1,8 @@
-package fr.traqueur.energylib.api.components;
+package fr.traqueur.energylib.api.types;
 
-public enum ComponentsType {
+import fr.traqueur.energylib.api.components.*;
+
+public enum ComponentsTypes implements ComponentType {
 
     PRODUCER(EnergyProducer.class),
     CONSUMER(EnergyConsumer.class),
@@ -9,7 +11,7 @@ public enum ComponentsType {
 
     private final Class<? extends EnergyMechanic> clazz;
 
-    ComponentsType(Class<? extends EnergyMechanic> clazz) {
+    ComponentsTypes(Class<? extends EnergyMechanic> clazz) {
         this.clazz = clazz;
     }
 

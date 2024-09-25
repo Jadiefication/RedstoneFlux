@@ -1,7 +1,7 @@
 package fr.traqueur.energylib.api.components;
 
 import fr.traqueur.energylib.api.EnergyAPI;
-import fr.traqueur.energylib.api.EnergyType;
+import fr.traqueur.energylib.api.types.EnergyType;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import org.bukkit.Location;
 

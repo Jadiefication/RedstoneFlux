@@ -4,7 +4,7 @@ import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
 import fr.traqueur.energylib.EnergyLib;
 import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.components.ComponentsType;
+import fr.traqueur.energylib.api.types.ComponentsTypes;
 import fr.traqueur.energylib.api.types.EnergyTypes;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -21,7 +21,7 @@ public class EnergyCommand extends Command<EnergyLib> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
         EnergyManager energyManager = this.getPlugin().getManager();
-        ComponentsType componentType = arguments.get("component-type");
+        ComponentsTypes componentType = arguments.get("component-type");
         var item = switch (componentType) {
             case PRODUCER -> energyManager.createItemComponent(Material.FURNACE, componentType, EnergyTypes.RF, BlockProducer.class);
             case CONSUMER -> energyManager.createItemComponent(Material.DISPENSER, componentType, EnergyTypes.RF, BlockConsumer.class);
