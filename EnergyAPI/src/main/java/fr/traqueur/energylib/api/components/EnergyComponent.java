@@ -3,6 +3,7 @@ package fr.traqueur.energylib.api.components;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 import fr.traqueur.energylib.api.types.EnergyType;
+import org.bukkit.Location;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,6 +39,10 @@ public class EnergyComponent<T extends EnergyMechanic> {
         component.disconnect(this);
     }
 
+    public double update(Location location) {
+        return this.mechanic.handle(location);
+    }
+
     public Set<EnergyComponent<?>> getConnectedComponents() {
         return this.connectedComponents;
     }
@@ -46,8 +51,7 @@ public class EnergyComponent<T extends EnergyMechanic> {
         return this.energyType;
     }
 
-    public void update() {
-        this.mechanic.handle();
+    public T getMechanic() {
+        return mechanic;
     }
-
 }

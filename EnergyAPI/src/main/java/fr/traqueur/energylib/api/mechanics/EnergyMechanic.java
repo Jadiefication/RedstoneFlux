@@ -1,7 +1,9 @@
 package fr.traqueur.energylib.api.mechanics;
 
+import org.bukkit.Location;
+
 public interface EnergyMechanic {
 
-    void handle();
+    double handle(Location location);
 
 }
