@@ -29,14 +29,12 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
 
         new EnergyTest(this);
 
-        this.getScheduler().runTimerAsync(() -> {
-            this.manager.getNetworks().forEach(EnergyNetwork::update);
-        }, 20L, 20L);
+        this.manager.startNetworkUpdater();
     }
 
     @Override
     public void onDisable() {
-
+        this.manager.stopNetworkUpdater();
     }
 
     @Override

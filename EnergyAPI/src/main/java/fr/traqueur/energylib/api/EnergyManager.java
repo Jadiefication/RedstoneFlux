@@ -34,6 +34,10 @@ public interface EnergyManager {
 
     ItemStack createItemComponent(Material material, EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic);
 
+    void startNetworkUpdater();
+
+    void stopNetworkUpdater();
+
     NamespacedKey getEnergyTypeKey();
 
     NamespacedKey getMechanicClassKey();

@@ -2,6 +2,7 @@ package fr.traqueur.energylib;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.components.EnergyNetwork;
@@ -28,10 +29,14 @@ public class EnergyManagerImpl implements EnergyManager {
 
     private final EnergyLib api;
     private final Gson gson;
+
     private final NamespacedKey energyTypeKey;
     private final NamespacedKey mechanicClassKey;
     private final NamespacedKey mechanicKey;
+
     private final Set<EnergyNetwork> networks;
+    private WrappedTask updaterTask;
+
 
     public EnergyManagerImpl(EnergyLib energyLib) {
         this.api = energyLib;
@@ -159,6 +164,21 @@ public class EnergyManagerImpl implements EnergyManager {
         persistentDataContainer.set(this.getMechanicKey(), PersistentDataType.STRING, this.gson.toJson(mechanic, mechanic.getClass()));
         item.setItemMeta(meta);
         return item;
+    }
+
+    @Override
+    public void startNetworkUpdater() {
+        this.updaterTask = this.api.getScheduler().runTimerAsync(() -> {
+            this.networks.forEach(EnergyNetwork::update);
+        }, 0L, 1L);
+    }
+
+    @Override
+    public void stopNetworkUpdater() {
+        if(this.updaterTask == null) {
+            throw new IllegalStateException("Updater task is not running!");
+        }
+        this.updaterTask.cancel();
     }
 
     @Override
