@@ -1,6 +1,6 @@
 package fr.traqueur.energylib.api.types;
 
-import fr.traqueur.energylib.api.components.*;
+import fr.traqueur.energylib.api.mechanics.*;
 
 public enum ComponentsTypes implements ComponentType {
 

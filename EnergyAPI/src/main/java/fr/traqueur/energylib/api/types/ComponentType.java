@@ -1,6 +1,6 @@
 package fr.traqueur.energylib.api.types;
 
-import fr.traqueur.energylib.api.components.EnergyMechanic;
+import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 
 import java.util.ArrayList;
 import java.util.List;

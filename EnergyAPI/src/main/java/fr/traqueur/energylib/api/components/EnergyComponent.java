@@ -1,22 +1,25 @@
 package fr.traqueur.energylib.api.components;
 
-import fr.traqueur.energylib.api.types.EnergyType;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
+import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
+import fr.traqueur.energylib.api.types.EnergyType;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class EnergyComponent {
+public class EnergyComponent<T extends EnergyMechanic> {
 
     private final EnergyType energyType;
-    private final Set<EnergyComponent> connectedComponents;
+    private final T mechanic;
+    private final Set<EnergyComponent<?>> connectedComponents;
 
-    protected EnergyComponent(EnergyType energyType) {
+    protected EnergyComponent(EnergyType energyType, T mechanic) {
+        this.mechanic = mechanic;
         this.connectedComponents = new HashSet<>();
         this.energyType = energyType;
     }
 
-    public void connect(EnergyComponent component) throws SameEnergyTypeException {
+    public void connect(EnergyComponent<?> component) throws SameEnergyTypeException {
         if(this.energyType != component.getEnergyType()) {
             throw new SameEnergyTypeException();
         }
@@ -27,7 +30,7 @@ public abstract class EnergyComponent {
         component.connect(this);
     }
 
-    public void disconnect(EnergyComponent component) {
+    public void disconnect(EnergyComponent<?> component) {
         if(!this.connectedComponents.contains(component)) {
             return;
         }
@@ -35,7 +38,7 @@ public abstract class EnergyComponent {
         component.disconnect(this);
     }
 
-    public Set<EnergyComponent> getConnectedComponents() {
+    public Set<EnergyComponent<?>> getConnectedComponents() {
         return this.connectedComponents;
     }
 
@@ -43,6 +46,8 @@ public abstract class EnergyComponent {
         return this.energyType;
     }
 
-    public abstract void update();
+    public void update() {
+        this.mechanic.handle();
+    }
 
 }
