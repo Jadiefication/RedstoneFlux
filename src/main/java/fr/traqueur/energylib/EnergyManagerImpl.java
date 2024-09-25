@@ -9,7 +9,9 @@ import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 import fr.traqueur.energylib.api.persistents.EnergyTypePersistentDataType;
 import fr.traqueur.energylib.api.types.EnergyType;
+import fr.traqueur.energylib.api.types.MechanicType;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
@@ -138,6 +140,25 @@ public class EnergyManagerImpl implements EnergyManager {
         return this.getEnergyType(item).isPresent()
                 && this.getMechanicClass(item).isPresent()
                 && this.getMechanic(item).isPresent();
+    }
+
+    @Override
+    public ItemStack createItemComponent(Material material, EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic) {
+        if (mechanicType.getClazz().isAssignableFrom(mechanic.getClass())) {
+            throw new IllegalArgumentException("Mechanic type " + mechanicType + " is not compatible with mechanic " + mechanic.getClass());
+        }
+
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if(meta == null) {
+            throw new IllegalArgumentException("ItemMeta is null!");
+        }
+        PersistentDataContainer persistentDataContainer = meta.getPersistentDataContainer();
+        persistentDataContainer.set(this.getEnergyTypeKey(), EnergyTypePersistentDataType.INSTANCE, type);
+        persistentDataContainer.set(this.getMechanicClassKey(), PersistentDataType.STRING, mechanic.getClass().getName());
+        persistentDataContainer.set(this.getMechanicKey(), PersistentDataType.STRING, this.gson.toJson(mechanic, mechanic.getClass()));
+        item.setItemMeta(meta);
+        return item;
     }
 
     @Override

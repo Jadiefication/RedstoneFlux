@@ -5,7 +5,9 @@ import fr.traqueur.energylib.api.components.EnergyNetwork;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 import fr.traqueur.energylib.api.types.EnergyType;
+import fr.traqueur.energylib.api.types.MechanicType;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 
@@ -29,6 +31,8 @@ public interface EnergyManager {
     EnergyComponent<?> createComponent(ItemStack item);
 
     boolean isComponent(ItemStack item);
+
+    ItemStack createItemComponent(Material material, EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic);
 
     NamespacedKey getEnergyTypeKey();
 
