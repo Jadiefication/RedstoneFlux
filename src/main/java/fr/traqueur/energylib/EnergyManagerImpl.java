@@ -144,8 +144,8 @@ public class EnergyManagerImpl implements EnergyManager {
 
     @Override
     public ItemStack createItemComponent(Material material, EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic) {
-        if (mechanicType.getClazz().isAssignableFrom(mechanic.getClass())) {
-            throw new IllegalArgumentException("Mechanic type " + mechanicType + " is not compatible with mechanic " + mechanic.getClass());
+        if (mechanic.getClass().isAssignableFrom(mechanicType.getClazz())) {
+            throw new IllegalArgumentException("Mechanic type " + mechanicType.getClazz() + " is not compatible with mechanic " + mechanic.getClass());
         }
 
         ItemStack item = new ItemStack(material);
