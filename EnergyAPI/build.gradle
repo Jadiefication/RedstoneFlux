@@ -9,3 +9,7 @@ publishing {
         }
     }
 }
+
+shadowJar {
+    destinationDirectory = rootProject.apiFolder
+}

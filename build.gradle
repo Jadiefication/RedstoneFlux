@@ -7,6 +7,7 @@ project.ext {
     testFolder = property("test-folder")
     archiveFolder = file("archive/")
     targetFolder = file("target/")
+    apiFolder = file("target/api/")
 }
 
 group = 'fr.traqueur.energylib'
@@ -94,14 +95,14 @@ processResources {
 shadowJar {
     dependsOn(jar)
 
+    delete fileTree(rootProject.targetFolder.getAbsolutePath())
+
     relocate 'com.tcoded.folialib', 'fr.traqueur.energylib.api.platform.folia'
     relocate 'dev.dejvokep.boostedyaml', 'fr.traqueur.energylib.api.boostedyaml'
 
     archiveFileName = rootProject.name + "-" + rootProject.version + ".jar"
-
-    delete fileTree(rootProject.targetFolder.getAbsolutePath())
-
     destinationDirectory = rootProject.targetFolder
+
     from sourceSets.getByName("main").output
     configurations = [project.configurations.getByName("runtimeClasspath")]
 }
@@ -116,7 +117,7 @@ build {
 }
 
 tasks.register('copyFiles', Copy) {
-    from "${rootProject.targetFolder}"
+    from file(rootProject.targetFolder.getAbsolutePath() + "/" + rootProject.name + "-" + rootProject.version + ".jar")
     into rootProject.testFolder
 }
 
