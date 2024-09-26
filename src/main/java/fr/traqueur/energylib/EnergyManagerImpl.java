@@ -21,6 +21,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class EnergyManagerImpl implements EnergyManager {
@@ -90,11 +91,7 @@ public class EnergyManagerImpl implements EnergyManager {
             this.networks.remove(network);
         }
 
-        try {
-            this.splitNetworkIfNecessary(network);
-        } catch (SameEnergyTypeException e) {
-            throw new RuntimeException(e);
-        }
+        this.splitNetworkIfNecessary(network);
     }
 
     @Override
@@ -201,25 +198,34 @@ public class EnergyManagerImpl implements EnergyManager {
         return this.networks;
     }
 
-    private void splitNetworkIfNecessary(EnergyNetwork network) throws SameEnergyTypeException {
+    private void splitNetworkIfNecessary(EnergyNetwork network) {
         Set<Location> visited = new HashSet<>();
         List<EnergyNetwork> newNetworks = new ArrayList<>();
-
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (Location component : network.getComponents().keySet()) {
-            if (!visited.contains(component)) {
-                Set<Map.Entry<Location, EnergyComponent<?>>> subNetworkComponents = discoverSubNetwork(component, visited);
-                if (!subNetworkComponents.isEmpty()) {
-                    EnergyNetwork newNetwork = new EnergyNetwork(this.api);
-                    for (Map.Entry<Location, EnergyComponent<?>> subComponent : subNetworkComponents) {
-                        newNetwork.addComponent(subComponent.getValue(), subComponent.getKey());
+            var future = this.api.getScheduler().runAtLocation(component, (t) -> {
+                if (!visited.contains(component)) {
+                    Set<Map.Entry<Location, EnergyComponent<?>>> subNetworkComponents = discoverSubNetwork(component, visited);
+                    if (!subNetworkComponents.isEmpty()) {
+                        EnergyNetwork newNetwork = new EnergyNetwork(this.api);
+                        for (Map.Entry<Location, EnergyComponent<?>> subComponent : subNetworkComponents) {
+                            try {
+                                newNetwork.addComponent(subComponent.getValue(), subComponent.getKey());
+                            } catch (SameEnergyTypeException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        newNetworks.add(newNetwork);
                     }
-                    newNetworks.add(newNetwork);
                 }
-            }
+            });
+            futures.add(future);
         }
 
-        this.networks.remove(network);
-        this.networks.addAll(newNetworks);
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept((t) -> {
+            this.networks.remove(network);
+            this.networks.addAll(newNetworks);
+        });
     }
 
     private Set<Map.Entry<Location, EnergyComponent<?>>> discoverSubNetwork(Location startBlock, Set<Location> visited) {

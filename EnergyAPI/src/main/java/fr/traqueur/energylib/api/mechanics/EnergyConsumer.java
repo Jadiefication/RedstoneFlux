@@ -1,8 +1,10 @@
 package fr.traqueur.energylib.api.mechanics;
 
-import org.bukkit.Location;
-
 public interface EnergyConsumer  extends EnergyMechanic {
+
+    boolean isEnable();
+
+    void setEnable(boolean enable);
 
     double getEnergyDemand();
 

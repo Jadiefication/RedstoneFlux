@@ -1,6 +1,5 @@
 package fr.traqueur.energylib.api.components;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.EnergyConsumer;
@@ -12,7 +11,6 @@ import fr.traqueur.energylib.api.types.MechanicTypes;
 import org.bukkit.Location;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -97,8 +95,12 @@ public class EnergyNetwork {
 
             consumer.receiveEnergy(providedEnergy);
             if (requiredEnergy > 0) {
-                System.out.println("Le consommateur " + consumerComponent +
-                        " n'a pas reçu suffisamment d'énergie.");
+                if(api.isDebug()) {
+                    System.out.println("Le consommateur " + consumerComponent + " n'a pas reçu assez d'énergie.");
+                }
+                consumer.setEnable(false);
+            } else {
+                consumer.setEnable(true);
             }
         }
 
@@ -121,7 +123,7 @@ public class EnergyNetwork {
                 }
             }
 
-            if (excessEnergy > 0) {
+            if (excessEnergy > 0 && api.isDebug()) {
                 System.out.println("L'énergie excédentaire du producteur " + producerComponent + " est perdue.");
             }
         }
@@ -143,12 +145,6 @@ public class EnergyNetwork {
         return this.components.values().iterator().next();
     }
 
-    /**
-     * Récupère les composants connectés directement ou reliés par des transporteurs.
-     * @param component Le composant dont on cherche les connexions.
-     * @param type Le type de composant à rechercher (PRODUCER, STORAGE, etc.).
-     * @return Liste des composants reliés directement ou via des transporteurs.
-     */
     private List<EnergyComponent<?>> getConnectedComponents(EnergyComponent<?> component, MechanicType type) {
         Set<EnergyComponent<?>> visited = new HashSet<>();
         List<EnergyComponent<?>> connectedComponents = new ArrayList<>();
@@ -156,13 +152,6 @@ public class EnergyNetwork {
         return connectedComponents;
     }
 
-    /**
-     * Effectue une recherche DFS pour trouver les composants connectés (directement ou via des transporteurs).
-     * @param component Le composant actuel de la recherche.
-     * @param visited Liste des composants déjà visités pour éviter les boucles.
-     * @param connectedComponents Liste des composants reliés trouvés.
-     * @param type Le type de composant recherché (PRODUCER, STORAGE, etc.).
-     */
     private void dfsConnectedComponents(EnergyComponent<?> component, Set<EnergyComponent<?>> visited,
                                         List<EnergyComponent<?>> connectedComponents, MechanicType type) {
         if (visited.contains(component)) {

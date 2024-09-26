@@ -1,7 +1,6 @@
 package fr.traqueur.energylib.tests;
 
 import fr.traqueur.energylib.api.mechanics.EnergyStorage;
-import org.bukkit.Location;
 
 public class BlockStorage implements EnergyStorage {
 

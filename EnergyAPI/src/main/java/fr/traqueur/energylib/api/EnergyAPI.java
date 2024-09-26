@@ -7,4 +7,8 @@ public interface EnergyAPI {
     EnergyManager getManager();
 
     PlatformScheduler getScheduler();
+
+    boolean isDebug();
+
+    void setDebug(boolean debug);
 }

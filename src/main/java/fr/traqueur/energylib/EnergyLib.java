@@ -4,7 +4,6 @@ import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
 import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.components.EnergyNetwork;
 import fr.traqueur.energylib.tests.EnergyTest;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
@@ -15,11 +14,13 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
 
     private PlatformScheduler scheduler;
     private EnergyManager manager;
+    private boolean debug;
 
     @Override
     public void onEnable() {
         this.scheduler = new FoliaLib(this).getScheduler();
         this.manager = new EnergyManagerImpl(this);
+        this.debug = false;
 
         PluginManager pluginManager = this.getServer().getPluginManager();
         pluginManager.registerEvents(new EnergyListener(this), this);
@@ -45,6 +46,16 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
     @Override
     public PlatformScheduler getScheduler() {
         return this.scheduler;
+    }
+
+    @Override
+    public boolean isDebug() {
+        return this.debug;
+    }
+
+    @Override
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 
     private <T> void registerProvider(T instance, Class<T> clazz) {

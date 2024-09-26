@@ -3,7 +3,6 @@ package fr.traqueur.energylib.api.components;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 import fr.traqueur.energylib.api.types.EnergyType;
-import org.bukkit.Location;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -4,7 +4,18 @@ import fr.traqueur.energylib.api.mechanics.EnergyConsumer;
 
 public class BlockConsumer implements EnergyConsumer {
 
+    private boolean enable = false;
     private double energy = 0;
+
+    @Override
+    public boolean isEnable() {
+        return this.enable;
+    }
+
+    @Override
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
 
     @Override
     public double getEnergyDemand() {
