@@ -12,10 +12,10 @@ public interface EnergyProducer extends EnergyMechanic {
 
     boolean canProduce(Location location);
 
-    double produce(Location location);
+    void produce(Location location);
 
-    default double handle(Location location) {
-        return this.produce(location);
-    }
+    double extractEnergy(double v);
+
+    double getExcessEnergy();
 
 }

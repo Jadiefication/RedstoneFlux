@@ -39,10 +39,6 @@ public class EnergyComponent<T extends EnergyMechanic> {
         component.disconnect(this);
     }
 
-    public double update(Location location) {
-        return this.mechanic.handle(location);
-    }
-
     public Set<EnergyComponent<?>> getConnectedComponents() {
         return this.connectedComponents;
     }

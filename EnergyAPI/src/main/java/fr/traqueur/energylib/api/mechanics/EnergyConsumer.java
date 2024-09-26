@@ -9,9 +9,4 @@ public interface EnergyConsumer  extends EnergyMechanic {
     void receiveEnergy(double energyToGive);
 
     void consumeEnergy();
-
-    @Override
-    default double handle(Location location) {
-        return this.getEnergyDemand();
-    }
 }

@@ -7,5 +7,5 @@ public interface EnergyStorage  extends EnergyMechanic {
 
     double getStoredEnergy();
 
-    void consumeEnergy(double energyTaken);
+    double consumeEnergy(double energyTaken);
 }

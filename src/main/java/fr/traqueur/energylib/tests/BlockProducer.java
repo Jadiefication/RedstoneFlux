@@ -8,6 +8,7 @@ public class BlockProducer implements EnergyProducer {
 
     private double maxRate = 2000;
     private int age = 0;
+    private double producedEnergy = 0;
 
     @Override
     public double getMaxRate() {
@@ -36,12 +37,25 @@ public class BlockProducer implements EnergyProducer {
     }
 
     @Override
-    public double produce(Location location) {
+    public void produce(Location location) {
         if(this.canProduce(location)) {
             System.out.println("Producing " + this.getRate() + " energy at " + location);
             age++;
-            return this.getRate();
+            producedEnergy = this.getRate();
         }
-        return 0;
+    }
+
+    @Override
+    public double extractEnergy(double v) {
+        double energy = Math.min(v, producedEnergy);
+        producedEnergy -= energy;
+        return energy;
+    }
+
+    @Override
+    public double getExcessEnergy() {
+        double excess = producedEnergy;
+        producedEnergy = 0;
+        return excess;
     }
 }
