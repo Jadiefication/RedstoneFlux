@@ -3,3 +3,6 @@ version: '${version}'
 main: fr.traqueur.energylib.EnergyLib
 api-version: '1.21'
 folia-supported: true
+softdepend:
+  - Oraxen
+  - ItemsAdder

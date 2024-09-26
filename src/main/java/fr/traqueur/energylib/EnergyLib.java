@@ -4,7 +4,10 @@ import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
 import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
+import fr.traqueur.energylib.hooks.EnergyItemsAdderCompatibility;
+import fr.traqueur.energylib.hooks.EnergyOraxenCompatibility;
 import fr.traqueur.energylib.tests.EnergyTest;
+import io.th0rgal.oraxen.compatibilities.CompatibilitiesManager;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.ServicesManager;
@@ -22,7 +25,15 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
         this.manager = new EnergyManagerImpl(this);
         this.debug = false;
 
+
         PluginManager pluginManager = this.getServer().getPluginManager();
+
+        if(this.getServer().getPluginManager().isPluginEnabled("Oraxen"))
+            CompatibilitiesManager.addCompatibility("EnergyLib", EnergyOraxenCompatibility.class);
+
+        if(this.getServer().getPluginManager().isPluginEnabled("ItemsAdder"))
+            pluginManager.registerEvents(new EnergyItemsAdderCompatibility(this), this);
+
         pluginManager.registerEvents(new EnergyListener(this), this);
 
         this.registerProvider(this.manager, EnergyManager.class);
