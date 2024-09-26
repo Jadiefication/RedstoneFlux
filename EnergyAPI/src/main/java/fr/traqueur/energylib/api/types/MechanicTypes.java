@@ -1,5 +1,6 @@
 package fr.traqueur.energylib.api.types;
 
+import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.mechanics.*;
 
 public enum MechanicTypes implements MechanicType {
@@ -17,5 +18,9 @@ public enum MechanicTypes implements MechanicType {
 
     public Class<? extends EnergyMechanic> getClazz() {
         return clazz;
+    }
+
+    public boolean isInstance(EnergyComponent<?> component) {
+        return this.clazz.isInstance(component.getMechanic());
     }
 }

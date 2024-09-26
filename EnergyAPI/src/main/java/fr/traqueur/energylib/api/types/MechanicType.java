@@ -1,5 +1,6 @@
 package fr.traqueur.energylib.api.types;
 
+import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 
 import java.util.ArrayList;
@@ -17,5 +18,7 @@ public interface MechanicType {
     }
 
     Class<? extends EnergyMechanic> getClazz();
+
+    boolean isInstance(EnergyComponent<?> component);
 
 }

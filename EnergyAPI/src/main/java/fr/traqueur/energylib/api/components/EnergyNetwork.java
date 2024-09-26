@@ -10,9 +10,7 @@ import fr.traqueur.energylib.api.types.MechanicType;
 import fr.traqueur.energylib.api.types.MechanicTypes;
 import org.bukkit.Location;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -48,8 +46,8 @@ public class EnergyNetwork {
         this.components.remove(location);
     }
 
-    public boolean contains(Location neibhor) {
-        return this.components.containsKey(neibhor);
+    public boolean contains(Location location) {
+        return this.components.containsKey(location);
     }
 
     public void mergeWith(EnergyNetwork network) {
@@ -63,7 +61,7 @@ public class EnergyNetwork {
         double mustHave = this.handleMechanic(MechanicTypes.CONSUMER);
 
         if (produced >= mustHave) {
-            distributeEnergyToConsumers(mustHave);
+            distributeEnergyToConsumers(mustHave, false);
 
             double excess = produced - mustHave;
 
@@ -90,9 +88,9 @@ public class EnergyNetwork {
             }
 
             if (totalAvailableEnergy >= mustHave) {
-                distributeEnergyToConsumers(mustHave);
+                distributeEnergyToConsumers(mustHave, true);
             } else {
-                distributeEnergyToConsumers(totalAvailableEnergy);
+                distributeEnergyToConsumers(totalAvailableEnergy, true);
                 handleShortage(deficit);
             }
         }
@@ -115,33 +113,58 @@ public class EnergyNetwork {
         return this.components.values().iterator().next();
     }
 
-    private void distributeEnergyToConsumers(double availableEnergy) {
+    private boolean isConnectedTo(EnergyComponent<?> component, MechanicType type) {
+        Set<EnergyComponent<?>> visited = new HashSet<>();
+        return this.dfsConnection(component, visited, type);
+    }
+
+    private boolean dfsConnection(EnergyComponent<?> component, Set<EnergyComponent<?>> visited, MechanicType type) {
+        if (type.isInstance(component)) {
+            return true;
+        }
+
+        visited.add(component);
+        for (EnergyComponent<?> neighbor : component.getConnectedComponents()) {
+            if (!visited.contains(neighbor) && (MechanicTypes.TRANSPORTER.isInstance(neighbor)|| type.isInstance(neighbor))) {
+                if (dfsConnection(neighbor, visited, type)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void distributeEnergyToConsumers(double availableEnergy, boolean fromStorage) {
         double totalDemand = this.handleMechanic(MechanicTypes.CONSUMER);
         if (totalDemand == 0) return;
 
         for (EnergyComponent<?> component : getComponents().values()) {
             if (component.getMechanic() instanceof EnergyConsumer consumer) {
-                double energyNeeded = consumer.getEnergyDemand();
-                double energyToGive = (energyNeeded / totalDemand) * availableEnergy;
-                consumer.receiveEnergy(energyToGive);
+                boolean condition = fromStorage ? isConnectedTo(component, MechanicTypes.STORAGE) : isConnectedTo(component, MechanicTypes.PRODUCER);
+                if (condition) {
+                    double energyNeeded = consumer.getEnergyDemand();
+                    double energyToGive = (energyNeeded / totalDemand) * availableEnergy;
+                    consumer.receiveEnergy(energyToGive);
+                }
             }
         }
     }
 
     private double storeEnergy(double energyToStore) {
-
         for (EnergyComponent<?> component : getComponents().values()) {
             if (component.getMechanic() instanceof EnergyStorage storage) {
-                double availableCapacity = storage.getAvailableCapacity();
-                double energyStored = Math.min(availableCapacity, energyToStore);
+                if (isConnectedTo(component, MechanicTypes.PRODUCER)) {
+                    double availableCapacity = storage.getAvailableCapacity();
+                    double energyStored = Math.min(availableCapacity, energyToStore);
 
-                double wasted = storage.storeEnergy(energyStored);
+                    double wasted = storage.storeEnergy(energyStored);
 
-                energyToStore -= energyStored;
-                energyToStore += wasted;
+                    energyToStore -= energyStored;
+                    energyToStore += wasted;
 
-                if (energyToStore <= 0) {
-                    break;
+                    if (energyToStore <= 0) {
+                        break;
+                    }
                 }
             }
         }
@@ -151,15 +174,17 @@ public class EnergyNetwork {
     private double consumeStoredEnergy(double energyToRetrieve) {
         for (EnergyComponent<?> component : getComponents().values()) {
             if (component.getMechanic() instanceof EnergyStorage storage) {
-                double energyAvailable = storage.getStoredEnergy();
-                double energyTaken = Math.min(energyAvailable, energyToRetrieve);
+                if (isConnectedTo(component, MechanicTypes.CONSUMER)) {
+                    double energyAvailable = storage.getStoredEnergy();
+                    double energyTaken = Math.min(energyAvailable, energyToRetrieve);
 
-                storage.consumeEnergy(energyTaken);
+                    storage.consumeEnergy(energyTaken);
 
-                energyToRetrieve -= energyTaken;
+                    energyToRetrieve -= energyTaken;
 
-                if (energyToRetrieve <= 0) {
-                    break;
+                    if (energyToRetrieve <= 0) {
+                        break;
+                    }
                 }
             }
         }
@@ -173,7 +198,6 @@ public class EnergyNetwork {
     private void handleWaste(double excessEnergy) {
         System.out.println("Excess energy of " + excessEnergy + " units has been wasted.");
     }
-
 
     private double handleMechanic(MechanicType type) {
         AtomicDouble energy = new AtomicDouble(0);
