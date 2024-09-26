@@ -32,7 +32,7 @@ public interface EnergyManager {
 
     boolean isComponent(ItemStack item);
 
-    ItemStack createItemComponent(Material material, EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic);
+    ItemStack createItemComponent(EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic);
 
     void startNetworkUpdater();
 

@@ -7,6 +7,7 @@ import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.components.EnergyNetwork;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
+import fr.traqueur.energylib.api.items.ItemsFactory;
 import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 import fr.traqueur.energylib.api.persistents.EnergyTypePersistentDataType;
 import fr.traqueur.energylib.api.types.EnergyType;
@@ -145,12 +146,14 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     @Override
-    public ItemStack createItemComponent(Material material, EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic) {
+    public ItemStack createItemComponent(EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic) {
         if (mechanic.getClass().isAssignableFrom(mechanicType.getClazz())) {
             throw new IllegalArgumentException("Mechanic type " + mechanicType.getClazz() + " is not compatible with mechanic " + mechanic.getClass());
         }
 
-        ItemStack item = new ItemStack(material);
+        ItemStack item = ItemsFactory.getItem(mechanic.getClass())
+                .orElseThrow(() -> new IllegalArgumentException("Item not found for mechanic " + mechanic.getClass()));
+
         ItemMeta meta = item.getItemMeta();
         if(meta == null) {
             throw new IllegalArgumentException("ItemMeta is null!");
