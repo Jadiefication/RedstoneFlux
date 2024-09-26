@@ -6,6 +6,7 @@ import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 import fr.traqueur.energylib.api.types.EnergyType;
 import fr.traqueur.energylib.api.types.MechanicType;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -44,5 +45,15 @@ public interface EnergyManager {
 
     NamespacedKey getMechanicKey();
 
+    NamespacedKey getNetworkKey();
+
     Set<EnergyNetwork> getNetworks();
+
+    void loadNetworksInChunk(Chunk chunk);
+
+    void unloadNetworksInChunk(Chunk chunk);
+
+    void saveNetworks();
+
+    void loadNetworks();
 }

@@ -8,6 +8,7 @@ import fr.traqueur.energylib.api.mechanics.EnergyStorage;
 import fr.traqueur.energylib.api.types.EnergyType;
 import fr.traqueur.energylib.api.types.MechanicType;
 import fr.traqueur.energylib.api.types.MechanicTypes;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 
 import java.util.*;
@@ -160,6 +161,10 @@ public class EnergyNetwork {
 
     public boolean isEmpty() {
         return this.components.isEmpty();
+    }
+
+    public boolean isInChunk(Chunk chunk) {
+        return this.components.keySet().stream().anyMatch(location -> location.getChunk().equals(chunk));
     }
 
     public Map<Location, EnergyComponent<?>> getComponents() {

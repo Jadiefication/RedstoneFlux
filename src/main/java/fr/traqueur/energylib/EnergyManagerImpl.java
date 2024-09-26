@@ -10,10 +10,13 @@ import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.items.ItemsFactory;
 import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
 import fr.traqueur.energylib.api.persistents.EnergyTypePersistentDataType;
+import fr.traqueur.energylib.api.persistents.adapters.EnergyComponentAdapter;
+import fr.traqueur.energylib.api.persistents.adapters.EnergyNetworkAdapter;
+import fr.traqueur.energylib.api.persistents.adapters.EnergyTypeAdapter;
 import fr.traqueur.energylib.api.types.EnergyType;
 import fr.traqueur.energylib.api.types.MechanicType;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +26,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 public class EnergyManagerImpl implements EnergyManager {
@@ -35,6 +39,7 @@ public class EnergyManagerImpl implements EnergyManager {
     private final NamespacedKey energyTypeKey;
     private final NamespacedKey mechanicClassKey;
     private final NamespacedKey mechanicKey;
+    private final NamespacedKey networkKey;
 
     private final Set<EnergyNetwork> networks;
     private WrappedTask updaterTask;
@@ -43,10 +48,11 @@ public class EnergyManagerImpl implements EnergyManager {
     public EnergyManagerImpl(EnergyLib energyLib) {
         this.api = energyLib;
         this.gson = this.createGson();
-        this.networks = new HashSet<>();
+        this.networks = new CopyOnWriteArraySet<>();
         this.energyTypeKey = new NamespacedKey(energyLib, "energy-type");
         this.mechanicClassKey = new NamespacedKey(energyLib, "mechanic-class");
         this.mechanicKey = new NamespacedKey(energyLib, "mechanic");
+        this.networkKey = new NamespacedKey(energyLib, "network");
     }
 
     @Override
@@ -182,6 +188,47 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     @Override
+    public void loadNetworksInChunk(Chunk chunk) {
+        PersistentDataContainer container = chunk.getPersistentDataContainer();
+        if(!container.has(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING))) {
+            return;
+        }
+
+        List<String> formattedNetworks = container.getOrDefault(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
+        List<EnergyNetwork> networksInChunk = formattedNetworks.stream().map(network -> this.gson.fromJson(network, EnergyNetwork.class)).toList();
+        this.networks.addAll(networksInChunk);
+
+        container.remove(this.getNetworkKey());
+    }
+
+    @Override
+    public void unloadNetworksInChunk(Chunk chunk) {
+        Set<EnergyNetwork> networksInChunk = this.networks.stream().filter(network -> network.isInChunk(chunk)).collect(Collectors.toSet());
+        if(networksInChunk.isEmpty()) {
+            return;
+        }
+        PersistentDataContainer container = chunk.getPersistentDataContainer();
+        List<String> formattedNetworks = networksInChunk.stream().map(network -> this.gson.toJson(network, EnergyNetwork.class)).collect(Collectors.toList());
+        container.set(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), formattedNetworks);
+
+        this.networks.removeIf(networksInChunk::contains);
+    }
+
+    @Override
+    public void saveNetworks() {
+        this.api.getServer().getWorlds().forEach(world -> {
+           Arrays.asList(world.getLoadedChunks()).forEach(this::unloadNetworksInChunk);
+        });
+    }
+
+    @Override
+    public void loadNetworks() {
+        this.api.getServer().getWorlds().forEach(world -> {
+            Arrays.asList(world.getLoadedChunks()).forEach(this::loadNetworksInChunk);
+        });
+    }
+
+    @Override
     public NamespacedKey getEnergyTypeKey() {
         return this.energyTypeKey;
     }
@@ -194,6 +241,11 @@ public class EnergyManagerImpl implements EnergyManager {
     @Override
     public NamespacedKey getMechanicKey() {
         return this.mechanicKey;
+    }
+
+    @Override
+    public NamespacedKey getNetworkKey() {
+        return this.networkKey;
     }
 
     @Override
@@ -268,10 +320,18 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     private Gson createGson() {
-        return new GsonBuilder()
+        GsonBuilder builder = new GsonBuilder()
                 .setPrettyPrinting()
                 .disableHtmlEscaping()
-                .create();
+                .registerTypeAdapter(EnergyType.class, new EnergyTypeAdapter());
+
+        Gson temp = builder.create();
+        builder.registerTypeAdapter(EnergyComponent.class, new EnergyComponentAdapter(temp));
+
+        Gson temp2 = builder.create();
+        builder.registerTypeAdapter(EnergyNetwork.class, new EnergyNetworkAdapter(this.api, temp2));
+
+        return builder.create();
     }
 
 }
