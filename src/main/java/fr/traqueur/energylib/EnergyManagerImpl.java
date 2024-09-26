@@ -167,7 +167,7 @@ public class EnergyManagerImpl implements EnergyManager {
     public void startNetworkUpdater() {
         this.updaterTask = this.api.getScheduler().runTimerAsync(() -> {
             this.networks.forEach(EnergyNetwork::update);
-        }, 0L, 20L*5);
+        }, 0L, 1L);
     }
 
     @Override
