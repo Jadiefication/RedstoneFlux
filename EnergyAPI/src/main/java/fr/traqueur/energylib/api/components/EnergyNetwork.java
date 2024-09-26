@@ -11,6 +11,7 @@ import fr.traqueur.energylib.api.types.MechanicTypes;
 import org.bukkit.Location;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -54,79 +55,107 @@ public class EnergyNetwork {
     }
 
     public void update() {
-        Map<Location, EnergyComponent<?>> consumers = getComponentByType(MechanicTypes.CONSUMER);
+        this.handleProduction().thenAccept((t) -> {
+            this.handleConsumers().thenAccept((t1) -> {
+                this.handleExcess();
+            });
+        });
+    }
+
+    private CompletableFuture<Void> handleProduction() {
+        Map<Location, EnergyComponent<?>> producers = this.getComponentByType(MechanicTypes.PRODUCER);
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        producers.forEach((location, producer) -> {
+            var future =this.api.getScheduler().runAtLocation(location, (t) -> {
+                ((EnergyProducer) producer.getMechanic()).produce(location);
+            });
+            futures.add(future);
+        });
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    }
+
+    private void handleExcess() {
         Map<Location, EnergyComponent<?>> producers = getComponentByType(MechanicTypes.PRODUCER);
-
-        producers.forEach((location, producer) -> ((EnergyProducer) producer.getMechanic()).produce(location));
-
-        for (EnergyComponent<?> consumerComponent : consumers.values()) {
-            EnergyConsumer consumer = (EnergyConsumer) consumerComponent.getMechanic();
-            double requiredEnergy = consumer.getEnergyDemand();
-            double providedEnergy = 0;
-
-            List<EnergyComponent<?>> connectedProducers =
-                    getConnectedComponents(consumerComponent, MechanicTypes.PRODUCER);
-
-            for (EnergyComponent<?> producerComponent : connectedProducers) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        producers.forEach((location, producerComponent) -> {
+            var future = this.api.getScheduler().runAtLocation(location, (t) -> {
                 EnergyProducer producer = (EnergyProducer) producerComponent.getMechanic();
-                double energyAvailable = producer.extractEnergy(requiredEnergy);
-                requiredEnergy -= energyAvailable;
-                providedEnergy += energyAvailable;
-                if (requiredEnergy <= 0) {
-                    break;
+                double excessEnergy = producer.getExcessEnergy();
+
+                if (excessEnergy > 0) {
+                    List<EnergyComponent<?>> connectedStorages =
+                            getConnectedComponents(producerComponent, MechanicTypes.STORAGE);
+
+                    for (EnergyComponent<?> storageComponent : connectedStorages) {
+                        EnergyStorage storage = (EnergyStorage) storageComponent.getMechanic();
+                        double energyStored = storage.storeEnergy(excessEnergy);
+                        excessEnergy -= energyStored;
+
+                        if (excessEnergy <= 0) {
+                            break;
+                        }
+                    }
                 }
-            }
 
-            if (requiredEnergy > 0) {
-                List<EnergyComponent<?>> connectedStorages =
-                        getConnectedComponents(consumerComponent, MechanicTypes.STORAGE);
+                if (excessEnergy > 0 && api.isDebug()) {
+                    System.out.println("L'énergie excédentaire du producteur " + producerComponent + " est perdue.");
+                }
+            });
+            futures.add(future);
+        });
+    }
 
-                for (EnergyComponent<?> storageComponent : connectedStorages) {
-                    EnergyStorage storage = (EnergyStorage) storageComponent.getMechanic();
-                    double energyFromStorage = storage.consumeEnergy(requiredEnergy);
-                    requiredEnergy -= energyFromStorage;
-                    providedEnergy += energyFromStorage;
+    private CompletableFuture<Void> handleConsumers() {
+        Map<Location, EnergyComponent<?>> consumers = this.getComponentByType(MechanicTypes.CONSUMER);
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        consumers.forEach((location, consumerComponent) -> {
+            var future = this.api.getScheduler().runAtLocation(location, (t) -> {
+                EnergyConsumer consumer = (EnergyConsumer) consumerComponent.getMechanic();
+                double requiredEnergy = consumer.getEnergyDemand();
+                double providedEnergy = 0;
 
+                List<EnergyComponent<?>> connectedProducers =
+                        getConnectedComponents(consumerComponent, MechanicTypes.PRODUCER);
+
+                for (EnergyComponent<?> producerComponent : connectedProducers) {
+                    EnergyProducer producer = (EnergyProducer) producerComponent.getMechanic();
+                    double energyAvailable = producer.extractEnergy(requiredEnergy);
+                    requiredEnergy -= energyAvailable;
+                    providedEnergy += energyAvailable;
                     if (requiredEnergy <= 0) {
                         break;
                     }
                 }
-            }
 
-            consumer.receiveEnergy(providedEnergy);
-            if (requiredEnergy > 0) {
-                if(api.isDebug()) {
-                    System.out.println("Le consommateur " + consumerComponent + " n'a pas reçu assez d'énergie.");
-                }
-                consumer.setEnable(false);
-            } else {
-                consumer.setEnable(true);
-            }
-        }
+                if (requiredEnergy > 0) {
+                    List<EnergyComponent<?>> connectedStorages =
+                            getConnectedComponents(consumerComponent, MechanicTypes.STORAGE);
 
-        for (EnergyComponent<?> producerComponent : producers.values()) {
-            EnergyProducer producer = (EnergyProducer) producerComponent.getMechanic();
-            double excessEnergy = producer.getExcessEnergy();
+                    for (EnergyComponent<?> storageComponent : connectedStorages) {
+                        EnergyStorage storage = (EnergyStorage) storageComponent.getMechanic();
+                        double energyFromStorage = storage.consumeEnergy(requiredEnergy);
+                        requiredEnergy -= energyFromStorage;
+                        providedEnergy += energyFromStorage;
 
-            if (excessEnergy > 0) {
-                List<EnergyComponent<?>> connectedStorages =
-                        getConnectedComponents(producerComponent, MechanicTypes.STORAGE);
-
-                for (EnergyComponent<?> storageComponent : connectedStorages) {
-                    EnergyStorage storage = (EnergyStorage) storageComponent.getMechanic();
-                    double energyStored = storage.storeEnergy(excessEnergy);
-                    excessEnergy -= energyStored;
-
-                    if (excessEnergy <= 0) {
-                        break;
+                        if (requiredEnergy <= 0) {
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (excessEnergy > 0 && api.isDebug()) {
-                System.out.println("L'énergie excédentaire du producteur " + producerComponent + " est perdue.");
-            }
-        }
+                consumer.receiveEnergy(providedEnergy);
+                if (requiredEnergy > 0) {
+                    if(api.isDebug()) {
+                        System.out.println("Le consommateur " + consumerComponent + " n'a pas reçu assez d'énergie.");
+                    }
+                    consumer.setEnable(false);
+                } else {
+                    consumer.setEnable(true);
+                }
+            });
+            futures.add(future);
+        });
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
     public boolean isEmpty() {
@@ -148,7 +177,7 @@ public class EnergyNetwork {
     private List<EnergyComponent<?>> getConnectedComponents(EnergyComponent<?> component, MechanicType type) {
         Set<EnergyComponent<?>> visited = new HashSet<>();
         List<EnergyComponent<?>> connectedComponents = new ArrayList<>();
-        dfsConnectedComponents(component, visited, connectedComponents, type);
+        this.dfsConnectedComponents(component, visited, connectedComponents, type);
         return connectedComponents;
     }
 
@@ -166,7 +195,7 @@ public class EnergyNetwork {
 
         for (EnergyComponent<?> neighbor : component.getConnectedComponents()) {
             if (!visited.contains(neighbor) && (MechanicTypes.TRANSPORTER.isInstance(neighbor) || type.isInstance(neighbor))) {
-                dfsConnectedComponents(neighbor, visited, connectedComponents, type);
+                this.dfsConnectedComponents(neighbor, visited, connectedComponents, type);
             }
         }
     }
