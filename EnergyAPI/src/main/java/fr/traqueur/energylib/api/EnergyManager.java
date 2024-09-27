@@ -8,7 +8,6 @@ import fr.traqueur.energylib.api.types.EnergyType;
 import fr.traqueur.energylib.api.types.MechanicType;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 
@@ -51,7 +50,11 @@ public interface EnergyManager {
 
     void loadNetworksInChunk(Chunk chunk);
 
-    void unloadNetworksInChunk(Chunk chunk);
+    void saveNetworksInChunk(Chunk chunk);
+
+    void disableInChunk(Chunk chunk);
+
+    void enableInChunk(Chunk chunk);
 
     void saveNetworks();
 

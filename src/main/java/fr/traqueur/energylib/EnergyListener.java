@@ -11,10 +11,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
-import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.Arrays;
 
 public class EnergyListener implements Listener {
 
@@ -29,13 +26,13 @@ public class EnergyListener implements Listener {
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
         Chunk chunk = event.getChunk();
-        this.energyManager.loadNetworksInChunk(chunk);
+        this.energyManager.enableInChunk(chunk);
     }
 
     @EventHandler
     public void onChunkUnload(ChunkUnloadEvent event) {
         Chunk chunk = event.getChunk();
-        this.energyManager.unloadNetworksInChunk(chunk);
+        this.energyManager.disableInChunk(chunk);
     }
 
     @EventHandler

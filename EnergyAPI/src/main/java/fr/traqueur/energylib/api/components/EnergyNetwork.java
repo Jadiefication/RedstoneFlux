@@ -20,16 +20,26 @@ public class EnergyNetwork {
 
     private final EnergyAPI api;
     private final Map<Location, EnergyComponent<?>> components;
+    private boolean enable;
 
     public EnergyNetwork(EnergyAPI api, EnergyComponent<?> component, Location location) {
         this.api = api;
         this.components = new ConcurrentHashMap<>();
         this.components.put(location,component);
+        this.enable = true;
     }
 
     public EnergyNetwork(EnergyAPI api) {
         this.api = api;
         this.components = new ConcurrentHashMap<>();
+    }
+
+    public boolean isEnable() {
+        return this.enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 
     public void addComponent(EnergyComponent<?> component, Location location) throws SameEnergyTypeException {

@@ -175,7 +175,7 @@ public class EnergyManagerImpl implements EnergyManager {
     @Override
     public void startNetworkUpdater() {
         this.updaterTask = this.api.getScheduler().runTimerAsync(() -> {
-            this.networks.forEach(EnergyNetwork::update);
+            this.networks.stream().filter(EnergyNetwork::isEnable).forEach(EnergyNetwork::update);
         }, 0L, 1L);
     }
 
@@ -196,28 +196,41 @@ public class EnergyManagerImpl implements EnergyManager {
 
         List<String> formattedNetworks = container.getOrDefault(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
         List<EnergyNetwork> networksInChunk = formattedNetworks.stream().map(network -> this.gson.fromJson(network, EnergyNetwork.class)).toList();
+        networksInChunk.forEach(network -> network.setEnable(true));
         this.networks.addAll(networksInChunk);
 
         container.remove(this.getNetworkKey());
     }
 
     @Override
-    public void unloadNetworksInChunk(Chunk chunk) {
+    public void saveNetworksInChunk(Chunk chunk) {
         Set<EnergyNetwork> networksInChunk = this.networks.stream().filter(network -> network.isInChunk(chunk)).collect(Collectors.toSet());
         if(networksInChunk.isEmpty()) {
             return;
         }
+        networksInChunk.forEach(network -> network.setEnable(false));
         PersistentDataContainer container = chunk.getPersistentDataContainer();
         List<String> formattedNetworks = networksInChunk.stream().map(network -> this.gson.toJson(network, EnergyNetwork.class)).collect(Collectors.toList());
         container.set(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), formattedNetworks);
-
         this.networks.removeIf(networksInChunk::contains);
+    }
+
+    @Override
+    public void disableInChunk(Chunk chunk) {
+        Set<EnergyNetwork> networksInChunk = this.networks.stream().filter(network -> network.isInChunk(chunk)).collect(Collectors.toSet());
+        networksInChunk.forEach(network -> network.setEnable(false));
+    }
+
+    @Override
+    public void enableInChunk(Chunk chunk) {
+        Set<EnergyNetwork> networksInChunk = this.networks.stream().filter(network -> network.isInChunk(chunk)).collect(Collectors.toSet());
+        networksInChunk.forEach(network -> network.setEnable(true));
     }
 
     @Override
     public void saveNetworks() {
         this.api.getServer().getWorlds().forEach(world -> {
-           Arrays.asList(world.getLoadedChunks()).forEach(this::unloadNetworksInChunk);
+           Arrays.asList(world.getLoadedChunks()).forEach(this::saveNetworksInChunk);
         });
     }
 
