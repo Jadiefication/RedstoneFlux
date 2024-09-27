@@ -1,3 +1,5 @@
 rootProject.name = 'EnergyLib'
+
 include ':EnergyAPI'
+include ':test-plugin'
 

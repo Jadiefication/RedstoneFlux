@@ -78,7 +78,6 @@ repositories {
 
 dependencies {
     implementation(project(":EnergyAPI"))
-    implementation "com.github.Traqueur-dev:CommandsAPI:1.5.1"
 }
 
 jar {
@@ -123,7 +122,7 @@ build {
 }
 
 tasks.register('copyFiles', Copy) {
-    from file(rootProject.targetFolder.getAbsolutePath() + "/" + rootProject.name + "-" + rootProject.version + ".jar")
+    from rootProject.targetFolder
     into rootProject.testFolder
 }
 

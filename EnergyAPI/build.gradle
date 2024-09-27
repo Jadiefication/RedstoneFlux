@@ -11,5 +11,5 @@ publishing {
 }
 
 shadowJar {
-    destinationDirectory = rootProject.apiFolder
+    destinationDirectory = rootProject.archiveFolder
 }

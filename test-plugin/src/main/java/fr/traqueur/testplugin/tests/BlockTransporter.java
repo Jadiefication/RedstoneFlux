@@ -1,4 +1,4 @@
-package fr.traqueur.energylib.tests;
+package fr.traqueur.testplugin.tests;
 
 import fr.traqueur.energylib.api.mechanics.EnergyTransporter;
 

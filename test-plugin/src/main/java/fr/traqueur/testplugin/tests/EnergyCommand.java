@@ -1,17 +1,17 @@
-package fr.traqueur.energylib.tests;
+package fr.traqueur.testplugin.tests;
 
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
-import fr.traqueur.energylib.EnergyLib;
+import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.types.EnergyTypes;
 import fr.traqueur.energylib.api.types.MechanicTypes;
-import org.bukkit.Material;
+import fr.traqueur.testplugin.TestPlugin;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class EnergyCommand extends Command<EnergyLib> {
-    public EnergyCommand(EnergyLib plugin) {
+public class EnergyCommand extends Command<TestPlugin> {
+    public EnergyCommand(TestPlugin plugin) {
         super(plugin, "energy");
         this.addArgs("component-type:component-type");
         this.setGameOnly(true);
@@ -20,7 +20,8 @@ public class EnergyCommand extends Command<EnergyLib> {
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
-        EnergyManager energyManager = this.getPlugin().getManager();
+        EnergyAPI api = this.getPlugin().getServer().getServicesManager().getRegistration(EnergyAPI.class).getProvider();
+        EnergyManager energyManager = api.getManager();
         MechanicTypes componentType = arguments.get("component-type");
         var item = switch (componentType) {
             case PRODUCER -> energyManager.createItemComponent(EnergyTypes.RF, componentType, new BlockProducer());

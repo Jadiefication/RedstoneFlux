@@ -6,7 +6,6 @@ import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.hooks.EnergyItemsAdderCompatibility;
 import fr.traqueur.energylib.hooks.EnergyOraxenCompatibility;
-import fr.traqueur.energylib.tests.EnergyTest;
 import io.th0rgal.oraxen.compatibilities.CompatibilitiesManager;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
@@ -36,10 +35,9 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
 
         pluginManager.registerEvents(new EnergyListener(this), this);
 
-        this.registerProvider(this.manager, EnergyManager.class);
-        this.registerProvider(this, EnergyAPI.class);
 
-        new EnergyTest(this);
+        this.registerProvider(this, EnergyAPI.class);
+        this.registerProvider(this.manager, EnergyManager.class);
 
         this.getScheduler().runNextTick((t) -> {
             this.manager.loadNetworks();

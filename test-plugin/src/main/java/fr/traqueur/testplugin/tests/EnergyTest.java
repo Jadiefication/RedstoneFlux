@@ -1,16 +1,15 @@
-package fr.traqueur.energylib.tests;
+package fr.traqueur.testplugin.tests;
 
 import fr.traqueur.commands.api.CommandManager;
-import fr.traqueur.energylib.EnergyLib;
 import fr.traqueur.energylib.api.items.ItemsFactory;
 import fr.traqueur.energylib.api.types.MechanicTypes;
-import io.th0rgal.oraxen.api.OraxenBlocks;
+import fr.traqueur.testplugin.TestPlugin;
 import io.th0rgal.oraxen.api.OraxenItems;
 import org.bukkit.Material;
 
 public class EnergyTest {
 
-    public EnergyTest(EnergyLib energyLib) {
+    public EnergyTest(TestPlugin energyLib) {
         CommandManager commandManager = new CommandManager(energyLib);
 
         commandManager.registerConverter(MechanicTypes.class,"component-type", new ComponentsTypeConverter());
