@@ -1,5 +1,6 @@
 package fr.traqueur.energylib.api;
 
+import com.google.gson.Gson;
 import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.components.EnergyNetwork;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
@@ -52,4 +53,9 @@ public interface EnergyManager {
 
     void enableInChunk(Chunk chunk);
 
+    void saveNetworks();
+
+    void loadNetworks(Chunk chunk);
+
+    Gson getGson();
 }

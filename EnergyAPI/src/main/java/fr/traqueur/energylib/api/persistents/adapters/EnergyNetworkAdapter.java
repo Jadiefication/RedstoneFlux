@@ -43,13 +43,15 @@ public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
             gson.toJson(entry.getValue(), EnergyComponent.class, out);
         }
         out.endObject();
+        out.name("id");
+        out.value(value.getId().toString());
         out.endObject();
     }
 
     @Override
     public EnergyNetwork read(JsonReader in) throws IOException {
         Map<Location, EnergyComponent<?>> components = new ConcurrentHashMap<>();
-
+        String id = null;
         in.beginObject();
         while (in.hasNext()) {
             String name = in.nextName();
@@ -61,13 +63,15 @@ public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
                     components.put(location, component);
                 }
                 in.endObject();
+            } else if(name.equalsIgnoreCase("id")) {
+                id = in.nextString();
             } else {
                 throw new JsonSyntaxException("Unknown field in EnergyNetwork: " + name);
             }
         }
         in.endObject();
 
-        EnergyNetwork network = new EnergyNetwork(api);
+        EnergyNetwork network = new EnergyNetwork(api, UUID.fromString(id));
         components.forEach((location, component) -> {
             try {
                 network.addComponent(component, location);

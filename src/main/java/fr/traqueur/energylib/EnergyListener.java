@@ -26,6 +26,7 @@ public class EnergyListener implements Listener {
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
         Chunk chunk = event.getChunk();
+        this.energyManager.loadNetworks(chunk);
         this.energyManager.enableInChunk(chunk);
     }
 

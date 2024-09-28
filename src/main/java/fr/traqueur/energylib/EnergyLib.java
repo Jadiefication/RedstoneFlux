@@ -12,6 +12,9 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
 public final class EnergyLib extends JavaPlugin implements EnergyAPI {
 
     private PlatformScheduler scheduler;
@@ -32,13 +35,21 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
 
         this.getScheduler().runNextTick((t) -> {
             this.hooks();
+
+            this.getServer().getWorlds().forEach(world -> {
+                Arrays.stream(world.getLoadedChunks()).forEach(chunk -> this.manager.loadNetworks(chunk));
+            });
+
             this.manager.startNetworkUpdater();
+
+            this.getScheduler().runTimerAsync(this.manager::saveNetworks, 1, 1, TimeUnit.HOURS);
         });
     }
 
     @Override
     public void onDisable() {
         this.manager.stopNetworkUpdater();
+        this.manager.saveNetworks();
     }
 
     private void hooks() {

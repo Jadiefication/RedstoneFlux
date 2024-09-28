@@ -1,6 +1,7 @@
 package fr.traqueur.energylib.api.components;
 
 import fr.traqueur.energylib.api.EnergyAPI;
+import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.EnergyConsumer;
 import fr.traqueur.energylib.api.mechanics.EnergyProducer;
@@ -10,6 +11,8 @@ import fr.traqueur.energylib.api.types.MechanicType;
 import fr.traqueur.energylib.api.types.MechanicTypes;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -19,18 +22,21 @@ import java.util.stream.Collectors;
 public class EnergyNetwork {
 
     private final EnergyAPI api;
+    private final UUID id;
+    private Chunk chunk;
     private final Map<Location, EnergyComponent<?>> components;
     private boolean enable;
 
     public EnergyNetwork(EnergyAPI api, EnergyComponent<?> component, Location location) {
-        this.api = api;
-        this.components = new ConcurrentHashMap<>();
+        this(api, UUID.randomUUID());
         this.components.put(location,component);
         this.enable = true;
+        this.chunk = location.getChunk();
     }
 
-    public EnergyNetwork(EnergyAPI api) {
+    public EnergyNetwork(EnergyAPI api, UUID id) {
         this.api = api;
+        this.id = id;
         this.components = new ConcurrentHashMap<>();
     }
 
@@ -39,6 +45,7 @@ public class EnergyNetwork {
     }
 
     public void setEnable(boolean enable) {
+        System.out.println("Network " + this.id + " is now " + (enable ? "enable" : "disable"));
         this.enable = enable;
     }
 
@@ -46,6 +53,9 @@ public class EnergyNetwork {
         for (Map.Entry<Location, EnergyComponent<?>> entry : this.components.entrySet().stream()
                 .filter(entry -> entry.getKey().distance(location) == 1).toList()) {
             entry.getValue().connect(component);
+        }
+        if(chunk == null) {
+            this.chunk = location.getChunk();
         }
         this.components.put(location,component);
     }
@@ -192,6 +202,10 @@ public class EnergyNetwork {
         return this.getRoot().getEnergyType();
     }
 
+    public UUID getId() {
+        return id;
+    }
+
     private EnergyComponent<?> getRoot() {
         return this.components.values().iterator().next();
     }
@@ -227,5 +241,35 @@ public class EnergyNetwork {
                 .stream()
                 .filter(entry -> type.getClazz().isAssignableFrom(entry.getValue().getMechanic().getClass()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public void save() {
+        EnergyManager manager = this.api.getManager();
+        Chunk chunk = this.getChunk();
+        PersistentDataContainer container = chunk.getPersistentDataContainer();
+        var gson = manager.getGson();
+        String json = gson.toJson(this, EnergyNetwork.class);
+        List<String> networks =
+                container.getOrDefault(manager.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
+        networks = new ArrayList<>(networks);
+        networks.add(json);
+
+        container.set(manager.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), networks);
+    }
+
+    public void delete() {
+        PersistentDataContainer container = chunk.getPersistentDataContainer();
+        List<String> networks =
+                container.getOrDefault(this.api.getManager().getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
+        networks = new ArrayList<>(networks);
+        networks.removeIf(json -> {
+            EnergyNetwork network = this.api.getManager().getGson().fromJson(json, EnergyNetwork.class);
+            return network.getId().equals(this.id);
+        });
+        container.set(this.api.getManager().getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), networks);
+    }
+
+    private Chunk getChunk() {
+        return this.chunk;
     }
 }

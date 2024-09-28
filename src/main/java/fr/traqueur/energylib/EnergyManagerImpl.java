@@ -44,7 +44,6 @@ public class EnergyManagerImpl implements EnergyManager {
     private final Set<EnergyNetwork> networks;
     private WrappedTask updaterTask;
 
-
     public EnergyManagerImpl(EnergyLib energyLib) {
         this.api = energyLib;
         this.gson = this.createGson();
@@ -82,6 +81,7 @@ public class EnergyManagerImpl implements EnergyManager {
             for (int i = 1; i < energyNetworks.size(); i++) {
                 EnergyNetwork network = energyNetworks.get(i);
                 firstNetwork.mergeWith(network);
+                network.delete();
                 this.networks.remove(network);
             }
         }
@@ -95,6 +95,7 @@ public class EnergyManagerImpl implements EnergyManager {
         }
         network.removeComponent(location);
         if(network.isEmpty()) {
+            network.delete();
             this.networks.remove(network);
         }
 
@@ -197,6 +198,7 @@ public class EnergyManagerImpl implements EnergyManager {
                 .filter(network -> network.isInChunk(chunk))
                 .collect(Collectors.toSet());
         networksInChunk.forEach(network -> network.setEnable(false));
+        chunk.unload();
     }
 
     @Override
@@ -205,6 +207,30 @@ public class EnergyManagerImpl implements EnergyManager {
                 .filter(network -> network.isInChunk(chunk))
                 .collect(Collectors.toSet());
         networksInChunk.forEach(network -> network.setEnable(true));
+    }
+
+    @Override
+    public void saveNetworks() {
+        this.networks.forEach(EnergyNetwork::save);
+    }
+
+    @Override
+    public void loadNetworks(Chunk chunk) {
+        PersistentDataContainer chunkData = chunk.getPersistentDataContainer();
+        if(chunkData.has(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING))) {
+            List<String> networkDatas = chunkData.getOrDefault(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
+            for (String networkData : networkDatas) {
+                EnergyNetwork network = this.gson.fromJson(networkData, EnergyNetwork.class);
+                if(this.networks.stream().noneMatch(n -> n.getId().equals(network.getId()))) {
+                    this.networks.add(network);
+                }
+            }
+        }
+    }
+
+    @Override
+    public Gson getGson() {
+        return this.gson;
     }
 
     @Override
@@ -241,7 +267,7 @@ public class EnergyManagerImpl implements EnergyManager {
                 if (!visited.contains(component)) {
                     Set<Map.Entry<Location, EnergyComponent<?>>> subNetworkComponents = discoverSubNetwork(component, visited);
                     if (!subNetworkComponents.isEmpty()) {
-                        EnergyNetwork newNetwork = new EnergyNetwork(this.api);
+                        EnergyNetwork newNetwork = new EnergyNetwork(this.api, UUID.randomUUID());
                         for (Map.Entry<Location, EnergyComponent<?>> subComponent : subNetworkComponents) {
                             try {
                                 newNetwork.addComponent(subComponent.getValue(), subComponent.getKey());
@@ -257,6 +283,7 @@ public class EnergyManagerImpl implements EnergyManager {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept((t) -> {
+            network.delete();
             this.networks.remove(network);
             this.networks.addAll(newNetworks);
         });
