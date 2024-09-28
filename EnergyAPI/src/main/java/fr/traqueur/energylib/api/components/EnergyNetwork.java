@@ -252,6 +252,10 @@ public class EnergyNetwork {
         List<String> networks =
                 container.getOrDefault(manager.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
         networks = new ArrayList<>(networks);
+        networks.removeIf(network -> {
+            EnergyNetwork energyNetwork = gson.fromJson(network, EnergyNetwork.class);
+            return energyNetwork.getId().equals(this.id);
+        });
         networks.add(json);
 
         container.set(manager.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), networks);
