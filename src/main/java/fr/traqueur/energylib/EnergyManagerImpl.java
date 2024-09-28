@@ -3,6 +3,7 @@ package fr.traqueur.energylib;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
+import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.components.EnergyNetwork;
@@ -28,21 +29,61 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+/**
+ * This class is the implementation of the EnergyManager interface.
+ * It allows to place and break energy components in the world.
+ */
 public class EnergyManagerImpl implements EnergyManager {
 
+    /**
+     * The list of the 6 block faces.
+     */
     private static final List<BlockFace> NEIBHORS = List.of(BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST);
 
-    private final EnergyLib api;
+    /**
+     * The EnergyLib instance.
+     */
+    private final EnergyAPI api;
+
+    /**
+     * The Gson instance.
+     */
     private final Gson gson;
 
+    /**
+     * The key to store the energy type in the item meta.
+     */
     private final NamespacedKey energyTypeKey;
+
+    /**
+     * The key to store the mechanic class in the item meta.
+     */
     private final NamespacedKey mechanicClassKey;
+
+    /**
+     * The key to store the mechanic in the item meta.
+     */
     private final NamespacedKey mechanicKey;
+
+    /**
+     * The key to store the network in the chunk.
+     */
     private final NamespacedKey networkKey;
 
+    /**
+     * The set of all the energy networks.
+     */
     private final Set<EnergyNetwork> networks;
+
+    /**
+     * The task that updates the networks.
+     */
     private WrappedTask updaterTask;
 
+    /**
+     * Create a new EnergyManagerImpl instance.
+     * @param energyLib the EnergyLib instance
+     */
     public EnergyManagerImpl(EnergyLib energyLib) {
         this.api = energyLib;
         this.gson = this.createGson();
@@ -53,6 +94,9 @@ public class EnergyManagerImpl implements EnergyManager {
         this.networkKey = new NamespacedKey(energyLib, "network");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void placeComponent(EnergyComponent<?> component, Location location) throws SameEnergyTypeException {
         List<EnergyNetwork> energyNetworks = new ArrayList<>();
@@ -86,6 +130,9 @@ public class EnergyManagerImpl implements EnergyManager {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void breakComponent(Location location) {
         EnergyNetwork network = this.networks.stream().filter(n -> n.contains(location)).findFirst().orElse(null);
@@ -101,16 +148,25 @@ public class EnergyManagerImpl implements EnergyManager {
         this.splitNetworkIfNecessary(network);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<EnergyType> getEnergyType(ItemStack item) {
         return this.getPersistentData(item, this.getEnergyTypeKey(), EnergyTypePersistentDataType.INSTANCE);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<String> getMechanicClass(ItemStack item) {
         return this.getPersistentData(item, this.getMechanicClassKey(), PersistentDataType.STRING);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<? extends EnergyMechanic> getMechanic(ItemStack item) {
         String mechanicClass = this.getMechanicClass(item).orElseThrow();
@@ -132,11 +188,17 @@ public class EnergyManagerImpl implements EnergyManager {
         return Optional.of(this.gson.fromJson(mechanicData, mechanicClazz));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isBlockComponent(Location neighbor) {
         return this.networks.stream().anyMatch(network -> network.contains(neighbor));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public EnergyComponent<?> createComponent(ItemStack item) {
         EnergyType energyType = this.getEnergyType(item).orElseThrow();
@@ -144,6 +206,9 @@ public class EnergyManagerImpl implements EnergyManager {
         return new EnergyComponent<>(energyType, mechanic);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isComponent(ItemStack item) {
         return this.getEnergyType(item).isPresent()
@@ -151,6 +216,9 @@ public class EnergyManagerImpl implements EnergyManager {
                 && this.getMechanic(item).isPresent();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ItemStack createItemComponent(EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic) {
         if (mechanic.getClass().isAssignableFrom(mechanicType.getClazz())) {
@@ -172,6 +240,9 @@ public class EnergyManagerImpl implements EnergyManager {
         return item;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void startNetworkUpdater() {
         this.updaterTask = this.api.getScheduler().runTimerAsync(() -> {
@@ -183,6 +254,9 @@ public class EnergyManagerImpl implements EnergyManager {
         }, 0L, 1L);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void stopNetworkUpdater() {
         if(this.updaterTask == null) {
@@ -191,6 +265,9 @@ public class EnergyManagerImpl implements EnergyManager {
         this.updaterTask.cancel();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void disableInChunk(Chunk chunk) {
         Set<EnergyNetwork> networksInChunk = this.networks.stream()
@@ -200,6 +277,9 @@ public class EnergyManagerImpl implements EnergyManager {
         chunk.unload();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enableInChunk(Chunk chunk) {
         Set<EnergyNetwork> networksInChunk = this.networks.stream()
@@ -208,11 +288,17 @@ public class EnergyManagerImpl implements EnergyManager {
         networksInChunk.forEach(network -> network.setEnable(true));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void saveNetworks() {
         this.networks.forEach(EnergyNetwork::save);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void loadNetworks(Chunk chunk) {
         PersistentDataContainer chunkData = chunk.getPersistentDataContainer();
@@ -227,36 +313,58 @@ public class EnergyManagerImpl implements EnergyManager {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Gson getGson() {
         return this.gson;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NamespacedKey getEnergyTypeKey() {
         return this.energyTypeKey;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NamespacedKey getMechanicClassKey() {
         return this.mechanicClassKey;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NamespacedKey getMechanicKey() {
         return this.mechanicKey;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NamespacedKey getNetworkKey() {
         return this.networkKey;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<EnergyNetwork> getNetworks() {
         return this.networks;
     }
 
+    /**
+     * Check if th network must be split.
+     * @param network the network
+     */
     private void splitNetworkIfNecessary(EnergyNetwork network) {
         Set<Location> visited = new HashSet<>();
         List<EnergyNetwork> newNetworks = new ArrayList<>();
@@ -288,6 +396,12 @@ public class EnergyManagerImpl implements EnergyManager {
         });
     }
 
+    /**
+     * Discover the sub network of a block.
+     * @param startBlock the start block
+     * @param visited the set of visited blocks
+     * @return the set of components
+     */
     private Set<Map.Entry<Location, EnergyComponent<?>>> discoverSubNetwork(Location startBlock, Set<Location> visited) {
         Set<Map.Entry<Location, EnergyComponent<?>>> subNetwork = new HashSet<>();
         Queue<Location> queue = new LinkedList<>();
@@ -315,6 +429,14 @@ public class EnergyManagerImpl implements EnergyManager {
         return subNetwork;
     }
 
+    /**
+     * Get the persistent data of an item.
+     * @param item the item
+     * @param key the key
+     * @param type the type
+     * @param <C> the type of the data
+     * @return the optional of the data
+     */
     private <C> Optional<C> getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<?,C> type) {
         ItemMeta meta = item.getItemMeta();
         if(meta == null) {
@@ -324,6 +446,10 @@ public class EnergyManagerImpl implements EnergyManager {
         return Optional.ofNullable(persistentDataContainer.get(key, type));
     }
 
+    /**
+     * Create the Gson instance.
+     * @return the Gson instance
+     */
     private Gson createGson() {
         GsonBuilder builder = new GsonBuilder()
                 .setPrettyPrinting()

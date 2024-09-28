@@ -14,16 +14,35 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * This class is a compatibility for ItemsAdder plugin.
+ * It allows to place and break energy components from ItemsAdder.
+ */
 public class EnergyItemsAdderCompatibility implements Listener {
 
+    /**
+     * The EnergyAPI instance.
+     */
     private final EnergyAPI api;
+
+    /**
+     * The EnergyManager instance.
+     */
     private final EnergyManager energyManager;
 
+    /**
+     * Constructor.
+     * @param api The EnergyAPI instance.
+     */
     public EnergyItemsAdderCompatibility(EnergyAPI api) {
         this.api = api;
         this.energyManager = api.getManager();
     }
 
+    /**
+     * Handle the place of a custom block.
+     * @param event The event.
+     */
     @EventHandler
     public void onPlace(CustomBlockPlaceEvent event) {
         ItemStack item = event.getItemInHand();
@@ -39,6 +58,10 @@ public class EnergyItemsAdderCompatibility implements Listener {
         });
     }
 
+    /**
+     * Handle the break of a custom block.
+     * @param event The event.
+     */
     @EventHandler
     public void onBreak(CustomBlockBreakEvent event) {
         Location location = event.getBlock().getLocation();

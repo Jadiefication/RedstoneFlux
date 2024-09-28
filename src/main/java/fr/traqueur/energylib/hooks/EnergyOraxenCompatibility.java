@@ -11,8 +11,17 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * This class is a compatibility provider for Oraxen.
+ * It allows to place and break energy components in the world.
+ */
 public class EnergyOraxenCompatibility extends CompatibilityProvider<EnergyLib> {
 
+
+    /**
+     * Handle the event when a player places a custom not block from oraxen
+     * @param event the event
+     */
     @EventHandler
     public void onPlace(OraxenNoteBlockPlaceEvent event) {
         EnergyAPI api = (EnergyLib) this.getPlugin();
@@ -30,6 +39,10 @@ public class EnergyOraxenCompatibility extends CompatibilityProvider<EnergyLib> 
         });
     }
 
+    /**
+     * Handle the event when a player breaks a custom not block from oraxen
+     * @param event the event
+     */
     @EventHandler
     public void onBreak(OraxenNoteBlockBreakEvent event) {
         EnergyAPI api = (EnergyLib) this.getPlugin();
