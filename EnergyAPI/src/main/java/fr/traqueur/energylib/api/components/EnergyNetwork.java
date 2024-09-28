@@ -174,7 +174,14 @@ public class EnergyNetwork {
     }
 
     public boolean isInChunk(Chunk chunk) {
-        return this.components.keySet().stream().anyMatch(location -> location.getChunk().equals(chunk));
+        return this.components.keySet()
+                .stream()
+                .anyMatch(location -> this.isSameChunk(chunk, location.getChunk()));
+    }
+
+    private boolean isSameChunk(Chunk chunk, Chunk chunk1) {
+        return chunk.getX() == chunk1.getX() && chunk.getZ() == chunk1.getZ()
+                && chunk.getWorld().getName().equals(chunk1.getWorld().getName());
     }
 
     public Map<Location, EnergyComponent<?>> getComponents() {

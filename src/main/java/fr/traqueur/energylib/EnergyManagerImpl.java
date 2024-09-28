@@ -48,7 +48,7 @@ public class EnergyManagerImpl implements EnergyManager {
     public EnergyManagerImpl(EnergyLib energyLib) {
         this.api = energyLib;
         this.gson = this.createGson();
-        this.networks = new CopyOnWriteArraySet<>();
+        this.networks = new HashSet<>();
         this.energyTypeKey = new NamespacedKey(energyLib, "energy-type");
         this.mechanicClassKey = new NamespacedKey(energyLib, "mechanic-class");
         this.mechanicKey = new NamespacedKey(energyLib, "mechanic");
@@ -175,7 +175,11 @@ public class EnergyManagerImpl implements EnergyManager {
     @Override
     public void startNetworkUpdater() {
         this.updaterTask = this.api.getScheduler().runTimerAsync(() -> {
-            this.networks.stream().filter(EnergyNetwork::isEnable).forEach(EnergyNetwork::update);
+            this.networks.forEach(energyNetwork -> {
+                if (energyNetwork.isEnable()) {
+                    energyNetwork.update();
+                }
+            });
         }, 0L, 1L);
     }
 
@@ -188,57 +192,19 @@ public class EnergyManagerImpl implements EnergyManager {
     }
 
     @Override
-    public void loadNetworksInChunk(Chunk chunk) {
-        PersistentDataContainer container = chunk.getPersistentDataContainer();
-        if(!container.has(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING))) {
-            return;
-        }
-
-        List<String> formattedNetworks = container.getOrDefault(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
-        List<EnergyNetwork> networksInChunk = formattedNetworks.stream().map(network -> this.gson.fromJson(network, EnergyNetwork.class)).toList();
-        networksInChunk.forEach(network -> network.setEnable(true));
-        this.networks.addAll(networksInChunk);
-
-        container.remove(this.getNetworkKey());
-    }
-
-    @Override
-    public void saveNetworksInChunk(Chunk chunk) {
-        Set<EnergyNetwork> networksInChunk = this.networks.stream().filter(network -> network.isInChunk(chunk)).collect(Collectors.toSet());
-        if(networksInChunk.isEmpty()) {
-            return;
-        }
-        networksInChunk.forEach(network -> network.setEnable(false));
-        PersistentDataContainer container = chunk.getPersistentDataContainer();
-        List<String> formattedNetworks = networksInChunk.stream().map(network -> this.gson.toJson(network, EnergyNetwork.class)).collect(Collectors.toList());
-        container.set(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), formattedNetworks);
-        this.networks.removeIf(networksInChunk::contains);
-    }
-
-    @Override
     public void disableInChunk(Chunk chunk) {
-        Set<EnergyNetwork> networksInChunk = this.networks.stream().filter(network -> network.isInChunk(chunk)).collect(Collectors.toSet());
+        Set<EnergyNetwork> networksInChunk = this.networks.stream()
+                .filter(network -> network.isInChunk(chunk))
+                .collect(Collectors.toSet());
         networksInChunk.forEach(network -> network.setEnable(false));
     }
 
     @Override
     public void enableInChunk(Chunk chunk) {
-        Set<EnergyNetwork> networksInChunk = this.networks.stream().filter(network -> network.isInChunk(chunk)).collect(Collectors.toSet());
+        Set<EnergyNetwork> networksInChunk = this.networks.stream()
+                .filter(network -> network.isInChunk(chunk))
+                .collect(Collectors.toSet());
         networksInChunk.forEach(network -> network.setEnable(true));
-    }
-
-    @Override
-    public void saveNetworks() {
-        this.api.getServer().getWorlds().forEach(world -> {
-           Arrays.asList(world.getLoadedChunks()).forEach(this::saveNetworksInChunk);
-        });
-    }
-
-    @Override
-    public void loadNetworks() {
-        this.api.getServer().getWorlds().forEach(world -> {
-            Arrays.asList(world.getLoadedChunks()).forEach(this::loadNetworksInChunk);
-        });
     }
 
     @Override

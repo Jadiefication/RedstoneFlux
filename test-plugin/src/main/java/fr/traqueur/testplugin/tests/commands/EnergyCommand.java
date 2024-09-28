@@ -1,4 +1,4 @@
-package fr.traqueur.testplugin.tests;
+package fr.traqueur.testplugin.tests.commands;
 
 import fr.traqueur.commands.api.Arguments;
 import fr.traqueur.commands.api.Command;
@@ -7,6 +7,10 @@ import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.types.EnergyTypes;
 import fr.traqueur.energylib.api.types.MechanicTypes;
 import fr.traqueur.testplugin.TestPlugin;
+import fr.traqueur.testplugin.tests.BlockConsumer;
+import fr.traqueur.testplugin.tests.BlockProducer;
+import fr.traqueur.testplugin.tests.BlockStorage;
+import fr.traqueur.testplugin.tests.BlockTransporter;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 

@@ -24,23 +24,14 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
         this.manager = new EnergyManagerImpl(this);
         this.debug = false;
 
-
         PluginManager pluginManager = this.getServer().getPluginManager();
-
-        if(this.getServer().getPluginManager().isPluginEnabled("Oraxen"))
-            CompatibilitiesManager.addCompatibility("EnergyLib", EnergyOraxenCompatibility.class);
-
-        if(this.getServer().getPluginManager().isPluginEnabled("ItemsAdder"))
-            pluginManager.registerEvents(new EnergyItemsAdderCompatibility(this), this);
-
         pluginManager.registerEvents(new EnergyListener(this), this);
-
 
         this.registerProvider(this, EnergyAPI.class);
         this.registerProvider(this.manager, EnergyManager.class);
 
         this.getScheduler().runNextTick((t) -> {
-            this.manager.loadNetworks();
+            this.hooks();
             this.manager.startNetworkUpdater();
         });
     }
@@ -48,7 +39,15 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
     @Override
     public void onDisable() {
         this.manager.stopNetworkUpdater();
-        this.manager.saveNetworks();
+    }
+
+    private void hooks() {
+        PluginManager pluginManager = this.getServer().getPluginManager();
+        if(pluginManager.isPluginEnabled("Oraxen"))
+            CompatibilitiesManager.addCompatibility("EnergyLib", EnergyOraxenCompatibility.class);
+
+        if(pluginManager.isPluginEnabled("ItemsAdder"))
+            pluginManager.registerEvents(new EnergyItemsAdderCompatibility(this), this);
     }
 
     @Override

@@ -4,6 +4,7 @@ import fr.traqueur.commands.api.CommandManager;
 import fr.traqueur.energylib.api.items.ItemsFactory;
 import fr.traqueur.energylib.api.types.MechanicTypes;
 import fr.traqueur.testplugin.TestPlugin;
+import fr.traqueur.testplugin.tests.commands.EnergyCommand;
 import io.th0rgal.oraxen.api.OraxenItems;
 import org.bukkit.Material;
 

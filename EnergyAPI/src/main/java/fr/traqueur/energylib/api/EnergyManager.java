@@ -48,15 +48,8 @@ public interface EnergyManager {
 
     Set<EnergyNetwork> getNetworks();
 
-    void loadNetworksInChunk(Chunk chunk);
-
-    void saveNetworksInChunk(Chunk chunk);
-
     void disableInChunk(Chunk chunk);
 
     void enableInChunk(Chunk chunk);
 
-    void saveNetworks();
-
-    void loadNetworks();
 }
