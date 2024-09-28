@@ -27,11 +27,6 @@ public class BlockProducer implements EnergyProducer {
     }
 
     @Override
-    public void setMaxRate(double rate) {
-        this.maxRate = rate;
-    }
-
-    @Override
     public boolean canProduce(Location location) {
         return location.getBlock().getRelative(BlockFace.UP).getLightFromSky() == 15;
     }

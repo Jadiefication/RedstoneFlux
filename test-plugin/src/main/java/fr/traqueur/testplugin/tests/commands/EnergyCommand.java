@@ -5,7 +5,7 @@ import fr.traqueur.commands.api.Command;
 import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.types.EnergyTypes;
-import fr.traqueur.energylib.api.types.MechanicTypes;
+import fr.traqueur.energylib.api.types.MechanicType;
 import fr.traqueur.testplugin.TestPlugin;
 import fr.traqueur.testplugin.tests.BlockConsumer;
 import fr.traqueur.testplugin.tests.BlockProducer;
@@ -26,7 +26,7 @@ public class EnergyCommand extends Command<TestPlugin> {
         Player player = (Player) commandSender;
         EnergyAPI api = this.getPlugin().getServer().getServicesManager().getRegistration(EnergyAPI.class).getProvider();
         EnergyManager energyManager = api.getManager();
-        MechanicTypes componentType = arguments.get("component-type");
+        MechanicType componentType = arguments.get("component-type");
         var item = switch (componentType) {
             case PRODUCER -> energyManager.createItemComponent(EnergyTypes.RF, componentType, new BlockProducer());
             case CONSUMER -> energyManager.createItemComponent(EnergyTypes.RF, componentType, new BlockConsumer());

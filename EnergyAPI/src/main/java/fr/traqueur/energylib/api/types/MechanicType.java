@@ -1,24 +1,60 @@
 package fr.traqueur.energylib.api.types;
 
 import fr.traqueur.energylib.api.components.EnergyComponent;
-import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
+import fr.traqueur.energylib.api.mechanics.*;
 
-import java.util.ArrayList;
-import java.util.List;
+/**
+ * The type of a mechanic.
+ */
+public enum MechanicType {
 
-public interface MechanicType {
+    /**
+     * Represents an energy producer.
+     */
+    PRODUCER(EnergyProducer.class),
 
-    List<MechanicType> TYPES = new ArrayList<>(List.of(MechanicTypes.values()));
+    /**
+     * Represents an energy consumer.
+     */
+    CONSUMER(EnergyConsumer.class),
 
-    static void registerType(MechanicType type) {
-        if(TYPES.stream().anyMatch(t -> t.getClazz().getName().equalsIgnoreCase(type.getClazz().getName()))) {
-            throw new IllegalArgumentException("EnergyType with class " + type.getClazz().getName() + " already exists!");
-        }
-        TYPES.add(type);
+    /**
+     * Represents an energy storage.
+     */
+    STORAGE(EnergyStorage.class),
+
+    /**
+     * Represents an energy transporter.
+     */
+    TRANSPORTER(EnergyTransporter.class);
+
+    /**
+     * The class of the mechanic.
+     */
+    private final Class<? extends EnergyMechanic> clazz;
+
+    /**
+     * Constructor of MechanicType.
+     * @param clazz the class of the mechanic.
+     */
+    MechanicType(Class<? extends EnergyMechanic> clazz) {
+        this.clazz = clazz;
     }
 
-    Class<? extends EnergyMechanic> getClazz();
+    /**
+     * Get the class of the mechanic.
+     * @return the class of the mechanic.
+     */
+    public Class<? extends EnergyMechanic> getClazz() {
+        return clazz;
+    }
 
-    boolean isInstance(EnergyComponent<?> component);
-
+    /**
+     * Check if the mechanic is an instance of the given component.
+     * @param component the component to check.
+     * @return true if the mechanic is an instance of the given component, false otherwise.
+     */
+    public boolean isInstance(EnergyComponent<?> component) {
+        return this.clazz.isInstance(component.getMechanic());
+    }
 }

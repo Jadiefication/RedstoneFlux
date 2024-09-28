@@ -2,7 +2,7 @@ package fr.traqueur.testplugin.tests;
 
 import fr.traqueur.commands.api.CommandManager;
 import fr.traqueur.energylib.api.items.ItemsFactory;
-import fr.traqueur.energylib.api.types.MechanicTypes;
+import fr.traqueur.energylib.api.types.MechanicType;
 import fr.traqueur.testplugin.TestPlugin;
 import fr.traqueur.testplugin.tests.commands.EnergyCommand;
 import io.th0rgal.oraxen.api.OraxenItems;
@@ -13,7 +13,7 @@ public class EnergyTest {
     public EnergyTest(TestPlugin energyLib) {
         CommandManager commandManager = new CommandManager(energyLib);
 
-        commandManager.registerConverter(MechanicTypes.class,"component-type", new ComponentsTypeConverter());
+        commandManager.registerConverter(MechanicType.class,"component-type", new ComponentsTypeConverter());
 
         commandManager.registerCommand(new EnergyCommand(energyLib));
 

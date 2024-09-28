@@ -23,16 +23,40 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This class is a Gson adapter for EnergyNetworks.
+ * It is used to serialize and deserialize EnergyNetworks.
+ */
 public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
 
+    /**
+     * The EnergyAPI instance.
+     */
     private final EnergyAPI api;
+
+    /**
+     * The Gson instance.
+     */
     private final Gson gson;
 
+    /**
+     * Creates a new EnergyNetworkAdapter.
+     *
+     * @param api The EnergyAPI instance.
+     * @param gson The Gson instance.
+     */
     public EnergyNetworkAdapter(EnergyAPI api, Gson gson) {
         this.api = api;
         this.gson = gson;
     }
 
+    /**
+     * Writes an EnergyNetwork to a JsonWriter.
+     *
+     * @param out The JsonWriter.
+     * @param value The EnergyNetwork.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public void write(JsonWriter out, EnergyNetwork value) throws IOException {
         out.beginObject();
@@ -48,6 +72,13 @@ public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
         out.endObject();
     }
 
+    /**
+     * Reads an EnergyNetwork from a JsonReader.
+     *
+     * @param in The JsonReader.
+     * @return The EnergyNetwork.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public EnergyNetwork read(JsonReader in) throws IOException {
         Map<Location, EnergyComponent<?>> components = new ConcurrentHashMap<>();
@@ -83,11 +114,23 @@ public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
         return network;
     }
 
+    /**
+     * Converts a string to a Location.
+     *
+     * @param string The string.
+     * @return The Location.
+     */
     private Location toLocation(String string) {
         String[] parts = string.split(",");
         return new Location(parts[0].equals("null") ? null : Bukkit.getServer().getWorld(UUID.fromString(parts[0])), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
     }
 
+    /**
+     * Converts a Location to a string.
+     *
+     * @param location The Location.
+     * @return The string.
+     */
     private String fromLocation(Location location) {
         String world = location.getWorld() == null ? "null" : location.getWorld().getUID().toString();
         return world + "," + location.getX() + "," + location.getY() + "," + location.getZ();

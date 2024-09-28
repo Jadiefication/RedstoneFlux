@@ -8,8 +8,8 @@ public class BlockStorage implements EnergyStorage {
     private double capacity;
 
     @Override
-    public double getAvailableCapacity() {
-        return this.maxCapacity - this.capacity;
+    public double getMaximumCapacity() {
+        return this.maxCapacity;
     }
 
     @Override

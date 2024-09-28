@@ -10,14 +10,31 @@ import fr.traqueur.energylib.api.types.EnergyType;
 
 import java.io.IOException;
 
+/**
+ * This class is used to serialize and deserialize EnergyComponents.
+ * It is used by the EnergyComponentTypeAdapter to serialize and deserialize EnergyComponents.
+ */
 public class EnergyComponentAdapter extends TypeAdapter<EnergyComponent<?>> {
 
+    /**
+     * The Gson instance used to serialize and deserialize the EnergyMechanic.
+     */
     private final Gson gson;
 
+    /**
+     * Creates a new EnergyComponentAdapter with the given Gson instance.
+     * @param gson The Gson instance used to serialize and deserialize the EnergyMechanic.
+     */
     public EnergyComponentAdapter(Gson gson) {
         this.gson = gson;
     }
 
+    /**
+     * Serializes the given EnergyComponent to the given JsonWriter.
+     * @param out The JsonWriter to write the EnergyComponent to.
+     * @param value The EnergyComponent to serialize.
+     * @throws IOException If an error occurs while writing to the JsonWriter.
+     */
     @Override
     public void write(JsonWriter out, EnergyComponent<?> value) throws IOException {
         out.beginObject();
@@ -34,6 +51,12 @@ public class EnergyComponentAdapter extends TypeAdapter<EnergyComponent<?>> {
         out.endObject();
     }
 
+    /**
+     * Deserializes an EnergyComponent from the given JsonReader.
+     * @param in The JsonReader to read the EnergyComponent from.
+     * @return The deserialized EnergyComponent.
+     * @throws IOException If an error occurs while reading from the JsonReader.
+     */
     @Override
     public EnergyComponent<?> read(JsonReader in) throws IOException {
         EnergyType energyType = null;
