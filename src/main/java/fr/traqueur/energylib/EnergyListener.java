@@ -6,7 +6,6 @@ import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.InteractableMechanic;
 import org.bukkit.Chunk;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -79,7 +78,7 @@ public class EnergyListener implements Listener {
             return;
         }
         Location location = event.getBlockPlaced().getLocation();
-        this.api.getScheduler().runAsync((t) -> {
+        this.api.getScheduler().runAtLocation(location,(t) -> {
             var component = this.energyManager.createComponent(item);
             try {
                 this.energyManager.placeComponent(component, location);
@@ -97,7 +96,8 @@ public class EnergyListener implements Listener {
         if (!this.energyManager.isBlockComponent(location)) {
             return;
         }
-        this.api.getScheduler().runAsync((t) -> this.energyManager.breakComponent(location));
+        event.setCancelled(true);
+        this.api.getScheduler().runAtLocation(location,(t) -> this.energyManager.breakComponent(event.getPlayer(), location));
     }
 
     /**
@@ -116,10 +116,6 @@ public class EnergyListener implements Listener {
 
         if(optComponent.isEmpty()) {
             return;
-        }
-
-        if(event.getPlayer().getGameMode() != GameMode.CREATIVE)  {
-            event.setCancelled(true);
         }
 
         EnergyComponent<?> component = optComponent.get();

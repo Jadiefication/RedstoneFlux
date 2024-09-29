@@ -2,13 +2,9 @@ package fr.traqueur.energylib.hooks;
 
 import dev.lone.itemsadder.api.Events.CustomBlockBreakEvent;
 import dev.lone.itemsadder.api.Events.CustomBlockPlaceEvent;
-import fr.traqueur.energylib.EnergyLib;
 import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
-import io.th0rgal.oraxen.api.events.noteblock.OraxenNoteBlockBreakEvent;
-import io.th0rgal.oraxen.api.events.noteblock.OraxenNoteBlockPlaceEvent;
-import io.th0rgal.oraxen.compatibilities.CompatibilityProvider;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -50,7 +46,7 @@ public class EnergyItemsAdderCompatibility implements Listener {
             return;
         }
         Location location = event.getBlock().getLocation();
-        api.getScheduler().runAsync((t) -> {
+        api.getScheduler().runAtLocation(location, (t) -> {
             var component = energyManager.createComponent(item);
             try {
                 energyManager.placeComponent(component, location);
@@ -68,7 +64,8 @@ public class EnergyItemsAdderCompatibility implements Listener {
         if (!energyManager.isBlockComponent(location)) {
             return;
         }
-        api.getScheduler().runAsync((t) -> energyManager.breakComponent(location));
+        event.setCancelled(true);
+        api.getScheduler().runAtLocation(location, (t) -> energyManager.breakComponent(event.getPlayer(), location));
     }
 
 }

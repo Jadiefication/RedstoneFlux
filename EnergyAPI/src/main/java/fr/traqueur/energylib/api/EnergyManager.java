@@ -10,6 +10,7 @@ import fr.traqueur.energylib.api.types.MechanicType;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
@@ -30,9 +31,11 @@ public interface EnergyManager {
 
     /**
      * Handle the break of a component in the world.
+     *
+     * @param player
      * @param location The location of the component to break.
      */
-    void breakComponent(Location location);
+    void breakComponent(Player player, Location location);
 
     /**
      * Get the energy type of an item.

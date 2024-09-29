@@ -31,7 +31,7 @@ public class EnergyOraxenCompatibility extends CompatibilityProvider<EnergyLib> 
             return;
         }
         Location location = event.getBlock().getLocation();
-        api.getScheduler().runAsync((t) -> {
+        api.getScheduler().runAtLocation(location, (t) -> {
             var component = energyManager.createComponent(item);
             try {
                 energyManager.placeComponent(component, location);
@@ -51,7 +51,8 @@ public class EnergyOraxenCompatibility extends CompatibilityProvider<EnergyLib> 
         if (!energyManager.isBlockComponent(location)) {
             return;
         }
-        api.getScheduler().runAsync((t) -> energyManager.breakComponent(location));
+        event.setCancelled(true);
+        api.getScheduler().runAtLocation(location, (t) -> energyManager.breakComponent(event.getPlayer(), location));
     }
 
 }

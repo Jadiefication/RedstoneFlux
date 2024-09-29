@@ -16,10 +16,9 @@ import fr.traqueur.energylib.api.persistents.adapters.EnergyNetworkAdapter;
 import fr.traqueur.energylib.api.persistents.adapters.EnergyTypeAdapter;
 import fr.traqueur.energylib.api.types.EnergyType;
 import fr.traqueur.energylib.api.types.MechanicType;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -134,11 +133,18 @@ public class EnergyManagerImpl implements EnergyManager {
      * {@inheritDoc}
      */
     @Override
-    public void breakComponent(Location location) {
+    public void breakComponent(Player player, Location location) {
         EnergyNetwork network = this.networks.stream().filter(n -> n.contains(location)).findFirst().orElse(null);
         if(network == null) {
             return;
         }
+
+        location.getBlock().setType(Material.AIR);
+        if(player.getGameMode() != GameMode.CREATIVE) {
+            ItemsFactory.getItem(network.getComponents().get(location).getMechanic().getClass())
+                    .ifPresent(item -> player.getWorld().dropItemNaturally(location, item));
+        }
+
         network.removeComponent(location);
 
         if(network.isEmpty()) {
