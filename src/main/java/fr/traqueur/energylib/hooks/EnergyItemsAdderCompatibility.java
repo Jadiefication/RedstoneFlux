@@ -41,7 +41,7 @@ public class EnergyItemsAdderCompatibility implements Listener {
      */
     @EventHandler
     public void onPlace(CustomBlockPlaceEvent event) {
-        ItemStack item = event.getItemInHand();
+        ItemStack item = event.getItemInHand().clone();
         if (!energyManager.isComponent(item)) {
             return;
         }

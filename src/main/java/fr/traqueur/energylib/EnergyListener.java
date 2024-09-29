@@ -73,7 +73,7 @@ public class EnergyListener implements Listener {
      */
     @EventHandler
     public void onEnergyComponentPlace(BlockPlaceEvent event) {
-        ItemStack item = event.getItemInHand();
+        ItemStack item = event.getItemInHand().clone();
         if (!this.energyManager.isComponent(item)) {
             return;
         }

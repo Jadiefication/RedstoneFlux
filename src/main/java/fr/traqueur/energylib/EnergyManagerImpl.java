@@ -139,10 +139,15 @@ public class EnergyManagerImpl implements EnergyManager {
             return;
         }
 
+        EnergyComponent<?> component = network.getComponents().get(location);
+        EnergyType energyType = component.getEnergyType();
+        MechanicType mechanicType = MechanicType.fromComponent(component);
+        EnergyMechanic mechanic = component.getMechanic();
+
         location.getBlock().setType(Material.AIR);
         if(player.getGameMode() != GameMode.CREATIVE) {
-            ItemsFactory.getItem(network.getComponents().get(location).getMechanic().getClass())
-                    .ifPresent(item -> player.getWorld().dropItemNaturally(location, item));
+            ItemStack result = this.createItemComponent(energyType, mechanicType, mechanic);
+            player.getWorld().dropItemNaturally(location, result);
         }
 
         network.removeComponent(location);

@@ -26,7 +26,7 @@ public class EnergyOraxenCompatibility extends CompatibilityProvider<EnergyLib> 
     public void onPlace(OraxenNoteBlockPlaceEvent event) {
         EnergyAPI api = (EnergyLib) this.getPlugin();
         EnergyManager energyManager = api.getManager();
-        ItemStack item = event.getItemInHand();
+        ItemStack item = event.getItemInHand().clone();
         if (!energyManager.isComponent(item)) {
             return;
         }

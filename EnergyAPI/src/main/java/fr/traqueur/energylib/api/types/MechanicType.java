@@ -41,6 +41,15 @@ public enum MechanicType {
         this.clazz = clazz;
     }
 
+    public static MechanicType fromComponent(EnergyComponent<?> component) {
+        for (MechanicType type : values()) {
+            if (type.isInstance(component)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("The component is not an instance of any mechanic type.");
+    }
+
     /**
      * Get the class of the mechanic.
      * @return the class of the mechanic.
