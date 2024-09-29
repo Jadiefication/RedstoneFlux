@@ -287,7 +287,6 @@ public class EnergyManagerImpl implements EnergyManager {
                 .filter(network -> network.isInChunk(chunk))
                 .collect(Collectors.toSet());
         networksInChunk.forEach(network -> network.setEnable(false));
-        chunk.unload();
     }
 
     /**

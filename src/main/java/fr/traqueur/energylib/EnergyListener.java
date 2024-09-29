@@ -49,10 +49,8 @@ public class EnergyListener implements Listener {
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
         Chunk chunk = event.getChunk();
-        this.api.getScheduler().runNextTick((t) -> {
-            this.energyManager.loadNetworks(chunk);
-            this.energyManager.enableInChunk(chunk);
-        });
+        this.energyManager.loadNetworks(chunk);
+        this.energyManager.enableInChunk(chunk);
     }
 
     /**
@@ -62,9 +60,7 @@ public class EnergyListener implements Listener {
     @EventHandler
     public void onChunkUnload(ChunkUnloadEvent event) {
         Chunk chunk = event.getChunk();
-        this.api.getScheduler().runNextTick((t) -> {
-            this.energyManager.disableInChunk(chunk);
-        });
+        this.energyManager.disableInChunk(chunk);
     }
 
     /**
