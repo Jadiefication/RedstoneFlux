@@ -140,9 +140,11 @@ public class EnergyManagerImpl implements EnergyManager {
             return;
         }
         network.removeComponent(location);
+
         if(network.isEmpty()) {
             network.delete();
             this.networks.remove(network);
+            return;
         }
 
         this.splitNetworkIfNecessary(network);

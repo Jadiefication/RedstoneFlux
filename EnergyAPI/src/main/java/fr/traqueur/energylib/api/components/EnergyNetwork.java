@@ -57,7 +57,6 @@ public class EnergyNetwork {
     public EnergyNetwork(EnergyAPI api, EnergyComponent<?> component, Location location) {
         this(api, UUID.randomUUID());
         this.components.put(location,component);
-        this.enable = true;
         this.chunk = location.getChunk();
     }
 
@@ -69,6 +68,7 @@ public class EnergyNetwork {
     public EnergyNetwork(EnergyAPI api, UUID id) {
         this.api = api;
         this.id = id;
+        this.enable = true;
         this.components = new ConcurrentHashMap<>();
     }
 
@@ -140,6 +140,10 @@ public class EnergyNetwork {
      * Update the network.
      */
     public void update() {
+        if(!this.isEnable()) {
+            return;
+        }
+
         this.handleProduction().thenAccept((t) -> {
             this.handleConsumers().thenAccept((t1) -> {
                 this.handleExcess();
@@ -154,7 +158,7 @@ public class EnergyNetwork {
         Map<Location, EnergyComponent<?>> producers = this.getComponentByType(MechanicType.PRODUCER);
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         producers.forEach((location, producer) -> {
-            var future =this.api.getScheduler().runAtLocation(location, (t) -> {
+            var future = this.api.getScheduler().runAtLocation(location, (t) -> {
                 ((EnergyProducer) producer.getMechanic()).produce(location);
             });
             futures.add(future);
@@ -281,6 +285,7 @@ public class EnergyNetwork {
         PersistentDataContainer container = chunk.getPersistentDataContainer();
         var gson = manager.getGson();
         String json = gson.toJson(this, EnergyNetwork.class);
+
         List<String> networks =
                 container.getOrDefault(manager.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
         networks = new ArrayList<>(networks);

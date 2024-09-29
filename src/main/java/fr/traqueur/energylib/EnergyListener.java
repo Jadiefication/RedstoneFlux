@@ -6,6 +6,7 @@ import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.InteractableMechanic;
 import org.bukkit.Chunk;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -117,7 +118,9 @@ public class EnergyListener implements Listener {
             return;
         }
 
-        event.setCancelled(true);
+        if(event.getPlayer().getGameMode() != GameMode.CREATIVE)  {
+            event.setCancelled(true);
+        }
 
         EnergyComponent<?> component = optComponent.get();
         if(!(component.getMechanic() instanceof InteractableMechanic interactableMechanic)) {

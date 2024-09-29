@@ -1,10 +1,13 @@
 package fr.traqueur.testplugin.tests;
 
 import fr.traqueur.energylib.api.mechanics.EnergyProducer;
+import fr.traqueur.energylib.api.mechanics.InteractableMechanic;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
+import org.bukkit.event.player.PlayerInteractEvent;
 
-public class BlockProducer implements EnergyProducer {
+public class BlockProducer implements EnergyProducer, InteractableMechanic {
 
     private double maxRate = 2000;
     private int age = 0;
@@ -52,5 +55,15 @@ public class BlockProducer implements EnergyProducer {
         double excess = producedEnergy;
         producedEnergy = 0;
         return excess;
+    }
+
+    @Override
+    public void onRightClick(PlayerInteractEvent event) {
+        Bukkit.broadcastMessage("Right click");
+    }
+
+    @Override
+    public void onLeftClick(PlayerInteractEvent event) {
+        Bukkit.broadcastMessage("Left click");
     }
 }
