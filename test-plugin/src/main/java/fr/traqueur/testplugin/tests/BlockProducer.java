@@ -9,7 +9,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 public class BlockProducer implements EnergyProducer, InteractableMechanic {
 
-    private double maxRate = 2000;
+    private final double maxRate = 2000;
     private int age = 0;
     private double producedEnergy = 0;
 
