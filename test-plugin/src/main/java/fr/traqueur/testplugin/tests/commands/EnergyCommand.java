@@ -25,6 +25,7 @@ public class EnergyCommand extends Command<TestPlugin> {
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
         EnergyAPI api = this.getPlugin().getServer().getServicesManager().getRegistration(EnergyAPI.class).getProvider();
+
         EnergyManager energyManager = api.getManager();
         MechanicType componentType = arguments.get("component-type");
         var item = switch (componentType) {
