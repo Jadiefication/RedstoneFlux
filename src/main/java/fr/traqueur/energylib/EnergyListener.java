@@ -2,13 +2,17 @@ package fr.traqueur.energylib;
 
 import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
+import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
+import fr.traqueur.energylib.api.mechanics.InteractableMechanic;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
@@ -45,8 +49,10 @@ public class EnergyListener implements Listener {
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
         Chunk chunk = event.getChunk();
-        this.energyManager.loadNetworks(chunk);
-        this.energyManager.enableInChunk(chunk);
+        this.api.getScheduler().runNextTick((t) -> {
+            this.energyManager.loadNetworks(chunk);
+            this.energyManager.enableInChunk(chunk);
+        });
     }
 
     /**
@@ -56,7 +62,9 @@ public class EnergyListener implements Listener {
     @EventHandler
     public void onChunkUnload(ChunkUnloadEvent event) {
         Chunk chunk = event.getChunk();
-        this.energyManager.disableInChunk(chunk);
+        this.api.getScheduler().runNextTick((t) -> {
+            this.energyManager.disableInChunk(chunk);
+        });
     }
 
     /**
@@ -89,6 +97,42 @@ public class EnergyListener implements Listener {
             return;
         }
         this.api.getScheduler().runAsync((t) -> this.energyManager.breakComponent(location));
+    }
+
+    /**
+     * Interact with an energy component in the world
+     * @param event the event
+     */
+    @EventHandler
+    public void onInteract(PlayerInteractEvent event) {
+        Block block = event.getClickedBlock();
+        if(block == null) {
+            return;
+        }
+
+        Location location = block.getLocation();
+        var optComponent = this.energyManager.getComponentFromBlock(location);
+
+        if(optComponent.isEmpty()) {
+            return;
+        }
+
+        event.setCancelled(true);
+
+        EnergyComponent<?> component = optComponent.get();
+        if(!(component.getMechanic() instanceof InteractableMechanic interactableMechanic)) {
+            return;
+        }
+
+        switch (event.getAction()) {
+            case RIGHT_CLICK_BLOCK -> {
+                interactableMechanic.onRightClick(event);
+            }
+            case LEFT_CLICK_BLOCK -> {
+                interactableMechanic.onLeftClick(event);
+            }
+            default -> {}
+        }
     }
 
 }

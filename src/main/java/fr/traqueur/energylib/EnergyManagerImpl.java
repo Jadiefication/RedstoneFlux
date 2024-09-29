@@ -317,6 +317,19 @@ public class EnergyManagerImpl implements EnergyManager {
      * {@inheritDoc}
      */
     @Override
+    public Optional<EnergyComponent<?>> getComponentFromBlock(Location location) {
+        Optional<EnergyNetwork> optionalEnergyNetwork = this.networks.stream()
+                .filter(network -> network.contains(location))
+                .findFirst();
+
+        return optionalEnergyNetwork.map(energyNetwork -> energyNetwork.getComponents().get(location));
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Gson getGson() {
         return this.gson;
     }

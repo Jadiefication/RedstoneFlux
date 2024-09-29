@@ -153,6 +153,14 @@ public interface EnergyManager {
     void loadNetworks(Chunk chunk);
 
     /**
+     * Get the component from a block.
+     *
+     * @param location The location of the block.
+     * @return The component of the block.
+     */
+    Optional<EnergyComponent<?>> getComponentFromBlock(Location location);
+
+    /**
      * Get the gson instance.
      * @return The gson instance.
      */
