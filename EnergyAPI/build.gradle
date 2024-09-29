@@ -11,5 +11,6 @@ publishing {
 }
 
 shadowJar {
-    destinationDirectory = rootProject.archiveFolder
+    relocate 'com.tcoded.folialib', 'fr.traqueur.energylib.api.platform.folia'
+    destinationDirectory = rootProject.apiFolder
 }

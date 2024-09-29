@@ -3,7 +3,6 @@ package fr.traqueur.energylib.api.persistents;
 import fr.traqueur.energylib.api.types.EnergyType;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * This class is used to save the EnergyType in a ItemStack
@@ -19,7 +18,6 @@ public class EnergyTypePersistentDataType implements PersistentDataType<String, 
      * Get the primitive type of the class
      * @return the primitive type
      */
-    @NotNull
     @Override
     public Class<String> getPrimitiveType() {
         return String.class;
@@ -29,7 +27,6 @@ public class EnergyTypePersistentDataType implements PersistentDataType<String, 
      * Get the complex type of the class
      * @return the complex type
      */
-    @NotNull
     @Override
     public Class<EnergyType> getComplexType() {
         return EnergyType.class;
@@ -41,9 +38,8 @@ public class EnergyTypePersistentDataType implements PersistentDataType<String, 
      * @param persistentDataAdapterContext the context
      * @return the primitive type
      */
-    @NotNull
     @Override
-    public String toPrimitive(@NotNull EnergyType energyType, @NotNull PersistentDataAdapterContext persistentDataAdapterContext) {
+    public String toPrimitive(EnergyType energyType, PersistentDataAdapterContext persistentDataAdapterContext) {
         return energyType.getName();
     }
 
@@ -53,9 +49,9 @@ public class EnergyTypePersistentDataType implements PersistentDataType<String, 
      * @param persistentDataAdapterContext the context
      * @return the EnergyType
      */
-    @NotNull
+    
     @Override
-    public EnergyType fromPrimitive(@NotNull String s, @NotNull PersistentDataAdapterContext persistentDataAdapterContext) {
+    public EnergyType fromPrimitive(String s, PersistentDataAdapterContext persistentDataAdapterContext) {
         return EnergyType.TYPES.stream()
                 .filter(type -> type.getName().equals(s))
                 .findFirst()
