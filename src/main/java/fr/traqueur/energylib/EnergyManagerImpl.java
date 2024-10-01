@@ -81,6 +81,7 @@ public class EnergyManagerImpl implements EnergyManager {
 
     /**
      * Create a new EnergyManagerImpl instance.
+     *
      * @param energyLib the EnergyLib instance
      */
     public EnergyManagerImpl(EnergyLib energyLib) {
@@ -102,8 +103,8 @@ public class EnergyManagerImpl implements EnergyManager {
         for (BlockFace neibhorFace : NEIBHORS) {
             var neibhor = location.getBlock().getRelative(neibhorFace);
             var networkNeighbor = this.networks.stream().filter(network -> network.contains(neibhor.getLocation())).findFirst();
-            if(networkNeighbor.isPresent()) {
-                if(!energyNetworks.contains(networkNeighbor.get()))
+            if (networkNeighbor.isPresent()) {
+                if (!energyNetworks.contains(networkNeighbor.get()))
                     energyNetworks.add(networkNeighbor.get());
             }
         }
@@ -112,7 +113,7 @@ public class EnergyManagerImpl implements EnergyManager {
                 .filter(network -> network.getEnergyType() == component.getEnergyType())
                 .collect(Collectors.toList());
 
-        if(energyNetworks.isEmpty()) {
+        if (energyNetworks.isEmpty()) {
             EnergyNetwork network = new EnergyNetwork(this.api, component, location);
             this.networks.add(network);
         } else if (energyNetworks.size() == 1) {
@@ -135,7 +136,7 @@ public class EnergyManagerImpl implements EnergyManager {
     @Override
     public void breakComponent(Player player, Location location) {
         EnergyNetwork network = this.networks.stream().filter(n -> n.contains(location)).findFirst().orElse(null);
-        if(network == null) {
+        if (network == null) {
             return;
         }
 
@@ -145,14 +146,14 @@ public class EnergyManagerImpl implements EnergyManager {
         EnergyMechanic mechanic = component.getMechanic();
 
         location.getBlock().setType(Material.AIR);
-        if(player.getGameMode() != GameMode.CREATIVE) {
+        if (player.getGameMode() != GameMode.CREATIVE) {
             ItemStack result = this.createItemComponent(energyType, mechanicType, mechanic);
             player.getWorld().dropItemNaturally(location, result);
         }
 
         network.removeComponent(location);
 
-        if(network.isEmpty()) {
+        if (network.isEmpty()) {
             network.delete();
             this.networks.remove(network);
             return;
@@ -189,12 +190,12 @@ public class EnergyManagerImpl implements EnergyManager {
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException("Class " + mechanicClass + " not found!");
         }
-        if(!EnergyMechanic.class.isAssignableFrom(clazz)) {
+        if (!EnergyMechanic.class.isAssignableFrom(clazz)) {
             throw new IllegalArgumentException("Class " + mechanicClass + " is not an EnergyMechanic!");
         }
         Class<? extends EnergyMechanic> mechanicClazz = clazz.asSubclass(EnergyMechanic.class);
         var opt = this.getPersistentData(item, this.getMechanicKey(), PersistentDataType.STRING);
-        if(opt.isEmpty()) {
+        if (opt.isEmpty()) {
             return Optional.empty();
         }
         String mechanicData = opt.get();
@@ -242,7 +243,7 @@ public class EnergyManagerImpl implements EnergyManager {
                 .orElseThrow(() -> new IllegalArgumentException("Item not found for mechanic " + mechanic.getClass()));
 
         ItemMeta meta = item.getItemMeta();
-        if(meta == null) {
+        if (meta == null) {
             throw new IllegalArgumentException("ItemMeta is null!");
         }
         PersistentDataContainer persistentDataContainer = meta.getPersistentDataContainer();
@@ -258,13 +259,7 @@ public class EnergyManagerImpl implements EnergyManager {
      */
     @Override
     public void startNetworkUpdater() {
-        this.updaterTask = this.api.getScheduler().runTimerAsync(() -> {
-            this.networks.forEach(energyNetwork -> {
-                if (energyNetwork.isEnable()) {
-                    energyNetwork.update();
-                }
-            });
-        }, 0L, 1L);
+        this.updaterTask = this.api.getScheduler().runTimerAsync(new UpdaterNetworksTask(this), 0L, 1L);
     }
 
     /**
@@ -272,7 +267,7 @@ public class EnergyManagerImpl implements EnergyManager {
      */
     @Override
     public void stopNetworkUpdater() {
-        if(this.updaterTask == null) {
+        if (this.updaterTask == null) {
             throw new IllegalStateException("Updater task is not running!");
         }
         this.updaterTask.cancel();
@@ -314,11 +309,11 @@ public class EnergyManagerImpl implements EnergyManager {
     @Override
     public void loadNetworks(Chunk chunk) {
         PersistentDataContainer chunkData = chunk.getPersistentDataContainer();
-        if(chunkData.has(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING))) {
+        if (chunkData.has(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING))) {
             List<String> networkDatas = chunkData.getOrDefault(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
             for (String networkData : networkDatas) {
                 EnergyNetwork network = this.gson.fromJson(networkData, EnergyNetwork.class);
-                if(this.networks.stream().noneMatch(n -> n.getId().equals(network.getId()))) {
+                if (this.networks.stream().noneMatch(n -> n.getId().equals(network.getId()))) {
                     this.networks.add(network);
                 }
             }
@@ -388,6 +383,7 @@ public class EnergyManagerImpl implements EnergyManager {
 
     /**
      * Check if th network must be split.
+     *
      * @param network the network
      */
     private void splitNetworkIfNecessary(EnergyNetwork network) {
@@ -423,8 +419,9 @@ public class EnergyManagerImpl implements EnergyManager {
 
     /**
      * Discover the sub network of a block.
+     *
      * @param startBlock the start block
-     * @param visited the set of visited blocks
+     * @param visited    the set of visited blocks
      * @return the set of components
      */
     private Set<Map.Entry<Location, EnergyComponent<?>>> discoverSubNetwork(Location startBlock, Set<Location> visited) {
@@ -456,15 +453,16 @@ public class EnergyManagerImpl implements EnergyManager {
 
     /**
      * Get the persistent data of an item.
+     *
      * @param item the item
-     * @param key the key
+     * @param key  the key
      * @param type the type
-     * @param <C> the type of the data
+     * @param <C>  the type of the data
      * @return the optional of the data
      */
-    private <C> Optional<C> getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<?,C> type) {
+    private <C> Optional<C> getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<?, C> type) {
         ItemMeta meta = item.getItemMeta();
-        if(meta == null) {
+        if (meta == null) {
             return Optional.empty();
         }
         PersistentDataContainer persistentDataContainer = meta.getPersistentDataContainer();
@@ -473,6 +471,7 @@ public class EnergyManagerImpl implements EnergyManager {
 
     /**
      * Create the Gson instance.
+     *
      * @return the Gson instance
      */
     private Gson createGson() {

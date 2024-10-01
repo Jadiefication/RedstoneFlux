@@ -5,7 +5,6 @@ import fr.traqueur.energylib.api.EnergyManager;
 import fr.traqueur.energylib.api.components.EnergyComponent;
 import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
 import fr.traqueur.energylib.api.mechanics.InteractableMechanic;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -13,8 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -35,6 +32,7 @@ public class EnergyListener implements Listener {
 
     /**
      * Create a new energy listener
+     *
      * @param api the energy API
      */
     public EnergyListener(EnergyAPI api) {
@@ -42,10 +40,8 @@ public class EnergyListener implements Listener {
         this.energyManager = api.getManager();
     }
 
-    /**
-     * Load the energy networks in a chunk when it is loaded
-     * @param event the event
-     */
+    /*
+
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
         Chunk chunk = event.getChunk();
@@ -53,18 +49,16 @@ public class EnergyListener implements Listener {
         this.energyManager.enableInChunk(chunk);
     }
 
-    /**
-     * Unload the energy networks in a chunk when it is unloaded
-     * @param event the event
-     */
     @EventHandler
     public void onChunkUnload(ChunkUnloadEvent event) {
         Chunk chunk = event.getChunk();
         this.energyManager.disableInChunk(chunk);
     }
+    */
 
     /**
      * Place an energy component in the world
+     *
      * @param event the event
      */
     @EventHandler
@@ -74,16 +68,18 @@ public class EnergyListener implements Listener {
             return;
         }
         Location location = event.getBlockPlaced().getLocation();
-        this.api.getScheduler().runAtLocation(location,(t) -> {
+        this.api.getScheduler().runAtLocation(location, (t) -> {
             var component = this.energyManager.createComponent(item);
             try {
                 this.energyManager.placeComponent(component, location);
-            } catch (SameEnergyTypeException ignored) {}
+            } catch (SameEnergyTypeException ignored) {
+            }
         });
     }
 
     /**
      * Break an energy component in the world
+     *
      * @param event the event
      */
     @EventHandler
@@ -93,29 +89,30 @@ public class EnergyListener implements Listener {
             return;
         }
         event.setCancelled(true);
-        this.api.getScheduler().runAtLocation(location,(t) -> this.energyManager.breakComponent(event.getPlayer(), location));
+        this.api.getScheduler().runAtLocation(location, (t) -> this.energyManager.breakComponent(event.getPlayer(), location));
     }
 
     /**
      * Interact with an energy component in the world
+     *
      * @param event the event
      */
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
-        if(block == null) {
+        if (block == null) {
             return;
         }
 
         Location location = block.getLocation();
         var optComponent = this.energyManager.getComponentFromBlock(location);
 
-        if(optComponent.isEmpty()) {
+        if (optComponent.isEmpty()) {
             return;
         }
 
         EnergyComponent<?> component = optComponent.get();
-        if(!(component.getMechanic() instanceof InteractableMechanic interactableMechanic)) {
+        if (!(component.getMechanic() instanceof InteractableMechanic interactableMechanic)) {
             return;
         }
 
@@ -126,7 +123,8 @@ public class EnergyListener implements Listener {
             case LEFT_CLICK_BLOCK -> {
                 interactableMechanic.onLeftClick(event);
             }
-            default -> {}
+            default -> {
+            }
         }
     }
 
