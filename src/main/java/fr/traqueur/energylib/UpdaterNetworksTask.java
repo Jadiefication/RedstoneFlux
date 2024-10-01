@@ -13,8 +13,7 @@ public class UpdaterNetworksTask implements Runnable {
     @Override
     public void run() {
         manager.getNetworks().forEach(energyNetwork -> {
-            energyNetwork.setEnable(energyNetwork.getChunk().isLoaded());
-            if (energyNetwork.isEnable()) {
+            if (energyNetwork.getChunk().isLoaded()) {
                 energyNetwork.update();
             }
         });

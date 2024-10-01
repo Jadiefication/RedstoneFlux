@@ -259,7 +259,8 @@ public class EnergyManagerImpl implements EnergyManager {
      */
     @Override
     public void startNetworkUpdater() {
-        this.updaterTask = this.api.getScheduler().runTimerAsync(new UpdaterNetworksTask(this), 0L, 1L);
+        this.updaterTask = this.api.getScheduler()
+                .runTimerAsync(new UpdaterNetworksTask(this), 0L, 1L);
     }
 
     /**

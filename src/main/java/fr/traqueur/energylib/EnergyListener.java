@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -38,6 +39,16 @@ public class EnergyListener implements Listener {
     public EnergyListener(EnergyAPI api) {
         this.api = api;
         this.energyManager = api.getManager();
+    }
+
+    /**
+     * Load energy networks in a chunk
+     *
+     * @param event the event
+     */
+    @EventHandler
+    public void onChunkLoad(ChunkLoadEvent event) {
+        this.energyManager.loadNetworks(event.getChunk());
     }
 
     /**

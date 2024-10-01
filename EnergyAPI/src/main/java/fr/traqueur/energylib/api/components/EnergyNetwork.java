@@ -44,57 +44,35 @@ public class EnergyNetwork {
     private final Map<Location, EnergyComponent<?>> components;
 
     /**
-     * If the network is enable.
-     */
-    private boolean enable;
-
-    /**
      * Creates a new energy network.
-     * @param api The API instance.
+     *
+     * @param api       The API instance.
      * @param component The component to add.
-     * @param location The location of the component.
+     * @param location  The location of the component.
      */
     public EnergyNetwork(EnergyAPI api, EnergyComponent<?> component, Location location) {
         this(api, UUID.randomUUID());
-        this.components.put(location,component);
+        this.components.put(location, component);
         this.chunk = location.getChunk();
     }
 
     /**
      * Creates a new energy network.
+     *
      * @param api The API instance.
-     * @param id The network's unique identifier.
+     * @param id  The network's unique identifier.
      */
     public EnergyNetwork(EnergyAPI api, UUID id) {
         this.api = api;
         this.id = id;
-        this.enable = true;
         this.components = new ConcurrentHashMap<>();
     }
 
     /**
-     * Get if the network is enable.
-     * @return If the network is enable.
-     */
-    public boolean isEnable() {
-        return this.enable;
-    }
-
-    /**
-     * Set if the network is enable.
-     * @param enable If the network is enable.
-     */
-    public void setEnable(boolean enable) {
-        if(this.api.isDebug()) {
-            System.out.println("Network " + this.id + " is now " + (enable ? "enable" : "disable"));
-        }
-        this.enable = enable;
-    }
-
-    /**
      * Add a component to the network.
+     *
      * @param component The component to add.
-     * @param location The location of the component.
+     * @param location  The location of the component.
      * @throws SameEnergyTypeException If the component is not the same type.
      */
     public void addComponent(EnergyComponent<?> component, Location location) throws SameEnergyTypeException {
@@ -102,14 +80,15 @@ public class EnergyNetwork {
                 .filter(entry -> entry.getKey().distance(location) == 1).toList()) {
             entry.getValue().connect(component);
         }
-        if(chunk == null) {
+        if (chunk == null) {
             this.chunk = location.getChunk();
         }
-        this.components.put(location,component);
+        this.components.put(location, component);
     }
 
     /**
      * Remove a component from the network.
+     *
      * @param location The location of the component.
      */
     public void removeComponent(Location location) {
@@ -121,6 +100,7 @@ public class EnergyNetwork {
 
     /**
      * Get if the network contains a location.
+     *
      * @param location The location to check.
      * @return If the network contains the location.
      */
@@ -130,6 +110,7 @@ public class EnergyNetwork {
 
     /**
      * Merge the network with another network.
+     *
      * @param network The network to merge with.
      */
     public void mergeWith(EnergyNetwork network) {
@@ -140,10 +121,6 @@ public class EnergyNetwork {
      * Update the network.
      */
     public void update() {
-        if(!this.isEnable()) {
-            return;
-        }
-
         this.handleProduction().thenAccept((t) -> {
             this.handleConsumers().thenAccept((t1) -> {
                 this.handleExcess();
@@ -243,7 +220,7 @@ public class EnergyNetwork {
 
                 consumer.receiveEnergy(providedEnergy);
                 if (requiredEnergy > 0) {
-                    if(api.isDebug()) {
+                    if (api.isDebug()) {
                         System.out.println("Le consommateur " + consumerComponent + " n'a pas reçu assez d'énergie.");
                     }
                     consumer.setEnable(false);
@@ -258,6 +235,7 @@ public class EnergyNetwork {
 
     /**
      * Get if the network is empty.
+     *
      * @return If the network is empty.
      */
     public boolean isEmpty() {
@@ -266,6 +244,7 @@ public class EnergyNetwork {
 
     /**
      * Get if the network is in a chunk.
+     *
      * @param chunk The chunk to check.
      * @return If the network is in the chunk.
      */
@@ -315,6 +294,7 @@ public class EnergyNetwork {
 
     /**
      * Get the network's components.
+     *
      * @return The network's components.
      */
     public Map<Location, EnergyComponent<?>> getComponents() {
@@ -323,6 +303,7 @@ public class EnergyNetwork {
 
     /**
      * Get the network's energy type.
+     *
      * @return The network's energy type.
      */
     public EnergyType getEnergyType() {
@@ -331,6 +312,7 @@ public class EnergyNetwork {
 
     /**
      * Get the network's unique identifier.
+     *
      * @return The network's unique identifier.
      */
     public UUID getId() {
@@ -339,6 +321,7 @@ public class EnergyNetwork {
 
     /**
      * Get the chunk.
+     *
      * @return The chunk.
      */
     public Chunk getChunk() {
@@ -347,7 +330,8 @@ public class EnergyNetwork {
 
     /**
      * Check if two chunks are the same.
-     * @param chunk The first chunk.
+     *
+     * @param chunk  The first chunk.
      * @param chunk1 The second chunk.
      * @return If the chunks are the same.
      */
@@ -358,6 +342,7 @@ public class EnergyNetwork {
 
     /**
      * Get the root component.
+     *
      * @return The root component.
      */
     private EnergyComponent<?> getRoot() {
@@ -366,8 +351,9 @@ public class EnergyNetwork {
 
     /**
      * Get the connected components.
+     *
      * @param component The component to check.
-     * @param type The type of the component.
+     * @param type      The type of the component.
      * @return The connected components.
      */
     private List<EnergyComponent<?>> getConnectedComponents(EnergyComponent<?> component, MechanicType type) {
@@ -379,10 +365,11 @@ public class EnergyNetwork {
 
     /**
      * Depth-first search to get the connected components.
-     * @param component The component to check.
-     * @param visited The visited components.
+     *
+     * @param component           The component to check.
+     * @param visited             The visited components.
      * @param connectedComponents The connected components.
-     * @param type The type of the component.
+     * @param type                The type of the component.
      */
     private void dfsConnectedComponents(EnergyComponent<?> component, Set<EnergyComponent<?>> visited,
                                         List<EnergyComponent<?>> connectedComponents, MechanicType type) {
@@ -405,6 +392,7 @@ public class EnergyNetwork {
 
     /**
      * Get the components by type.
+     *
      * @param type The type of the component.
      * @return The components by type.
      */
