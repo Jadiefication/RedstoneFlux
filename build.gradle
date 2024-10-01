@@ -78,6 +78,7 @@ repositories {
 dependencies {
     implementation(project(":EnergyAPI"))
     implementation "com.github.technicallycoded:FoliaLib:main-SNAPSHOT"
+    implementation "com.github.Traqueur-dev:CommandsAPI:1.5.1"
 }
 
 jar {

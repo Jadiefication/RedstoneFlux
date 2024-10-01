@@ -2,8 +2,10 @@ package fr.traqueur.energylib;
 
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
+import fr.traqueur.commands.api.CommandManager;
 import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
+import fr.traqueur.energylib.commands.EnergyCommand;
 import fr.traqueur.energylib.hooks.EnergyItemsAdderCompatibility;
 import fr.traqueur.energylib.hooks.EnergyOraxenCompatibility;
 import io.th0rgal.oraxen.compatibilities.CompatibilitiesManager;
@@ -51,6 +53,10 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
         this.registerProvider(this, EnergyAPI.class);
         this.registerProvider(this.manager, EnergyManager.class);
 
+        CommandManager commandManager = new CommandManager(this);
+        commandManager.setDebug(this.debug);
+        commandManager.registerCommand(new EnergyCommand(this));
+
         this.getScheduler().runNextTick((t) -> {
             this.hooks();
 
@@ -78,10 +84,10 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
      */
     private void hooks() {
         PluginManager pluginManager = this.getServer().getPluginManager();
-        if(pluginManager.isPluginEnabled("Oraxen"))
+        if (pluginManager.isPluginEnabled("Oraxen"))
             CompatibilitiesManager.addCompatibility("EnergyLib", EnergyOraxenCompatibility.class);
 
-        if(pluginManager.isPluginEnabled("ItemsAdder"))
+        if (pluginManager.isPluginEnabled("ItemsAdder"))
             pluginManager.registerEvents(new EnergyItemsAdderCompatibility(this), this);
     }
 
@@ -119,9 +125,10 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
 
     /**
      * Register a provider for a service. The provider can be use in other plugins.
+     *
      * @param instance the instance of the provider
-     * @param clazz the class of the provider
-     * @param <T> the type of the provider
+     * @param clazz    the class of the provider
+     * @param <T>      the type of the provider
      */
     private <T> void registerProvider(T instance, Class<T> clazz) {
         ServicesManager servicesManager = this.getServer().getServicesManager();
