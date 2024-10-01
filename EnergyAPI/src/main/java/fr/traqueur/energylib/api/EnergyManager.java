@@ -23,8 +23,9 @@ public interface EnergyManager {
 
     /**
      * Handle the placement of a component in the world.
+     *
      * @param component The component to place.
-     * @param location The location where the component will be placed.
+     * @param location  The location where the component will be placed.
      * @throws SameEnergyTypeException If a component of the different type is next to the location.
      */
     void placeComponent(EnergyComponent<?> component, Location location) throws SameEnergyTypeException;
@@ -39,6 +40,7 @@ public interface EnergyManager {
 
     /**
      * Get the energy type of an item.
+     *
      * @param item The item to get the energy type from.
      * @return The energy type of the item.
      */
@@ -46,6 +48,7 @@ public interface EnergyManager {
 
     /**
      * Get the mechanic type of an item.
+     *
      * @param item The item to get the mechanic type from.
      * @return The mechanic type of the item.
      */
@@ -53,6 +56,7 @@ public interface EnergyManager {
 
     /**
      * Get the mechanic of an item.
+     *
      * @param item The item to get the mechanic from.
      * @return The mechanic of the item.
      */
@@ -60,6 +64,7 @@ public interface EnergyManager {
 
     /**
      * Check if a location is a block component.
+     *
      * @param location The location to check.
      * @return True if the location is a block component, false otherwise.
      */
@@ -67,6 +72,7 @@ public interface EnergyManager {
 
     /**
      * Create a component from an item.
+     *
      * @param item The item to create the component from.
      * @return The component created.
      */
@@ -74,6 +80,7 @@ public interface EnergyManager {
 
     /**
      * Check if an item is a component.
+     *
      * @param item The item to check.
      * @return True if the item is a component, false otherwise.
      */
@@ -81,9 +88,10 @@ public interface EnergyManager {
 
     /**
      * Create an item from energytype, mechanictype and mechanic.
-     * @param type The energy type of the item.
+     *
+     * @param type         The energy type of the item.
      * @param mechanicType The mechanic type of the item.
-     * @param mechanic The mechanic of the item.
+     * @param mechanic     The mechanic of the item.
      * @return The item created.
      */
     ItemStack createItemComponent(EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic);
@@ -104,45 +112,38 @@ public interface EnergyManager {
 
     /**
      * Get the energy type key.
+     *
      * @return The energy type key.
      */
     NamespacedKey getEnergyTypeKey();
 
     /**
      * Get the mechanic class key.
+     *
      * @return The mechanic class key.
      */
     NamespacedKey getMechanicClassKey();
 
     /**
      * Get the mechanic key.
+     *
      * @return The mechanic key.
      */
     NamespacedKey getMechanicKey();
 
     /**
      * Get the network key.
+     *
      * @return The network key.
      */
     NamespacedKey getNetworkKey();
 
     /**
      * Get all the networks.
+     *
      * @return The networks.
      */
     Set<EnergyNetwork> getNetworks();
-
-    /**
-     * Disable the network of a chunk.
-     * @param chunk The chunk to disable the network from.
-     */
-    void disableInChunk(Chunk chunk);
-
-    /**
-     * Enable the network of a chunk.
-     * @param chunk The chunk to enable the network from.
-     */
-    void enableInChunk(Chunk chunk);
 
     /**
      * Save the networks.
@@ -151,6 +152,7 @@ public interface EnergyManager {
 
     /**
      * Load the networks.
+     *
      * @param chunk The chunk to load the networks from.
      */
     void loadNetworks(Chunk chunk);
@@ -165,6 +167,7 @@ public interface EnergyManager {
 
     /**
      * Get the gson instance.
+     *
      * @return The gson instance.
      */
     Gson getGson();

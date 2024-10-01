@@ -40,22 +40,6 @@ public class EnergyListener implements Listener {
         this.energyManager = api.getManager();
     }
 
-    /*
-
-    @EventHandler
-    public void onChunkLoad(ChunkLoadEvent event) {
-        Chunk chunk = event.getChunk();
-        this.energyManager.loadNetworks(chunk);
-        this.energyManager.enableInChunk(chunk);
-    }
-
-    @EventHandler
-    public void onChunkUnload(ChunkUnloadEvent event) {
-        Chunk chunk = event.getChunk();
-        this.energyManager.disableInChunk(chunk);
-    }
-    */
-
     /**
      * Place an energy component in the world
      *

@@ -277,28 +277,6 @@ public class EnergyManagerImpl implements EnergyManager {
      * {@inheritDoc}
      */
     @Override
-    public void disableInChunk(Chunk chunk) {
-        Set<EnergyNetwork> networksInChunk = this.networks.stream()
-                .filter(network -> network.isInChunk(chunk))
-                .collect(Collectors.toSet());
-        networksInChunk.forEach(network -> network.setEnable(false));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void enableInChunk(Chunk chunk) {
-        Set<EnergyNetwork> networksInChunk = this.networks.stream()
-                .filter(network -> network.isInChunk(chunk))
-                .collect(Collectors.toSet());
-        networksInChunk.forEach(network -> network.setEnable(true));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void saveNetworks() {
         this.networks.forEach(EnergyNetwork::save);
     }
