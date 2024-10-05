@@ -15,12 +15,16 @@ public class EnergyCommand extends Command<EnergyLib> {
         this.setPermission("energy.admin");
         this.setUsage("/energy-admin");
 
+        this.addSubCommand(new DeleteCommand(plugin),
+                new ListCommand(plugin),
+                new ShowCommand(plugin));
+
         this.setGameOnly(true);
     }
 
     @Override
     public void execute(CommandSender commandSender, Arguments arguments) {
         Player player = (Player) commandSender;
-        player.sendMessage("§cThis command is not implemented yet.");
+        player.sendMessage("§cUsage: /energy-admin <delete/list/show>");
     }
 }

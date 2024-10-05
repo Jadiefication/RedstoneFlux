@@ -124,8 +124,7 @@ public class EnergyManagerImpl implements EnergyManager {
             for (int i = 1; i < energyNetworks.size(); i++) {
                 EnergyNetwork network = energyNetworks.get(i);
                 firstNetwork.mergeWith(network);
-                network.delete();
-                this.networks.remove(network);
+                this.deleteNetwork(network);
             }
         }
     }
@@ -154,8 +153,7 @@ public class EnergyManagerImpl implements EnergyManager {
         network.removeComponent(location);
 
         if (network.isEmpty()) {
-            network.delete();
-            this.networks.remove(network);
+            this.deleteNetwork(network);
             return;
         }
 
@@ -274,6 +272,12 @@ public class EnergyManagerImpl implements EnergyManager {
         this.updaterTask.cancel();
     }
 
+    @Override
+    public void deleteNetwork(EnergyNetwork network) {
+        network.delete();
+        this.networks.remove(network);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -390,8 +394,7 @@ public class EnergyManagerImpl implements EnergyManager {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept((t) -> {
-            network.delete();
-            this.networks.remove(network);
+            this.deleteNetwork(network);
             this.networks.addAll(newNetworks);
         });
     }

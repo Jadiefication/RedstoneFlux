@@ -5,7 +5,9 @@ import com.tcoded.folialib.impl.PlatformScheduler;
 import fr.traqueur.commands.api.CommandManager;
 import fr.traqueur.energylib.api.EnergyAPI;
 import fr.traqueur.energylib.api.EnergyManager;
+import fr.traqueur.energylib.api.components.EnergyNetwork;
 import fr.traqueur.energylib.commands.EnergyCommand;
+import fr.traqueur.energylib.commands.NetworkArgument;
 import fr.traqueur.energylib.hooks.EnergyItemsAdderCompatibility;
 import fr.traqueur.energylib.hooks.EnergyOraxenCompatibility;
 import io.th0rgal.oraxen.compatibilities.CompatibilitiesManager;
@@ -55,6 +57,7 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
 
         CommandManager commandManager = new CommandManager(this);
         commandManager.setDebug(this.debug);
+        commandManager.registerConverter(EnergyNetwork.class, "network", new NetworkArgument(this.manager));
         commandManager.registerCommand(new EnergyCommand(this));
 
         this.getScheduler().runNextTick((t) -> {

@@ -111,6 +111,13 @@ public interface EnergyManager {
     void stopNetworkUpdater();
 
     /**
+     * Delete a network.
+     *
+     * @param network The network to delete.
+     */
+    void deleteNetwork(EnergyNetwork network);
+
+    /**
      * Get the energy type key.
      *
      * @return The energy type key.
