@@ -1,5 +1,8 @@
 name: EnergyLib
-version: '{version}'
+version: '${version}'
 main: fr.traqueur.energylib.EnergyLib
+author: Traqueur
+description: 'A library for energy system.'
 api-version: '1.21'
 folia-supported: true
+load: STARTUP
