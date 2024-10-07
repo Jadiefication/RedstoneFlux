@@ -1,4 +1,4 @@
-# EnergyLib
+# EnergyLib - ![Release](https://img.shields.io/github/v/tag/Traqueur-dev/EnergyLib?label=latest&sort=semver)
 
 **EnergyLib** is a Spigot library that enables the creation and management of a complete electricity system in
 Minecraft. It includes generators, batteries, cables, and machines that consume energy, with dynamic and flexible
@@ -45,6 +45,59 @@ Contributions to **EnergyLib** are welcome! Here's how you can contribute:
 ## Issues and Suggestions
 
 If you encounter any issues or have suggestions, feel free to open an **issue** on GitHub.
+
+## For Developers: Adding EnergyLib to Your Project
+
+EnergyLib is available on [JitPack](https://jitpack.io/), making it easy to include in your Spigot or Paper plugin project.
+
+### Gradle
+To include EnergyLib in your project using Gradle, follow these steps:
+
+1. Add the JitPack repository in your `build.gradle` file:
+   ```groovy
+   repositories {
+       maven { url 'https://jitpack.io' }
+   }
+   ```
+
+2. Add the dependency using `compileOnly`:
+   ```groovy
+   dependencies {
+       compileOnly 'com.github.Traqueur-dev:EnergyLib:<version>'
+   }
+   ```
+
+### Maven
+If you're using Maven, follow these steps:
+
+1. Add the JitPack repository to your `pom.xml`:
+   ```xml
+   <repositories>
+       <repository>
+           <id>jitpack.io</id>
+           <url>https://jitpack.io</url>
+       </repository>
+   </repositories>
+   ```
+
+2. Add the dependency in the `dependencies` section using `<scope>provided</scope>` (equivalent to `compileOnly` in Gradle):
+   ```xml
+   <dependency>
+       <groupId>com.github.Traqueur-dev</groupId>
+       <artifactId>EnergyLib</artifactId>
+       <version><version></version>
+       <scope>provided</scope>
+   </dependency>
+   ```
+
+Replace version by actual version.
+
+### Why Use `compileOnly` or `<scope>provided`?
+
+- EnergyLib will not be bundled with your plugin's final JAR file.
+- EnergyLib centralize system in his jarfile you must add your plugin and EnergyLib in plugin folder.
+- 
+Make sure EnergyLib is installed on the server if you use `compileOnly`, as it won't be included with your plugin.
 
 ---
 
