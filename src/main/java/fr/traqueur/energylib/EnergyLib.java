@@ -45,6 +45,9 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
      */
     @Override
     public void onEnable() {
+
+        Updater.update("EnergyLib");
+
         this.scheduler = new FoliaLib(this).getScheduler();
         this.manager = new EnergyManagerImpl(this);
         this.debug = false;

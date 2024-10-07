@@ -81,6 +81,18 @@ dependencies {
     implementation "com.github.Traqueur-dev:CommandsAPI:1.5.1"
 }
 
+tasks.register('generateVersionProperties') {
+    doLast {
+        def file = new File("$projectDir/src/main/resources/version.properties")
+        if (!file.parentFile.exists()) {
+            file.parentFile.mkdirs()
+        }
+        file.text = "version=${project.version}"
+    }
+}
+
+processResources.dependsOn generateVersionProperties
+
 jar {
     from {
         for (File file : rootProject.archiveFolder.listFiles()) {
