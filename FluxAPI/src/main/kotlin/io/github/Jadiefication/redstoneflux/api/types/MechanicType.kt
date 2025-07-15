@@ -3,6 +3,7 @@ package io.github.Jadiefication.redstoneflux.api.types
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
+import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMeter
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyProducer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyStorage
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyTransporter
@@ -38,7 +39,12 @@ enum class MechanicType
     /**
      * Represents an energy transporter.
      */
-    TRANSPORTER(EnergyTransporter::class.java);
+    TRANSPORTER(EnergyTransporter::class.java),
+
+    /**
+     * Represents an energy meter
+     */
+    METER(EnergyMeter::class.java);
 
     /**
      * Get the class of the mechanic.
