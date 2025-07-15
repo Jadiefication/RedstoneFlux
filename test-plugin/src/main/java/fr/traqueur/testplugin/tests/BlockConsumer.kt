@@ -1,38 +1,23 @@
-package fr.traqueur.testplugin.tests;
+package fr.traqueur.testplugin.tests
 
-import fr.traqueur.energylib.api.mechanics.EnergyConsumer;
+import fr.traqueur.energylib.api.mechanics.EnergyConsumer
 
-public class BlockConsumer implements EnergyConsumer {
+class BlockConsumer : EnergyConsumer {
+    override var isEnable: Boolean = false
+    private var energy = 0.0
 
-    private boolean enable = false;
-    private double energy = 0;
+    override val energyDemand: Double
+        get() = 1000.0
 
-    @Override
-    public boolean isEnable() {
-        return this.enable;
-    }
-
-    @Override
-    public void setEnable(boolean enable) {
-        this.enable = enable;
-    }
-
-    @Override
-    public double getEnergyDemand() {
-        return 1000;
-    }
-
-    @Override
-    public void receiveEnergy(double energyToGive) {
-        this.energy += energyToGive;
-        if (this.energy >= this.getEnergyDemand()) {
-            this.consumeEnergy();
+    override fun receiveEnergy(energyToGive: Double) {
+        this.energy += energyToGive
+        if (this.energy >= this.energyDemand) {
+            this.consumeEnergy()
         }
     }
 
-    @Override
-    public void consumeEnergy() {
-        this.energy -= this.getEnergyDemand();
-        System.out.println("Consuming 1000 energy, remaining: " + this.energy);
+    override fun consumeEnergy() {
+        this.energy -= this.energyDemand
+        println("Consuming 1000 energy, remaining: " + this.energy)
     }
 }

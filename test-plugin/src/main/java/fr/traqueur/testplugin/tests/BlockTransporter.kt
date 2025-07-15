@@ -1,6 +1,5 @@
-package fr.traqueur.testplugin.tests;
+package fr.traqueur.testplugin.tests
 
-import fr.traqueur.energylib.api.mechanics.EnergyTransporter;
+import fr.traqueur.energylib.api.mechanics.EnergyTransporter
 
-public class BlockTransporter implements EnergyTransporter {
-}
+class BlockTransporter : EnergyTransporter

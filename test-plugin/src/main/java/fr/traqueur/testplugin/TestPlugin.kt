@@ -1,30 +1,35 @@
-package fr.traqueur.testplugin;
+package fr.traqueur.testplugin
 
-import fr.traqueur.commands.api.CommandManager;
-import fr.traqueur.energylib.api.items.ItemsFactory;
-import fr.traqueur.energylib.api.types.MechanicType;
-import fr.traqueur.testplugin.tests.*;
-import fr.traqueur.testplugin.tests.commands.EnergyCommand;
-import org.bukkit.Material;
-import org.bukkit.plugin.java.JavaPlugin;
+import fr.traqueur.commands.api.CommandManager
+import fr.traqueur.energylib.api.items.ItemsFactory.registerItem
+import fr.traqueur.energylib.api.types.MechanicType
+import fr.traqueur.testplugin.tests.*
+import fr.traqueur.testplugin.tests.commands.EnergyCommand
+import org.bukkit.Material
+import org.bukkit.inventory.ItemStack
+import org.bukkit.plugin.java.JavaPlugin
 
-public final class TestPlugin extends JavaPlugin {
+class TestPlugin : JavaPlugin() {
 
-    @Override
-    public void onEnable() {
-        CommandManager commandManager = new CommandManager(this);
-
-        commandManager.registerConverter(MechanicType.class, "component-type", new ComponentsTypeConverter());
-
-        commandManager.registerCommand(new EnergyCommand(this));
-
-        ItemsFactory.registerItem(Material.FURNACE, BlockProducer.class);
-        ItemsFactory.registerItem(Material.DISPENSER, BlockConsumer.class);
-        ItemsFactory.registerItem(Material.CHEST, BlockStorage.class);
-        ItemsFactory.registerItem(Material.WHITE_STAINED_GLASS, BlockTransporter.class);
+    companion object {
+        lateinit var plugin: TestPlugin
     }
 
-    @Override
-    public void onDisable() {
+    override fun onEnable() {
+        plugin = this
+        val commandManager = CommandManager(this)
+
+        commandManager.registerConverter<MechanicType?>(
+            MechanicType::class.java,
+            "component-type",
+            ComponentsTypeConverter()
+        )
+
+        commandManager.registerCommand(EnergyCommand(this))
+
+        registerItem(ItemStack.of(Material.FURNACE), BlockProducer::class.java)
+        registerItem(ItemStack.of(Material.DISPENSER), BlockConsumer::class.java)
+        registerItem(ItemStack.of(Material.CHEST), BlockStorage::class.java)
+        registerItem(ItemStack.of(Material.WHITE_STAINED_GLASS), BlockTransporter::class.java)
     }
 }

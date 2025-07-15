@@ -1,35 +1,24 @@
-package fr.traqueur.testplugin.tests;
+package fr.traqueur.testplugin.tests
 
-import fr.traqueur.energylib.api.mechanics.EnergyStorage;
+import fr.traqueur.energylib.api.mechanics.EnergyStorage
+import kotlin.math.min
 
-public class BlockStorage implements EnergyStorage {
+class BlockStorage : EnergyStorage {
+    override val maximumCapacity: Double = 10000.0
+    override var storedEnergy: Double = 0.0
+        private set
 
-    private final double maxCapacity = 10000;
-    private double capacity;
-
-    @Override
-    public double getMaximumCapacity() {
-        return this.maxCapacity;
+    override fun storeEnergy(energyStored: Double): Double {
+        val energy = min(this.availableCapacity, energyStored)
+        this.storedEnergy += energy
+        println("BlockStorage stored " + energyStored + " energy. Total: " + this.storedEnergy)
+        return energy
     }
 
-    @Override
-    public double storeEnergy(double energyStored) {
-        double energy = Math.min(this.getAvailableCapacity(), energyStored);
-        this.capacity += energy;
-        System.out.println("BlockStorage stored " + energyStored + " energy. Total: " + this.capacity);
-        return energy;
-    }
-
-    @Override
-    public double getStoredEnergy() {
-        return this.capacity;
-    }
-
-    @Override
-    public double consumeEnergy(double energyTaken) {
-        double energy = Math.min(this.capacity, energyTaken);
-        this.capacity -= energy;
-        System.out.println("BlockStorage consumed " + energy + " energy. Total: " + this.capacity);
-        return energy;
+    override fun consumeEnergy(energyTaken: Double): Double {
+        val energy = min(this.storedEnergy, energyTaken)
+        this.storedEnergy -= energy
+        println("BlockStorage consumed " + energy + " energy. Total: " + this.storedEnergy)
+        return energy
     }
 }

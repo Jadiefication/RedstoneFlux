@@ -1,69 +1,60 @@
-package fr.traqueur.testplugin.tests;
+package fr.traqueur.testplugin.tests
 
-import fr.traqueur.energylib.api.mechanics.EnergyProducer;
-import fr.traqueur.energylib.api.mechanics.InteractableMechanic;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.block.BlockFace;
-import org.bukkit.event.player.PlayerInteractEvent;
+import fr.traqueur.energylib.api.mechanics.EnergyProducer
+import fr.traqueur.energylib.api.mechanics.InteractableMechanic
+import fr.traqueur.testplugin.TestPlugin.Companion.plugin
+import org.bukkit.Bukkit
+import org.bukkit.Location
+import org.bukkit.block.BlockFace
+import org.bukkit.event.player.PlayerInteractEvent
+import kotlin.math.min
 
-public class BlockProducer implements EnergyProducer, InteractableMechanic {
+class BlockProducer : EnergyProducer, InteractableMechanic {
+    override val maxRate: Double = 2000.0
+    private var age = 0
+    private var producedEnergy = 0.0
 
-    private final double maxRate = 2000;
-    private int age = 0;
-    private double producedEnergy = 0;
-
-    @Override
-    public double getMaxRate() {
-        return this.maxRate;
-    }
-
-    @Override
-    public double getRate() {
-        if (age < 1000) {
-            return maxRate;
-        } else if (age > 1000 && age < 2000) {
-            return 0.5 * maxRate;
-        } else {
-            return 0.05 * maxRate;
+    override val rate: Double
+        get() {
+            if (age < 1000) {
+                return maxRate
+            } else if (age > 1000 && age < 2000) {
+                return 0.5 * maxRate
+            } else {
+                return 0.05 * maxRate
+            }
         }
+
+    override fun canProduce(location: Location?): Boolean {
+        return location?.block?.getRelative(BlockFace.UP)?.lightFromSky?.toInt() == 15
     }
 
-    @Override
-    public boolean canProduce(Location location) {
-        return location.getBlock().getRelative(BlockFace.UP).getLightFromSky() == 15;
-    }
-
-    @Override
-    public void produce(Location location) {
+    override fun produce(location: Location?) {
         if (this.canProduce(location)) {
-            System.out.println("Producing " + this.getRate() + " energy at " + location);
-            age++;
-            producedEnergy = this.getRate();
+            println("Producing " + this.rate + " energy at " + location)
+            age++
+            producedEnergy = this.rate
         }
     }
 
-    @Override
-    public double extractEnergy(double v) {
-        double energy = Math.min(v, producedEnergy);
-        producedEnergy -= energy;
-        return energy;
+    override fun extractEnergy(v: Double): Double {
+        val energy = min(v, producedEnergy)
+        producedEnergy -= energy
+        return energy
     }
 
-    @Override
-    public double getExcessEnergy() {
-        double excess = producedEnergy;
-        producedEnergy = 0;
-        return excess;
+    override val excessEnergy: Double
+        get() {
+            val excess = producedEnergy
+            producedEnergy = 0.0
+            return excess
+        }
+
+    override fun onRightClick(event: PlayerInteractEvent?) {
+        plugin.server.broadcastMessage("Right click")
     }
 
-    @Override
-    public void onRightClick(PlayerInteractEvent event) {
-        Bukkit.broadcastMessage("Right click");
-    }
-
-    @Override
-    public void onLeftClick(PlayerInteractEvent event) {
-        Bukkit.broadcastMessage("Left click");
+    override fun onLeftClick(event: PlayerInteractEvent?) {
+        plugin.server.broadcastMessage("Left click")
     }
 }
