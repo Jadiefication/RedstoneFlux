@@ -21,15 +21,19 @@ object ItemsFactory {
     /**
      * This method is used to register all the items for each EnergyMechanic.
      */
-    fun registerItem(item: ItemStack?, clazz: Class<out EnergyMechanic?>?) {
-        ITEM_STACKS_MAP.put(clazz, item)
+    fun <T : EnergyMechanic> registerItemHolder(builder: ItemHolder<T>.() -> Unit) {
+        val item = ItemHolder<T>()
+        item.builder()
+        ITEM_STACKS_MAP.put(item.mechanic!!.javaClass, item.item!!)
     }
 
     /**
      * This method is used to register all the items for each EnergyMechanic.
      */
-    fun registerItem(material: Material, clazz: Class<out EnergyMechanic?>?) {
-        ITEM_STACKS_MAP.put(clazz, ItemStack(material))
+    fun <T : EnergyMechanic> registerItem(builder: MaterialHolder<T>.() -> Unit) {
+        val item = MaterialHolder<T>()
+        item.builder()
+        ITEM_STACKS_MAP.put(item.mechanic!!.javaClass, ItemStack(item.item!!))
     }
 
     /**
