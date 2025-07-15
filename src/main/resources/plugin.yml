@@ -1,7 +1,7 @@
-name: EnergyLib
+name: RedstoneFlux
 version: '${version}'
-main: io.github.Jadiefication.redstoneflux.EnergyLib
-author: Traqueur
+main: io.github.Jadiefication.redstoneflux.RedstoneFlux
+author: Jadiefication
 description: 'A library for energy system.'
 api-version: '1.21'
 folia-supported: true

@@ -2,12 +2,12 @@ package io.github.Jadiefication.redstoneflux.commands
 
 import fr.traqueur.commands.api.arguments.Arguments
 import fr.traqueur.commands.api.models.Command
-import io.github.Jadiefication.redstoneflux.EnergyLib
+import io.github.Jadiefication.redstoneflux.RedstoneFlux
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import org.bukkit.command.CommandSender
 
-class DeleteCommand(plugin: EnergyLib) : Command<EnergyLib?, CommandSender>(plugin, "delete") {
+class DeleteCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(plugin, "delete") {
     private val manager: EnergyManager? = plugin.manager
 
     init {

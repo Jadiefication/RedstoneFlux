@@ -35,7 +35,7 @@ import java.util.stream.Collectors
  * This class is the implementation of the EnergyManager interface.
  * It allows to place and break energy components in the world.
  */
-class EnergyManagerImpl(energyLib: EnergyLib) : EnergyManager {
+class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
     /**
      * The EnergyLib instance.
      */

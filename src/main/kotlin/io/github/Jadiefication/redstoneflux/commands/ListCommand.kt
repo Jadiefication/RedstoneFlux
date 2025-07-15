@@ -2,11 +2,11 @@ package io.github.Jadiefication.redstoneflux.commands
 
 import fr.traqueur.commands.api.arguments.Arguments
 import fr.traqueur.commands.api.models.Command
-import io.github.Jadiefication.redstoneflux.EnergyLib
+import io.github.Jadiefication.redstoneflux.RedstoneFlux
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import org.bukkit.command.CommandSender
 
-class ListCommand(plugin: EnergyLib) : Command<EnergyLib?, CommandSender>(plugin, "list") {
+class ListCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(plugin, "list") {
     private val manager: EnergyManager = plugin.manager!!
 
     init {

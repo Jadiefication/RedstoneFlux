@@ -21,7 +21,7 @@ import java.util.function.Consumer
  * This class is the main class of the plugin.
  * It is responsible for the initialization of the plugin.
  */
-class EnergyLib : JavaPlugin(), EnergyAPI {
+class RedstoneFlux : JavaPlugin(), EnergyAPI {
     /**
      * The scheduler of the plugin.
      */
@@ -47,16 +47,16 @@ class EnergyLib : JavaPlugin(), EnergyAPI {
      * Initialize the plugin.
      */
     override fun onEnable() {
-        Updater.update("EnergyLib")
+        Updater.update("RedstoneFlux")
 
-        this.scheduler = FoliaLib(this).getScheduler()
+        this.scheduler = FoliaLib(this).scheduler
         this.manager = EnergyManagerImpl(this)
         this.isDebug = false
 
         val pluginManager: PluginManager = this.server.pluginManager
         pluginManager.registerEvents(EnergyListener(this), this)
 
-        this.registerProvider(this, this::class.java as Class<EnergyLib?>)
+        this.registerProvider(this, this::class.java as Class<RedstoneFlux?>)
         this.registerProvider(this.manager, EnergyManager::class.java as Class<EnergyManager?>)
 
         val commandManager = CommandManager(this)
