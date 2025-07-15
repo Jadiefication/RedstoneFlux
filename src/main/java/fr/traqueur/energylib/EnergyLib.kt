@@ -2,13 +2,15 @@ package fr.traqueur.energylib
 
 import com.tcoded.folialib.FoliaLib
 import com.tcoded.folialib.impl.PlatformScheduler
-import fr.traqueur.commands.api.CommandManager
+import fr.traqueur.commands.spigot.CommandManager
+import fr.traqueur.commands.spigot.SpigotPlatform
 import fr.traqueur.energylib.api.EnergyAPI
 import fr.traqueur.energylib.api.EnergyManager
 import fr.traqueur.energylib.api.components.EnergyNetwork
 import fr.traqueur.energylib.commands.EnergyCommand
 import fr.traqueur.energylib.commands.NetworkArgument
 import org.bukkit.Chunk
+import org.bukkit.command.CommandSender
 import org.bukkit.plugin.PluginManager
 import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.ServicesManager

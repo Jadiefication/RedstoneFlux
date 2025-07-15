@@ -92,7 +92,7 @@ repositories {
 dependencies {
     implementation(project(":EnergyAPI"))
     implementation "com.tcoded:FoliaLib:0.5.1"
-    implementation "com.github.Traqueur-dev:CommandsAPI:1.5.1"
+    implementation "com.github.Traqueur-dev:CommandsAPI:4.2.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 

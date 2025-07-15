@@ -1,14 +1,14 @@
 package fr.traqueur.energylib.commands
 
 import fr.traqueur.commands.api.arguments.ArgumentConverter
-import fr.traqueur.commands.api.arguments.TabConverter
+import fr.traqueur.commands.api.arguments.TabCompleter
 import fr.traqueur.energylib.api.EnergyManager
 import fr.traqueur.energylib.api.components.EnergyNetwork
 import org.bukkit.command.CommandSender
 import java.util.*
 import java.util.stream.Collectors
 
-class NetworkArgument(private val manager: EnergyManager) : ArgumentConverter<EnergyNetwork?>, TabConverter {
+class NetworkArgument(private val manager: EnergyManager) : ArgumentConverter<EnergyNetwork?>, TabCompleter<CommandSender> {
     override fun apply(s: String): EnergyNetwork? {
         try {
             val uuid = UUID.fromString(s)
@@ -22,10 +22,10 @@ class NetworkArgument(private val manager: EnergyManager) : ArgumentConverter<En
         }
     }
 
-    override fun onCompletion(commandSender: CommandSender?): MutableList<String?> {
+    override fun onCompletion(commandSender: CommandSender, args: MutableList<String>): MutableList<String> {
         return this.manager.networks!!
             .stream()
-            .map({ network -> network!!.id.toString() })
+            .map { network -> network!!.id.toString() }
             .collect(Collectors.toList())
     }
 }

@@ -1,13 +1,13 @@
 package fr.traqueur.energylib.commands
 
-import fr.traqueur.commands.api.Arguments
-import fr.traqueur.commands.api.Command
+import fr.traqueur.commands.api.arguments.Arguments
+import fr.traqueur.commands.api.models.Command
 import fr.traqueur.energylib.EnergyLib
 import fr.traqueur.energylib.api.EnergyManager
 import fr.traqueur.energylib.api.components.EnergyNetwork
 import org.bukkit.command.CommandSender
 
-class ShowCommand(plugin: EnergyLib) : Command<EnergyLib?>(plugin, "show") {
+class ShowCommand(plugin: EnergyLib) : Command<EnergyLib?, CommandSender>(plugin, "show") {
     private val manager: EnergyManager = plugin.manager!!
 
     init {
