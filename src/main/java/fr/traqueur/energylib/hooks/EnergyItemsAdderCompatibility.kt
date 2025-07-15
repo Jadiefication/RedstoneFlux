@@ -1,4 +1,4 @@
-package fr.traqueur.energylib.hooks
+/*package fr.traqueur.energylib.hooks
 
 import fr.traqueur.energylib.api.EnergyAPI
 import fr.traqueur.energylib.api.EnergyManager
@@ -57,4 +57,6 @@ class EnergyItemsAdderCompatibility(
         event.isCancelled = true
         api.scheduler?.runAtLocation(location, { t -> energyManager.breakComponent(event.getPlayer(), location) })
     }
-}
+}/
+
+ */

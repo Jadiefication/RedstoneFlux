@@ -8,7 +8,6 @@ import fr.traqueur.energylib.api.EnergyManager
 import fr.traqueur.energylib.api.components.EnergyNetwork
 import fr.traqueur.energylib.commands.EnergyCommand
 import fr.traqueur.energylib.commands.NetworkArgument
-import fr.traqueur.energylib.hooks.EnergyItemsAdderCompatibility
 import org.bukkit.Chunk
 import org.bukkit.plugin.PluginManager
 import org.bukkit.plugin.ServicePriority
@@ -69,16 +68,15 @@ class EnergyLib : JavaPlugin(), EnergyAPI {
         )
         commandManager.registerCommand(EnergyCommand(this))
 
-        this.scheduler?.runNextTick({ t ->
-            this.hooks()
+        this.scheduler?.runNextTick { t ->
             this.server.worlds.forEach(Consumer { world ->
-                Arrays.stream<Chunk?>(world.loadedChunks)
+                Arrays.stream(world.loadedChunks)
                     .forEach { chunk: Chunk? -> this.manager!!.loadNetworks(chunk) }
             })
 
             this.manager!!.startNetworkUpdater()
             this.scheduler!!.runTimerAsync({ _ -> this.manager!!.saveNetworks() }, 1, 1, TimeUnit.HOURS)
-        })
+        }
     }
 
     /**
@@ -92,7 +90,7 @@ class EnergyLib : JavaPlugin(), EnergyAPI {
     /**
      * Initialize the hooks of the plugin.
      */
-    private fun hooks() {
+    /*private fun hooks() {
         val pluginManager: PluginManager = this.server.pluginManager
         /*if (pluginManager.isPluginEnabled("Nexo")) CompatibilitiesManager.addCompatibility(
             "EnergyLib",
@@ -103,7 +101,7 @@ class EnergyLib : JavaPlugin(), EnergyAPI {
             EnergyItemsAdderCompatibility(this),
             this
         )
-    }
+    }*/
 
     /**
      * Register a provider for a service. The provider can be use in other plugins.
