@@ -1,55 +1,40 @@
-package fr.traqueur.energylib.api.persistents.adapters;
+package fr.traqueur.energylib.api.persistents.adapters
 
-import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import fr.traqueur.energylib.api.EnergyAPI;
-import fr.traqueur.energylib.api.components.EnergyComponent;
-import fr.traqueur.energylib.api.components.EnergyNetwork;
-
-import java.io.IOException;
-
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import com.google.gson.JsonSyntaxException;
-import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
+import fr.traqueur.energylib.api.EnergyAPI
+import fr.traqueur.energylib.api.components.EnergyComponent
+import fr.traqueur.energylib.api.components.EnergyNetwork
+import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException
+import org.bukkit.Bukkit
+import org.bukkit.Location
+import java.io.IOException
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * This class is a Gson adapter for EnergyNetworks.
  * It is used to serialize and deserialize EnergyNetworks.
  */
-public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
-
+class EnergyNetworkAdapter
+/**
+ * Creates a new EnergyNetworkAdapter.
+ *
+ * @param api The EnergyAPI instance.
+ * @param gson The Gson instance.
+ */(
     /**
      * The EnergyAPI instance.
      */
-    private final EnergyAPI api;
-
+    private val api: EnergyAPI?,
     /**
      * The Gson instance.
      */
-    private final Gson gson;
-
-    /**
-     * Creates a new EnergyNetworkAdapter.
-     *
-     * @param api The EnergyAPI instance.
-     * @param gson The Gson instance.
-     */
-    public EnergyNetworkAdapter(EnergyAPI api, Gson gson) {
-        this.api = api;
-        this.gson = gson;
-    }
-
+    private val gson: Gson
+) : TypeAdapter<EnergyNetwork?>() {
     /**
      * Writes an EnergyNetwork to a JsonWriter.
      *
@@ -57,19 +42,18 @@ public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
      * @param value The EnergyNetwork.
      * @throws IOException If an I/O error occurs.
      */
-    @Override
-    public void write(JsonWriter out, EnergyNetwork value) throws IOException {
-        out.beginObject();
-        out.name("components");
-        out.beginObject();
-        for (Map.Entry<Location, EnergyComponent<?>> entry : value.getComponents().entrySet()) {
-            out.name(this.fromLocation(entry.getKey()));
-            gson.toJson(entry.getValue(), EnergyComponent.class, out);
+    override fun write(out: JsonWriter, value: EnergyNetwork?) {
+        out.beginObject()
+        out.name("components")
+        out.beginObject()
+        for (entry in value?.components?.entries!!) {
+            out.name(this.fromLocation(entry.key!!))
+            gson.toJson(entry.value, EnergyComponent::class.java, out)
         }
-        out.endObject();
-        out.name("id");
-        out.value(value.getId().toString());
-        out.endObject();
+        out.endObject()
+        out.name("id")
+        out.value(value.id.toString())
+        out.endObject()
     }
 
     /**
@@ -79,39 +63,39 @@ public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
      * @return The EnergyNetwork.
      * @throws IOException If an I/O error occurs.
      */
-    @Override
-    public EnergyNetwork read(JsonReader in) throws IOException {
-        Map<Location, EnergyComponent<?>> components = new ConcurrentHashMap<>();
-        String id = null;
-        in.beginObject();
-        while (in.hasNext()) {
-            String name = in.nextName();
-            if (name.equals("components")) {
-                in.beginObject();
-                while (in.hasNext()) {
-                    Location location = this.toLocation(in.nextName());
-                    EnergyComponent<?> component = gson.fromJson(in, EnergyComponent.class);
-                    components.put(location, component);
+    @Throws(IOException::class)
+    override fun read(`in`: JsonReader): EnergyNetwork {
+        val components: MutableMap<Location?, EnergyComponent<*>?> = ConcurrentHashMap<Location?, EnergyComponent<*>?>()
+        var id: String? = null
+        `in`.beginObject()
+        while (`in`.hasNext()) {
+            val name = `in`.nextName()
+            if (name == "components") {
+                `in`.beginObject()
+                while (`in`.hasNext()) {
+                    val location = this.toLocation(`in`.nextName())
+                    val component = gson.fromJson<EnergyComponent<*>?>(`in`, EnergyComponent::class.java)
+                    components.put(location, component)
                 }
-                in.endObject();
-            } else if(name.equalsIgnoreCase("id")) {
-                id = in.nextString();
+                `in`.endObject()
+            } else if (name.equals("id", ignoreCase = true)) {
+                id = `in`.nextString()
             } else {
-                throw new JsonSyntaxException("Unknown field in EnergyNetwork: " + name);
+                throw JsonSyntaxException("Unknown field in EnergyNetwork: $name")
             }
         }
-        in.endObject();
+        `in`.endObject()
 
-        EnergyNetwork network = new EnergyNetwork(api, UUID.fromString(id));
-        components.forEach((location, component) -> {
+        val network = EnergyNetwork(api!!, UUID.fromString(id))
+        components.forEach { (location: Location?, component: EnergyComponent<*>?) ->
             try {
-                network.addComponent(component, location);
-            } catch (SameEnergyTypeException e) {
-                throw new RuntimeException(e);
+                network.addComponent(component!!, location!!)
+            } catch (e: SameEnergyTypeException) {
+                throw RuntimeException(e)
             }
-        });
+        }
 
-        return network;
+        return network
     }
 
     /**
@@ -120,9 +104,14 @@ public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
      * @param string The string.
      * @return The Location.
      */
-    private Location toLocation(String string) {
-        String[] parts = string.split(",");
-        return new Location(parts[0].equals("null") ? null : Bukkit.getServer().getWorld(UUID.fromString(parts[0])), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
+    private fun toLocation(string: String): Location {
+        val parts: Array<String?> = string.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        return Location(
+            if (parts[0] == "null") null else Bukkit.getServer().getWorld(UUID.fromString(parts[0])),
+            parts[1]!!.toDouble(),
+            parts[2]!!.toDouble(),
+            parts[3]!!.toDouble()
+        )
     }
 
     /**
@@ -131,9 +120,9 @@ public class EnergyNetworkAdapter extends TypeAdapter<EnergyNetwork> {
      * @param location The Location.
      * @return The string.
      */
-    private String fromLocation(Location location) {
-        String world = location.getWorld() == null ? "null" : location.getWorld().getUID().toString();
-        return world + "," + location.getX() + "," + location.getY() + "," + location.getZ();
+    private fun fromLocation(location: Location): String {
+        val world: String? = if (location.getWorld() == null) "null" else location.getWorld()!!.uid.toString()
+        return world + "," + location.x + "," + location.y + "," + location.z
     }
 }
 

@@ -1,22 +1,20 @@
-package fr.traqueur.energylib.api.mechanics;
+package fr.traqueur.energylib.api.mechanics
 
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerInteractEvent
 
 /**
  * This interface represents a mechanic that can be interacted with.
  */
-public interface InteractableMechanic {
-
+interface InteractableMechanic {
     /**
      * Called when the mechanic is right-clicked.
      * @param event the event
      */
-    void onRightClick(PlayerInteractEvent event);
+    fun onRightClick(event: PlayerInteractEvent?)
 
     /**
      * Called when the mechanic is left-clicked.
      * @param event the event
      */
-    void onLeftClick(PlayerInteractEvent event);
-
+    fun onLeftClick(event: PlayerInteractEvent?)
 }

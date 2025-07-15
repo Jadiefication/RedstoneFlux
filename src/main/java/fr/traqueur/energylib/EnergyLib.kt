@@ -1,132 +1,108 @@
-package fr.traqueur.energylib;
+package fr.traqueur.energylib
 
-import com.tcoded.folialib.FoliaLib;
-import com.tcoded.folialib.impl.PlatformScheduler;
-import fr.traqueur.commands.api.CommandManager;
-import fr.traqueur.energylib.api.EnergyAPI;
-import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.components.EnergyNetwork;
-import fr.traqueur.energylib.commands.EnergyCommand;
-import fr.traqueur.energylib.commands.NetworkArgument;
-import fr.traqueur.energylib.hooks.EnergyItemsAdderCompatibility;
-import fr.traqueur.energylib.hooks.EnergyOraxenCompatibility;
-import io.th0rgal.oraxen.compatibilities.CompatibilitiesManager;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.ServicePriority;
-import org.bukkit.plugin.ServicesManager;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import com.tcoded.folialib.FoliaLib
+import com.tcoded.folialib.impl.PlatformScheduler
+import fr.traqueur.commands.api.CommandManager
+import fr.traqueur.energylib.api.EnergyAPI
+import fr.traqueur.energylib.api.EnergyManager
+import fr.traqueur.energylib.api.components.EnergyNetwork
+import fr.traqueur.energylib.commands.EnergyCommand
+import fr.traqueur.energylib.commands.NetworkArgument
+import fr.traqueur.energylib.hooks.EnergyItemsAdderCompatibility
+import org.bukkit.Chunk
+import org.bukkit.plugin.PluginManager
+import org.bukkit.plugin.ServicePriority
+import org.bukkit.plugin.ServicesManager
+import org.bukkit.plugin.java.JavaPlugin
+import java.util.Arrays
+import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
 
 /**
  * This class is the main class of the plugin.
  * It is responsible for the initialization of the plugin.
  */
-public final class EnergyLib extends JavaPlugin implements EnergyAPI {
-
+class EnergyLib : JavaPlugin(), EnergyAPI {
     /**
      * The scheduler of the plugin.
      */
-    private PlatformScheduler scheduler;
+    override var scheduler: PlatformScheduler? = null
 
     /**
      * The energy manager of the plugin.
      */
-    private EnergyManager manager;
+    override var manager: EnergyManager? = null
 
+    /**
+     * {@inheritDoc}
+     */
+    /**
+     * {@inheritDoc}
+     */
     /**
      * The debug state of the plugin.
      */
-    private boolean debug;
+    override var isDebug: Boolean = false
 
     /**
      * Initialize the plugin.
      */
-    @Override
-    public void onEnable() {
+    override fun onEnable() {
+        Updater.update("EnergyLib")
 
-        Updater.update("EnergyLib");
+        this.scheduler = FoliaLib(this).getScheduler()
+        this.manager = EnergyManagerImpl(this)
+        this.isDebug = false
 
-        this.scheduler = new FoliaLib(this).getScheduler();
-        this.manager = new EnergyManagerImpl(this);
-        this.debug = false;
+        val pluginManager: PluginManager = this.server.pluginManager
+        pluginManager.registerEvents(EnergyListener(this), this)
 
-        PluginManager pluginManager = this.getServer().getPluginManager();
-        pluginManager.registerEvents(new EnergyListener(this), this);
+        this.registerProvider(this, this::class.java as Class<EnergyLib?>)
+        this.registerProvider(this.manager, EnergyManager::class.java as Class<EnergyManager?>)
 
-        this.registerProvider(this, EnergyAPI.class);
-        this.registerProvider(this.manager, EnergyManager.class);
+        val commandManager = CommandManager(this)
+        commandManager.isDebug = this.isDebug
+        commandManager.registerConverter(
+            EnergyNetwork::class.java,
+            "network",
+            NetworkArgument(this.manager!!)
+        )
+        commandManager.registerCommand(EnergyCommand(this))
 
-        CommandManager commandManager = new CommandManager(this);
-        commandManager.setDebug(this.debug);
-        commandManager.registerConverter(EnergyNetwork.class, "network", new NetworkArgument(this.manager));
-        commandManager.registerCommand(new EnergyCommand(this));
+        this.scheduler?.runNextTick({ t ->
+            this.hooks()
+            this.server.worlds.forEach(Consumer { world ->
+                Arrays.stream<Chunk?>(world.loadedChunks)
+                    .forEach { chunk: Chunk? -> this.manager!!.loadNetworks(chunk) }
+            })
 
-        this.getScheduler().runNextTick((t) -> {
-            this.hooks();
-
-            this.getServer().getWorlds().forEach(world -> {
-                Arrays.stream(world.getLoadedChunks()).forEach(chunk -> this.manager.loadNetworks(chunk));
-            });
-
-            this.manager.startNetworkUpdater();
-
-            this.getScheduler().runTimerAsync(this.manager::saveNetworks, 1, 1, TimeUnit.HOURS);
-        });
+            this.manager!!.startNetworkUpdater()
+            this.scheduler!!.runTimerAsync({ _ -> this.manager!!.saveNetworks() }, 1, 1, TimeUnit.HOURS)
+        })
     }
 
     /**
      * Disable the plugin.
      */
-    @Override
-    public void onDisable() {
-        this.manager.stopNetworkUpdater();
-        this.manager.saveNetworks();
+    override fun onDisable() {
+        this.manager?.stopNetworkUpdater()
+        this.manager?.saveNetworks()
     }
 
     /**
      * Initialize the hooks of the plugin.
      */
-    private void hooks() {
-        PluginManager pluginManager = this.getServer().getPluginManager();
-        if (pluginManager.isPluginEnabled("Oraxen"))
-            CompatibilitiesManager.addCompatibility("EnergyLib", EnergyOraxenCompatibility.class);
+    private fun hooks() {
+        val pluginManager: PluginManager = this.server.pluginManager
+        /*if (pluginManager.isPluginEnabled("Nexo")) CompatibilitiesManager.addCompatibility(
+            "EnergyLib",
+            EnergyNexoCompatibility::class.java
+        )*/
 
-        if (pluginManager.isPluginEnabled("ItemsAdder"))
-            pluginManager.registerEvents(new EnergyItemsAdderCompatibility(this), this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public EnergyManager getManager() {
-        return this.manager;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PlatformScheduler getScheduler() {
-        return this.scheduler;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isDebug() {
-        return this.debug;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDebug(boolean debug) {
-        this.debug = debug;
+        if (pluginManager.isPluginEnabled("ItemsAdder")) pluginManager.registerEvents(
+            EnergyItemsAdderCompatibility(this),
+            this
+        )
     }
 
     /**
@@ -135,9 +111,9 @@ public final class EnergyLib extends JavaPlugin implements EnergyAPI {
      * @param instance the instance of the provider
      * @param clazz    the class of the provider
      * @param <T>      the type of the provider
-     */
-    private <T> void registerProvider(T instance, Class<T> clazz) {
-        ServicesManager servicesManager = this.getServer().getServicesManager();
-        servicesManager.register(clazz, instance, this, ServicePriority.Normal);
+    </T> */
+    private fun <T> registerProvider(instance: T?, clazz: Class<T?>) {
+        val servicesManager: ServicesManager = this.server.servicesManager
+        servicesManager.register<T?>(clazz, instance!!, this, ServicePriority.Normal)
     }
 }

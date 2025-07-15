@@ -1,42 +1,39 @@
-package fr.traqueur.energylib.hooks;
+/*package fr.traqueur.energylib.hooks
 
-import fr.traqueur.energylib.EnergyLib;
-import fr.traqueur.energylib.api.EnergyAPI;
-import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
-import io.th0rgal.oraxen.api.events.noteblock.OraxenNoteBlockBreakEvent;
-import io.th0rgal.oraxen.api.events.noteblock.OraxenNoteBlockPlaceEvent;
-import io.th0rgal.oraxen.compatibilities.CompatibilityProvider;
-import org.bukkit.Location;
-import org.bukkit.event.EventHandler;
-import org.bukkit.inventory.ItemStack;
+import fr.traqueur.energylib.EnergyLib
+import fr.traqueur.energylib.api.EnergyAPI
+import fr.traqueur.energylib.api.EnergyManager
+import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException
+import io.th0rgal.oraxen.api.events.noteblock.OraxenNoteBlockBreakEvent
+import io.th0rgal.oraxen.api.events.noteblock.OraxenNoteBlockPlaceEvent
+import io.th0rgal.oraxen.compatibilities.CompatibilityProvider
+import org.bukkit.event.EventHandler
 
 /**
  * This class is a compatibility provider for Oraxen.
  * It allows to place and break energy components in the world.
  */
-public class EnergyOraxenCompatibility extends CompatibilityProvider<EnergyLib> {
-
-
+class EnergyNexoCompatibility : CompatibilityProvider<EnergyLib?>() {
     /**
      * Handle the event when a player places a custom not block from oraxen
      * @param event the event
      */
     @EventHandler
-    public void onPlace(OraxenNoteBlockPlaceEvent event) {
-        EnergyAPI api = (EnergyLib) this.getPlugin();
-        EnergyManager energyManager = api.getManager();
-        ItemStack item = event.getItemInHand().clone();
+    fun onPlace(event: OraxenNoteBlockPlaceEvent) {
+        val api: EnergyAPI = this.getPlugin() as EnergyLib
+        val energyManager: EnergyManager = api.manager!!
+        val item = event.getItemInHand().clone()
         if (!energyManager.isComponent(item)) {
-            return;
+            return
         }
-        Location location = event.getBlock().getLocation();
-        api.getScheduler().runAtLocation(location, (t) -> {
-            var component = energyManager.createComponent(item);
+        val location = event.getBlock().getLocation()
+        api.scheduler.runAtLocation(location, { t ->
+            val component = energyManager.createComponent(item)
             try {
-                energyManager.placeComponent(component, location);
-            } catch (SameEnergyTypeException ignored) {}
-        });
+                energyManager.placeComponent(component, location)
+            } catch (ignored: SameEnergyTypeException) {
+            }
+        })
     }
 
     /**
@@ -44,15 +41,14 @@ public class EnergyOraxenCompatibility extends CompatibilityProvider<EnergyLib> 
      * @param event the event
      */
     @EventHandler
-    public void onBreak(OraxenNoteBlockBreakEvent event) {
-        EnergyAPI api = (EnergyLib) this.getPlugin();
-        EnergyManager energyManager = api.getManager();
-        Location location = event.getBlock().getLocation();
+    fun onBreak(event: OraxenNoteBlockBreakEvent) {
+        val api: EnergyAPI = this.getPlugin() as EnergyLib
+        val energyManager: EnergyManager = api.manager!!
+        val location = event.getBlock().getLocation()
         if (!energyManager.isBlockComponent(location)) {
-            return;
+            return
         }
-        event.setCancelled(true);
-        api.getScheduler().runAtLocation(location, (t) -> energyManager.breakComponent(event.getPlayer(), location));
+        event.setCancelled(true)
+        api.scheduler.runAtLocation(location, { t -> energyManager.breakComponent(event.getPlayer(), location) })
     }
-
-}
+}*/

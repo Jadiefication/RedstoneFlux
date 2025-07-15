@@ -1,57 +1,47 @@
-package fr.traqueur.energylib.hooks;
+package fr.traqueur.energylib.hooks
 
-import dev.lone.itemsadder.api.Events.CustomBlockBreakEvent;
-import dev.lone.itemsadder.api.Events.CustomBlockPlaceEvent;
-import fr.traqueur.energylib.api.EnergyAPI;
-import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
-import org.bukkit.Location;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
+import fr.traqueur.energylib.api.EnergyAPI
+import fr.traqueur.energylib.api.EnergyManager
+import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockPlaceEvent
 
 /**
  * This class is a compatibility for ItemsAdder plugin.
  * It allows to place and break energy components from ItemsAdder.
  */
-public class EnergyItemsAdderCompatibility implements Listener {
-
+class EnergyItemsAdderCompatibility(
     /**
      * The EnergyAPI instance.
      */
-    private final EnergyAPI api;
+    private val api: EnergyAPI
+) : Listener {
 
     /**
      * The EnergyManager instance.
      */
-    private final EnergyManager energyManager;
-
-    /**
-     * Constructor.
-     * @param api The EnergyAPI instance.
-     */
-    public EnergyItemsAdderCompatibility(EnergyAPI api) {
-        this.api = api;
-        this.energyManager = api.getManager();
-    }
+    private val energyManager: EnergyManager = api.manager!!
 
     /**
      * Handle the place of a custom block.
      * @param event The event.
      */
     @EventHandler
-    public void onPlace(CustomBlockPlaceEvent event) {
-        ItemStack item = event.getItemInHand().clone();
+    fun onPlace(event: BlockPlaceEvent) {
+        val item = event.getItemInHand().clone()
         if (!energyManager.isComponent(item)) {
-            return;
+            return
         }
-        Location location = event.getBlock().getLocation();
-        api.getScheduler().runAtLocation(location, (t) -> {
-            var component = energyManager.createComponent(item);
+        val location = event.getBlock().location
+        api.scheduler?.runAtLocation(location, { t ->
+            val component = energyManager.createComponent(item)
             try {
-                energyManager.placeComponent(component, location);
-            } catch (SameEnergyTypeException ignored) {}
-        });
+                energyManager.placeComponent(component, location)
+            } catch (ignored: SameEnergyTypeException) {
+            }
+        })
     }
 
     /**
@@ -59,13 +49,12 @@ public class EnergyItemsAdderCompatibility implements Listener {
      * @param event The event.
      */
     @EventHandler
-    public void onBreak(CustomBlockBreakEvent event) {
-        Location location = event.getBlock().getLocation();
+    fun onBreak(event: BlockBreakEvent) {
+        val location = event.getBlock().location
         if (!energyManager.isBlockComponent(location)) {
-            return;
+            return
         }
-        event.setCancelled(true);
-        api.getScheduler().runAtLocation(location, (t) -> energyManager.breakComponent(event.getPlayer(), location));
+        event.isCancelled = true
+        api.scheduler?.runAtLocation(location, { t -> energyManager.breakComponent(event.getPlayer(), location) })
     }
-
 }

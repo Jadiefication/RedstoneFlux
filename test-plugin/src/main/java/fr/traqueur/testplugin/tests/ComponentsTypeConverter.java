@@ -10,13 +10,13 @@ import java.util.stream.Stream;
 
 public class ComponentsTypeConverter implements ArgumentConverter<MechanicType>, TabConverter {
 
-        @Override
-        public MechanicType apply(String s) {
-            return MechanicType.valueOf(s.toUpperCase());
-        }
-
-        @Override
-        public List<String> onCompletion(CommandSender commandSender) {
-            return Stream.of(MechanicType.values()).map(Enum::name).toList();
-        }
+    @Override
+    public MechanicType apply(String s) {
+        return MechanicType.valueOf(s.toUpperCase());
     }
+
+    @Override
+    public List<String> onCompletion(CommandSender commandSender) {
+        return Stream.of(MechanicType.values()).map(Enum::name).toList();
+    }
+}

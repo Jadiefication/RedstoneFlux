@@ -1,45 +1,32 @@
-package fr.traqueur.energylib;
+package fr.traqueur.energylib
 
-import fr.traqueur.energylib.api.EnergyAPI;
-import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.components.EnergyComponent;
-import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
-import fr.traqueur.energylib.api.mechanics.InteractableMechanic;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.inventory.ItemStack;
+import fr.traqueur.energylib.api.EnergyAPI
+import fr.traqueur.energylib.api.EnergyManager
+import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException
+import fr.traqueur.energylib.api.mechanics.InteractableMechanic
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.world.ChunkLoadEvent
 
 /**
  * This class is a listener for the energy system.
  * It allows to load and unload energy networks in chunks and to place and break energy components in the world.
  */
-public class EnergyListener implements Listener {
-
+class EnergyListener(
     /**
      * The energy API
      */
-    private final EnergyAPI api;
+    private val api: EnergyAPI
+) : Listener {
 
     /**
      * The energy manager
      */
-    private final EnergyManager energyManager;
-
-    /**
-     * Create a new energy listener
-     *
-     * @param api the energy API
-     */
-    public EnergyListener(EnergyAPI api) {
-        this.api = api;
-        this.energyManager = api.getManager();
-    }
+    private val energyManager: EnergyManager = api.manager!!
 
     /**
      * Load energy networks in a chunk
@@ -47,8 +34,8 @@ public class EnergyListener implements Listener {
      * @param event the event
      */
     @EventHandler
-    public void onChunkLoad(ChunkLoadEvent event) {
-        this.energyManager.loadNetworks(event.getChunk());
+    fun onChunkLoad(event: ChunkLoadEvent) {
+        this.energyManager.loadNetworks(event.getChunk())
     }
 
     /**
@@ -57,19 +44,19 @@ public class EnergyListener implements Listener {
      * @param event the event
      */
     @EventHandler
-    public void onEnergyComponentPlace(BlockPlaceEvent event) {
-        ItemStack item = event.getItemInHand().clone();
+    fun onEnergyComponentPlace(event: BlockPlaceEvent) {
+        val item = event.getItemInHand().clone()
         if (!this.energyManager.isComponent(item)) {
-            return;
+            return
         }
-        Location location = event.getBlockPlaced().getLocation();
-        this.api.getScheduler().runAtLocation(location, (t) -> {
-            var component = this.energyManager.createComponent(item);
+        val location = event.blockPlaced.location
+        this.api.scheduler?.runAtLocation(location) { t ->
+            val component = this.energyManager.createComponent(item)
             try {
-                this.energyManager.placeComponent(component, location);
-            } catch (SameEnergyTypeException ignored) {
+                this.energyManager.placeComponent(component, location)
+            } catch (ignored: SameEnergyTypeException) {
             }
-        });
+        }
     }
 
     /**
@@ -78,13 +65,15 @@ public class EnergyListener implements Listener {
      * @param event the event
      */
     @EventHandler
-    public void onEnergyComponentBreak(BlockBreakEvent event) {
-        Location location = event.getBlock().getLocation();
+    fun onEnergyComponentBreak(event: BlockBreakEvent) {
+        val location = event.getBlock().getLocation()
         if (!this.energyManager.isBlockComponent(location)) {
-            return;
+            return
         }
-        event.setCancelled(true);
-        this.api.getScheduler().runAtLocation(location, (t) -> this.energyManager.breakComponent(event.getPlayer(), location));
+        event.isCancelled = true
+        this.api.scheduler?.runAtLocation(
+            location,
+            { t -> this.energyManager.breakComponent(event.getPlayer(), location) })
     }
 
     /**
@@ -93,34 +82,35 @@ public class EnergyListener implements Listener {
      * @param event the event
      */
     @EventHandler
-    public void onInteract(PlayerInteractEvent event) {
-        Block block = event.getClickedBlock();
+    fun onInteract(event: PlayerInteractEvent) {
+        val block = event.clickedBlock
         if (block == null) {
-            return;
+            return
         }
 
-        Location location = block.getLocation();
-        var optComponent = this.energyManager.getComponentFromBlock(location);
+        val location = block.location
+        val optComponent = this.energyManager.getComponentFromBlock(location)
 
-        if (optComponent.isEmpty()) {
-            return;
+        if (optComponent!!.isEmpty) {
+            return
         }
 
-        EnergyComponent<?> component = optComponent.get();
-        if (!(component.getMechanic() instanceof InteractableMechanic interactableMechanic)) {
-            return;
+        val component = optComponent.get()
+        if (component.mechanic !is InteractableMechanic) {
+            return
         }
+        val interactableMechanic = component.mechanic as InteractableMechanic
 
-        switch (event.getAction()) {
-            case RIGHT_CLICK_BLOCK -> {
-                interactableMechanic.onRightClick(event);
+        when (event.action) {
+            Action.RIGHT_CLICK_BLOCK -> {
+                interactableMechanic.onRightClick(event)
             }
-            case LEFT_CLICK_BLOCK -> {
-                interactableMechanic.onLeftClick(event);
+
+            Action.LEFT_CLICK_BLOCK -> {
+                interactableMechanic.onLeftClick(event)
             }
-            default -> {
-            }
+
+            else -> {}
         }
     }
-
 }

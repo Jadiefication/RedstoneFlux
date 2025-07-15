@@ -48,9 +48,11 @@ If you encounter any issues or have suggestions, feel free to open an **issue** 
 
 ## For Developers: Adding EnergyLib to Your Project
 
-EnergyLib is available on [JitPack](https://jitpack.io/), making it easy to include in your Spigot or Paper plugin project.
+EnergyLib is available on [JitPack](https://jitpack.io/), making it easy to include in your Spigot or Paper plugin
+project.
 
 ### Gradle
+
 To include EnergyLib in your project using Gradle, follow these steps:
 
 1. Add the JitPack repository in your `build.gradle` file:
@@ -68,6 +70,7 @@ To include EnergyLib in your project using Gradle, follow these steps:
    ```
 
 ### Maven
+
 If you're using Maven, follow these steps:
 
 1. Add the JitPack repository to your `pom.xml`:
@@ -80,7 +83,8 @@ If you're using Maven, follow these steps:
    </repositories>
    ```
 
-2. Add the dependency in the `dependencies` section using `<scope>provided</scope>` (equivalent to `compileOnly` in Gradle):
+2. Add the dependency in the `dependencies` section using `<scope>provided</scope>` (equivalent to `compileOnly` in
+   Gradle):
    ```xml
    <dependency>
        <groupId>com.github.Traqueur-dev</groupId>
@@ -96,7 +100,8 @@ Replace version by actual version.
 
 - EnergyLib will not be bundled with your plugin's final JAR file.
 - EnergyLib centralize system in his jarfile you must add your plugin and EnergyLib in plugin folder.
-- 
+-
+
 Make sure EnergyLib is installed on the server if you use `compileOnly`, as it won't be included with your plugin.
 
 ---

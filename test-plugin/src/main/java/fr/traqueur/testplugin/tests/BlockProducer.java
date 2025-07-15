@@ -20,9 +20,9 @@ public class BlockProducer implements EnergyProducer, InteractableMechanic {
 
     @Override
     public double getRate() {
-        if(age < 1000) {
+        if (age < 1000) {
             return maxRate;
-        } else if(age > 1000 && age < 2000) {
+        } else if (age > 1000 && age < 2000) {
             return 0.5 * maxRate;
         } else {
             return 0.05 * maxRate;
@@ -36,7 +36,7 @@ public class BlockProducer implements EnergyProducer, InteractableMechanic {
 
     @Override
     public void produce(Location location) {
-        if(this.canProduce(location)) {
+        if (this.canProduce(location)) {
             System.out.println("Producing " + this.getRate() + " energy at " + location);
             age++;
             producedEnergy = this.getRate();

@@ -1,130 +1,135 @@
-package fr.traqueur.energylib;
+package fr.traqueur.energylib
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.tcoded.folialib.wrapper.task.WrappedTask;
-import fr.traqueur.energylib.api.EnergyAPI;
-import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.components.EnergyComponent;
-import fr.traqueur.energylib.api.components.EnergyNetwork;
-import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
-import fr.traqueur.energylib.api.items.ItemsFactory;
-import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
-import fr.traqueur.energylib.api.persistents.EnergyTypePersistentDataType;
-import fr.traqueur.energylib.api.persistents.adapters.EnergyComponentAdapter;
-import fr.traqueur.energylib.api.persistents.adapters.EnergyNetworkAdapter;
-import fr.traqueur.energylib.api.persistents.adapters.EnergyTypeAdapter;
-import fr.traqueur.energylib.api.types.EnergyType;
-import fr.traqueur.energylib.api.types.MechanicType;
-import org.bukkit.*;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.tcoded.folialib.wrapper.task.WrappedTask
+import fr.traqueur.energylib.api.EnergyAPI
+import fr.traqueur.energylib.api.EnergyManager
+import fr.traqueur.energylib.api.components.EnergyComponent
+import fr.traqueur.energylib.api.components.EnergyNetwork
+import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException
+import fr.traqueur.energylib.api.items.ItemsFactory
+import fr.traqueur.energylib.api.mechanics.EnergyMechanic
+import fr.traqueur.energylib.api.persistents.EnergyTypePersistentDataType
+import fr.traqueur.energylib.api.persistents.adapters.EnergyComponentAdapter
+import fr.traqueur.energylib.api.persistents.adapters.EnergyNetworkAdapter
+import fr.traqueur.energylib.api.persistents.adapters.EnergyTypeAdapter
+import fr.traqueur.energylib.api.types.EnergyType
+import fr.traqueur.energylib.api.types.MechanicType
+import org.bukkit.Chunk
+import org.bukkit.GameMode
+import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.NamespacedKey
+import org.bukkit.block.BlockFace
+import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.ItemMeta
+import org.bukkit.persistence.PersistentDataContainer
+import org.bukkit.persistence.PersistentDataType
+import java.util.AbstractMap
+import java.util.LinkedList
+import java.util.List
+import java.util.Optional
+import java.util.Queue
+import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.Supplier
+import java.util.stream.Collectors
 
 /**
  * This class is the implementation of the EnergyManager interface.
  * It allows to place and break energy components in the world.
  */
-public class EnergyManagerImpl implements EnergyManager {
-
-    /**
-     * The list of the 6 block faces.
-     */
-    private static final List<BlockFace> NEIBHORS = List.of(BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST);
-
+class EnergyManagerImpl(energyLib: EnergyLib) : EnergyManager {
     /**
      * The EnergyLib instance.
      */
-    private final EnergyAPI api;
+    private val api: EnergyAPI = energyLib
 
     /**
      * The Gson instance.
      */
-    private final Gson gson;
+    override val gson: Gson
 
     /**
      * The key to store the energy type in the item meta.
      */
-    private final NamespacedKey energyTypeKey;
+    override val energyTypeKey: NamespacedKey
 
     /**
      * The key to store the mechanic class in the item meta.
      */
-    private final NamespacedKey mechanicClassKey;
+    override val mechanicClassKey: NamespacedKey
 
     /**
      * The key to store the mechanic in the item meta.
      */
-    private final NamespacedKey mechanicKey;
+    override val mechanicKey: NamespacedKey
 
     /**
      * The key to store the network in the chunk.
      */
-    private final NamespacedKey networkKey;
+    override val networkKey: NamespacedKey
 
     /**
      * The set of all the energy networks.
      */
-    private final Set<EnergyNetwork> networks;
+    override val networks: MutableSet<EnergyNetwork?>
 
     /**
      * The task that updates the networks.
      */
-    private WrappedTask updaterTask;
+    private var updaterTask: WrappedTask? = null
 
     /**
      * Create a new EnergyManagerImpl instance.
      *
      * @param energyLib the EnergyLib instance
      */
-    public EnergyManagerImpl(EnergyLib energyLib) {
-        this.api = energyLib;
-        this.gson = this.createGson();
-        this.networks = new HashSet<>();
-        this.energyTypeKey = new NamespacedKey(energyLib, "energy-type");
-        this.mechanicClassKey = new NamespacedKey(energyLib, "mechanic-class");
-        this.mechanicKey = new NamespacedKey(energyLib, "mechanic");
-        this.networkKey = new NamespacedKey(energyLib, "network");
+    init {
+        this.gson = this.createGson()
+        this.networks = HashSet<EnergyNetwork?>()
+        this.energyTypeKey = NamespacedKey(energyLib, "energy-type")
+        this.mechanicClassKey = NamespacedKey(energyLib, "mechanic-class")
+        this.mechanicKey = NamespacedKey(energyLib, "mechanic")
+        this.networkKey = NamespacedKey(energyLib, "network")
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public void placeComponent(EnergyComponent<?> component, Location location) throws SameEnergyTypeException {
-        List<EnergyNetwork> energyNetworks = new ArrayList<>();
-        for (BlockFace neibhorFace : NEIBHORS) {
-            var neibhor = location.getBlock().getRelative(neibhorFace);
-            var networkNeighbor = this.networks.stream().filter(network -> network.contains(neibhor.getLocation())).findFirst();
-            if (networkNeighbor.isPresent()) {
-                if (!energyNetworks.contains(networkNeighbor.get()))
-                    energyNetworks.add(networkNeighbor.get());
+    @Throws(SameEnergyTypeException::class)
+    override fun placeComponent(component: EnergyComponent<*>?, location: Location?) {
+        var energyNetworks: MutableList<EnergyNetwork> = ArrayList()
+        for (neibhorFace in NEIBHORS) {
+            val neighbor = location?.block?.getRelative(neibhorFace)
+            val networkNeighbor: Optional<EnergyNetwork?> =
+                this.networks.stream().filter { network: EnergyNetwork? -> network?.contains(neighbor?.location) == true }
+                    .findFirst()
+            if (networkNeighbor.isPresent) {
+                if (!energyNetworks.contains(networkNeighbor.get())) energyNetworks.add(networkNeighbor.get())
             }
         }
 
         energyNetworks = energyNetworks.stream()
-                .filter(network -> network.getEnergyType() == component.getEnergyType())
-                .collect(Collectors.toList());
+            .filter { network: EnergyNetwork? -> network?.energyType === component?.energyType }
+            .collect(Collectors.toList())
 
         if (energyNetworks.isEmpty()) {
-            EnergyNetwork network = new EnergyNetwork(this.api, component, location);
-            this.networks.add(network);
-        } else if (energyNetworks.size() == 1) {
-            energyNetworks.getFirst().addComponent(component, location);
+            val network = EnergyNetwork(this.api, component, location!!)
+            this.networks.add(network)
+        } else if (energyNetworks.size == 1) {
+            energyNetworks.first().addComponent(component!!, location!!)
         } else {
-            EnergyNetwork firstNetwork = energyNetworks.getFirst();
-            firstNetwork.addComponent(component, location);
-            for (int i = 1; i < energyNetworks.size(); i++) {
-                EnergyNetwork network = energyNetworks.get(i);
-                firstNetwork.mergeWith(network);
-                this.deleteNetwork(network);
+            val firstNetwork: EnergyNetwork = energyNetworks.first()
+            firstNetwork.addComponent(component!!, location!!)
+            for (i in 1..<energyNetworks.size) {
+                val network: EnergyNetwork = energyNetworks.get(i)
+                firstNetwork.mergeWith(network)
+                this.deleteNetwork(network)
             }
         }
     }
@@ -132,172 +137,177 @@ public class EnergyManagerImpl implements EnergyManager {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public void breakComponent(Player player, Location location) {
-        EnergyNetwork network = this.networks.stream().filter(n -> n.contains(location)).findFirst().orElse(null);
+    override fun breakComponent(player: Player?, location: Location?) {
+        val network: EnergyNetwork? =
+            this.networks.stream().filter { n: EnergyNetwork? -> n?.contains(location) == true }.findFirst().orElse(null)
         if (network == null) {
-            return;
+            return
         }
 
-        EnergyComponent<?> component = network.getComponents().get(location);
-        EnergyType energyType = component.getEnergyType();
-        MechanicType mechanicType = MechanicType.fromComponent(component);
-        EnergyMechanic mechanic = component.getMechanic();
+        val component: EnergyComponent<*>? = network.components[location]
+        val energyType: EnergyType? = component?.energyType
+        val mechanicType: MechanicType = MechanicType.fromComponent(component!!)
+        val mechanic: EnergyMechanic? = component.mechanic
 
-        location.getBlock().setType(Material.AIR);
-        if (player.getGameMode() != GameMode.CREATIVE) {
-            ItemStack result = this.createItemComponent(energyType, mechanicType, mechanic);
-            player.getWorld().dropItemNaturally(location, result);
+        location?.block?.type = Material.AIR
+        if (player?.gameMode != GameMode.CREATIVE) {
+            val result: ItemStack? = this.createItemComponent(energyType, mechanicType, mechanic)
+            player?.world?.dropItemNaturally(location!!, result!!)
         }
 
-        network.removeComponent(location);
+        network.removeComponent(location!!)
 
-        if (network.isEmpty()) {
-            this.deleteNetwork(network);
-            return;
+        if (network?.isEmpty == true) {
+            this.deleteNetwork(network)
+            return
         }
 
-        this.splitNetworkIfNecessary(network);
+        this.splitNetworkIfNecessary(network)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public Optional<EnergyType> getEnergyType(ItemStack item) {
-        return this.getPersistentData(item, this.getEnergyTypeKey(), EnergyTypePersistentDataType.INSTANCE);
+    override fun getEnergyType(item: ItemStack?): Optional<EnergyType?>? {
+        return this.getPersistentData<String, EnergyType>(item!!, this.energyTypeKey, EnergyTypePersistentDataType.INSTANCE)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public Optional<String> getMechanicClass(ItemStack item) {
-        return this.getPersistentData(item, this.getMechanicClassKey(), PersistentDataType.STRING);
+    override fun getMechanicClass(item: ItemStack?): Optional<String?>? {
+        return this.getPersistentData<String, String>(item!!, this.mechanicClassKey, PersistentDataType.STRING)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public Optional<? extends EnergyMechanic> getMechanic(ItemStack item) {
-        String mechanicClass = this.getMechanicClass(item).orElseThrow();
-        Class<?> clazz;
+    override fun getMechanic(item: ItemStack?): Optional<out EnergyMechanic?>? {
+        val mechanicClass: String? = this.getMechanicClass(item)?.orElseThrow()
+        val clazz: Class<*>?
         try {
-            clazz = Class.forName(mechanicClass);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("Class " + mechanicClass + " not found!");
+            clazz = Class.forName(mechanicClass)
+        } catch (_: ClassNotFoundException) {
+            throw IllegalArgumentException("Class $mechanicClass not found!")
         }
-        if (!EnergyMechanic.class.isAssignableFrom(clazz)) {
-            throw new IllegalArgumentException("Class " + mechanicClass + " is not an EnergyMechanic!");
+        require(EnergyMechanic::class.java.isAssignableFrom(clazz)) { "Class $mechanicClass is not an EnergyMechanic!" }
+        val mechanicClazz: Class<out EnergyMechanic?> = clazz.asSubclass(EnergyMechanic::class.java)
+        val opt = this.getPersistentData<String, String>(item!!, this.mechanicKey, PersistentDataType.STRING)
+        if (opt.isEmpty) {
+            return Optional.empty<EnergyMechanic?>()
         }
-        Class<? extends EnergyMechanic> mechanicClazz = clazz.asSubclass(EnergyMechanic.class);
-        var opt = this.getPersistentData(item, this.getMechanicKey(), PersistentDataType.STRING);
-        if (opt.isEmpty()) {
-            return Optional.empty();
-        }
-        String mechanicData = opt.get();
-        return Optional.of(this.gson.fromJson(mechanicData, mechanicClazz));
+        val mechanicData = opt.get()
+        return Optional.of(this.gson.fromJson(mechanicData, mechanicClazz))
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public boolean isBlockComponent(Location neighbor) {
-        return this.networks.stream().anyMatch(network -> network.contains(neighbor));
+    override fun isBlockComponent(location: Location?): Boolean {
+        return this.networks.stream().anyMatch { network: EnergyNetwork? -> network?.contains(location) == true }
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public EnergyComponent<?> createComponent(ItemStack item) {
-        EnergyType energyType = this.getEnergyType(item).orElseThrow();
-        EnergyMechanic mechanic = this.getMechanic(item).orElseThrow();
-        return new EnergyComponent<>(energyType, mechanic);
+    override fun createComponent(item: ItemStack?): EnergyComponent<*>? {
+        val energyType: EnergyType? = this.getEnergyType(item)?.orElseThrow()
+        val mechanic: EnergyMechanic = this.getMechanic(item)!!.orElseThrow()
+        return EnergyComponent<EnergyMechanic>(energyType, mechanic)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public boolean isComponent(ItemStack item) {
-        return this.getEnergyType(item).isPresent()
-                && this.getMechanicClass(item).isPresent()
-                && this.getMechanic(item).isPresent();
+    override fun isComponent(item: ItemStack?): Boolean {
+        return this.getEnergyType(item)?.isPresent == true
+                && this.getMechanicClass(item)?.isPresent == true
+                && this.getMechanic(item)!!.isPresent
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public ItemStack createItemComponent(EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic) {
-        if (mechanic.getClass().isAssignableFrom(mechanicType.getClazz())) {
-            throw new IllegalArgumentException("Mechanic type " + mechanicType.getClazz() + " is not compatible with mechanic " + mechanic.getClass());
-        }
+    override fun createItemComponent(
+        type: EnergyType?,
+        mechanicType: MechanicType?,
+        mechanic: EnergyMechanic?
+    ): ItemStack? {
+        require(mechanic?.javaClass?.isAssignableFrom(mechanicType?.clazz) == true) { "Mechanic type " + mechanicType?.clazz + " is not compatible with mechanic " + mechanic?.javaClass }
 
-        ItemStack item = ItemsFactory.getItem(mechanic.getClass())
-                .orElseThrow(() -> new IllegalArgumentException("Item not found for mechanic " + mechanic.getClass()));
+        val item: ItemStack = ItemsFactory.getItem(mechanic.javaClass)
+            .orElseThrow(Supplier { IllegalArgumentException("Item not found for mechanic " + mechanic.javaClass) })
 
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            throw new IllegalArgumentException("ItemMeta is null!");
-        }
-        PersistentDataContainer persistentDataContainer = meta.getPersistentDataContainer();
-        persistentDataContainer.set(this.getEnergyTypeKey(), EnergyTypePersistentDataType.INSTANCE, type);
-        persistentDataContainer.set(this.getMechanicClassKey(), PersistentDataType.STRING, mechanic.getClass().getName());
-        persistentDataContainer.set(this.getMechanicKey(), PersistentDataType.STRING, this.gson.toJson(mechanic, mechanic.getClass()));
-        item.setItemMeta(meta);
-        return item;
+        val meta: ItemMeta? = item.itemMeta
+        requireNotNull(meta) { "ItemMeta is null!" }
+        val persistentDataContainer: PersistentDataContainer = meta.persistentDataContainer
+        persistentDataContainer.set<String?, EnergyType?>(
+            this.energyTypeKey,
+            EnergyTypePersistentDataType.INSTANCE,
+            type!!
+        )
+        persistentDataContainer.set<String?, String?>(
+            this.mechanicClassKey,
+            PersistentDataType.STRING,
+            mechanic.javaClass.getName()
+        )
+        persistentDataContainer.set<String?, String?>(
+            this.mechanicKey,
+            PersistentDataType.STRING,
+            this.gson.toJson(mechanic, mechanic.javaClass)
+        )
+        item.setItemMeta(meta)
+        return item
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public void startNetworkUpdater() {
-        this.updaterTask = this.api.getScheduler()
-                .runTimerAsync(new UpdaterNetworksTask(this), 0L, 1L);
+    override fun startNetworkUpdater() {
+        this.updaterTask = this.api.scheduler
+            ?.runTimerAsync(UpdaterNetworksTask(this), 0L, 1L)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public void stopNetworkUpdater() {
-        if (this.updaterTask == null) {
-            throw new IllegalStateException("Updater task is not running!");
-        }
-        this.updaterTask.cancel();
+    override fun stopNetworkUpdater() {
+        checkNotNull(this.updaterTask) { "Updater task is not running!" }
+        this.updaterTask!!.cancel()
     }
 
-    @Override
-    public void deleteNetwork(EnergyNetwork network) {
-        network.delete();
-        this.networks.remove(network);
+    override fun deleteNetwork(network: EnergyNetwork?) {
+        network?.delete()
+        this.networks.remove(network)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public void saveNetworks() {
-        this.networks.forEach(EnergyNetwork::save);
+    override fun saveNetworks() {
+        this.networks.forEach(Consumer { obj: EnergyNetwork? -> obj?.save() })
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public void loadNetworks(Chunk chunk) {
-        PersistentDataContainer chunkData = chunk.getPersistentDataContainer();
-        if (chunkData.has(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING))) {
-            List<String> networkDatas = chunkData.getOrDefault(this.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
-            for (String networkData : networkDatas) {
-                EnergyNetwork network = this.gson.fromJson(networkData, EnergyNetwork.class);
-                if (this.networks.stream().noneMatch(n -> n.getId().equals(network.getId()))) {
-                    this.networks.add(network);
+    override fun loadNetworks(chunk: Chunk?) {
+        val chunkData: PersistentDataContainer? = chunk?.getPersistentDataContainer()
+        if (chunkData?.has(
+                this.networkKey,
+                PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING)
+            ) == true
+        ) {
+            val networkDatas: MutableList<String?> =
+                chunkData.getOrDefault(
+                    this.networkKey,
+                    PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING),
+                    ArrayList<String?>()
+                )
+            for (networkData in networkDatas) {
+                val network: EnergyNetwork = this.gson.fromJson<EnergyNetwork>(networkData, EnergyNetwork::class.java)
+                if (this.networks.stream().noneMatch { n: EnergyNetwork? -> n?.id == network.id }) {
+                    this.networks.add(network)
                 }
             }
         }
@@ -306,62 +316,14 @@ public class EnergyManagerImpl implements EnergyManager {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public Optional<EnergyComponent<?>> getComponentFromBlock(Location location) {
-        Optional<EnergyNetwork> optionalEnergyNetwork = this.networks.stream()
-                .filter(network -> network.contains(location))
-                .findFirst();
+    override fun getComponentFromBlock(location: Location?): Optional<EnergyComponent<*>?>? {
+        val optionalEnergyNetwork: Optional<EnergyNetwork?> = this.networks.stream()
+            .filter { network: EnergyNetwork? -> network?.contains(location) == true }
+            .findFirst()
 
-        return optionalEnergyNetwork.map(energyNetwork -> energyNetwork.getComponents().get(location));
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Gson getGson() {
-        return this.gson;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NamespacedKey getEnergyTypeKey() {
-        return this.energyTypeKey;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NamespacedKey getMechanicClassKey() {
-        return this.mechanicClassKey;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NamespacedKey getMechanicKey() {
-        return this.mechanicKey;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NamespacedKey getNetworkKey() {
-        return this.networkKey;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<EnergyNetwork> getNetworks() {
-        return this.networks;
+        return optionalEnergyNetwork.map<EnergyComponent<*>?>(Function { energyNetwork: EnergyNetwork? ->
+            energyNetwork?.components?.get(location)
+        })
     }
 
     /**
@@ -369,34 +331,36 @@ public class EnergyManagerImpl implements EnergyManager {
      *
      * @param network the network
      */
-    private void splitNetworkIfNecessary(EnergyNetwork network) {
-        Set<Location> visited = new HashSet<>();
-        List<EnergyNetwork> newNetworks = new ArrayList<>();
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        for (Location component : network.getComponents().keySet()) {
-            var future = this.api.getScheduler().runAtLocation(component, (t) -> {
-                if (!visited.contains(component)) {
-                    Set<Map.Entry<Location, EnergyComponent<?>>> subNetworkComponents = discoverSubNetwork(component, visited);
-                    if (!subNetworkComponents.isEmpty()) {
-                        EnergyNetwork newNetwork = new EnergyNetwork(this.api, UUID.randomUUID());
-                        for (Map.Entry<Location, EnergyComponent<?>> subComponent : subNetworkComponents) {
-                            try {
-                                newNetwork.addComponent(subComponent.getValue(), subComponent.getKey());
-                            } catch (SameEnergyTypeException e) {
-                                throw new RuntimeException(e);
+    private fun splitNetworkIfNecessary(network: EnergyNetwork) {
+        val visited: MutableSet<Location?> = HashSet()
+        val newNetworks: MutableList<EnergyNetwork?> = ArrayList()
+        val futures: MutableList<CompletableFuture<Void?>?> = ArrayList()
+        for (component in network.components.keys) {
+            val future =
+                this.api.scheduler?.runAtLocation(component, { t ->
+                    if (!visited.contains(component)) {
+                        val subNetworkComponents: MutableSet<MutableMap.MutableEntry<Location?, EnergyComponent<*>?>> =
+                            discoverSubNetwork(component, visited)
+                        if (!subNetworkComponents.isEmpty()) {
+                            val newNetwork = EnergyNetwork(this.api, UUID.randomUUID())
+                            for (subComponent in subNetworkComponents) {
+                                try {
+                                    newNetwork.addComponent(subComponent.value!!, subComponent.key!!)
+                                } catch (e: SameEnergyTypeException) {
+                                    throw RuntimeException(e)
+                                }
                             }
+                            newNetworks.add(newNetwork)
                         }
-                        newNetworks.add(newNetwork);
                     }
-                }
-            });
-            futures.add(future);
+                })
+            futures.add(future)
         }
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept((t) -> {
-            this.deleteNetwork(network);
-            this.networks.addAll(newNetworks);
-        });
+        CompletableFuture.allOf(*futures.toTypedArray<CompletableFuture<*>?>()).thenAccept(Consumer { t: Void? ->
+            this.deleteNetwork(network)
+            this.networks.addAll(newNetworks)
+        })
     }
 
     /**
@@ -406,31 +370,39 @@ public class EnergyManagerImpl implements EnergyManager {
      * @param visited    the set of visited blocks
      * @return the set of components
      */
-    private Set<Map.Entry<Location, EnergyComponent<?>>> discoverSubNetwork(Location startBlock, Set<Location> visited) {
-        Set<Map.Entry<Location, EnergyComponent<?>>> subNetwork = new HashSet<>();
-        Queue<Location> queue = new LinkedList<>();
-        queue.add(startBlock);
+    private fun discoverSubNetwork(
+        startBlock: Location?,
+        visited: MutableSet<Location?>
+    ): MutableSet<MutableMap.MutableEntry<Location?, EnergyComponent<*>?>> {
+        val subNetwork: MutableSet<MutableMap.MutableEntry<Location?, EnergyComponent<*>?>> =
+            HashSet()
+        val queue: Queue<Location> = LinkedList()
+        queue.add(startBlock)
 
         while (!queue.isEmpty()) {
-            Location current = queue.poll();
+            val current = queue.poll()
             if (!visited.contains(current)) {
-                visited.add(current);
-                subNetwork.add(new AbstractMap.SimpleEntry<>(current, this.networks.stream()
-                        .filter(network -> network.contains(current))
-                        .findFirst()
-                        .map(network -> network.getComponents().get(current))
-                        .orElse(null)));
+                visited.add(current)
+                subNetwork.add(
+                    AbstractMap.SimpleEntry<Location?, EnergyComponent<*>?>(
+                        current, this.networks.stream()
+                            .filter { network: EnergyNetwork? -> network?.contains(current) == true }
+                            .findFirst()
+                            .map { network: EnergyNetwork? -> network?.components?.get(current) }
+                            .orElse(null)
+                    )
+                )
 
-                for (BlockFace face : NEIBHORS) {
-                    Location neighbor = current.getBlock().getRelative(face).getLocation();
+                for (face in NEIBHORS) {
+                    val neighbor = current.block.getRelative(face).location
                     if (isBlockComponent(neighbor) && !visited.contains(neighbor)) {
-                        queue.add(neighbor);
+                        queue.add(neighbor)
                     }
                 }
             }
         }
 
-        return subNetwork;
+        return subNetwork
     }
 
     /**
@@ -441,14 +413,18 @@ public class EnergyManagerImpl implements EnergyManager {
      * @param type the type
      * @param <C>  the type of the data
      * @return the optional of the data
-     */
-    private <C> Optional<C> getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<?, C> type) {
-        ItemMeta meta = item.getItemMeta();
+    </C> */
+    private fun <P : Any, C : Any> getPersistentData(
+        item: ItemStack,
+        key: NamespacedKey,
+        type: PersistentDataType<P, C>
+    ): Optional<C?> {
+        val meta: ItemMeta? = item.getItemMeta()
         if (meta == null) {
-            return Optional.empty();
+            return Optional.empty<C?>() as Optional<C?>
         }
-        PersistentDataContainer persistentDataContainer = meta.getPersistentDataContainer();
-        return Optional.ofNullable(persistentDataContainer.get(key, type));
+        val persistentDataContainer: PersistentDataContainer = meta.persistentDataContainer
+        return Optional.ofNullable<C?>(persistentDataContainer.get(key, type)) as Optional<C?>
     }
 
     /**
@@ -456,19 +432,32 @@ public class EnergyManagerImpl implements EnergyManager {
      *
      * @return the Gson instance
      */
-    private Gson createGson() {
-        GsonBuilder builder = new GsonBuilder()
-                .setPrettyPrinting()
-                .disableHtmlEscaping()
-                .registerTypeAdapter(EnergyType.class, new EnergyTypeAdapter());
+    private fun createGson(): Gson {
+        val builder: GsonBuilder = GsonBuilder()
+            .setPrettyPrinting()
+            .disableHtmlEscaping()
+            .registerTypeAdapter(EnergyType::class.java, EnergyTypeAdapter())
 
-        Gson temp = builder.create();
-        builder.registerTypeAdapter(EnergyComponent.class, new EnergyComponentAdapter(temp));
+        val temp: Gson = builder.create()
+        builder.registerTypeAdapter(EnergyComponent::class.java, EnergyComponentAdapter(temp))
 
-        Gson temp2 = builder.create();
-        builder.registerTypeAdapter(EnergyNetwork.class, new EnergyNetworkAdapter(this.api, temp2));
+        val temp2: Gson = builder.create()
+        builder.registerTypeAdapter(EnergyNetwork::class.java, EnergyNetworkAdapter(this.api, temp2))
 
-        return builder.create();
+        return builder.create()
     }
 
+    companion object {
+        /**
+         * The list of the 6 block faces.
+         */
+        private val NEIBHORS: MutableList<BlockFace> = List.of<BlockFace?>(
+            BlockFace.UP,
+            BlockFace.DOWN,
+            BlockFace.NORTH,
+            BlockFace.EAST,
+            BlockFace.SOUTH,
+            BlockFace.WEST
+        )
+    }
 }

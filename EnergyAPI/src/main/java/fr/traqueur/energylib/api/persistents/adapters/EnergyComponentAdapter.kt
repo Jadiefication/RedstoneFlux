@@ -1,54 +1,47 @@
-package fr.traqueur.energylib.api.persistents.adapters;
+package fr.traqueur.energylib.api.persistents.adapters
 
-import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import fr.traqueur.energylib.api.components.EnergyComponent;
-import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
-import fr.traqueur.energylib.api.types.EnergyType;
-
-import java.io.IOException;
+import com.google.gson.Gson
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
+import fr.traqueur.energylib.api.components.EnergyComponent
+import fr.traqueur.energylib.api.mechanics.EnergyMechanic
+import fr.traqueur.energylib.api.types.EnergyType
+import java.io.IOException
 
 /**
  * This class is used to serialize and deserialize EnergyComponents.
  * It is used by the EnergyComponentTypeAdapter to serialize and deserialize EnergyComponents.
  */
-public class EnergyComponentAdapter extends TypeAdapter<EnergyComponent<?>> {
-
+class EnergyComponentAdapter
+/**
+ * Creates a new EnergyComponentAdapter with the given Gson instance.
+ * @param gson The Gson instance used to serialize and deserialize the EnergyMechanic.
+ */(
     /**
      * The Gson instance used to serialize and deserialize the EnergyMechanic.
      */
-    private final Gson gson;
-
-    /**
-     * Creates a new EnergyComponentAdapter with the given Gson instance.
-     * @param gson The Gson instance used to serialize and deserialize the EnergyMechanic.
-     */
-    public EnergyComponentAdapter(Gson gson) {
-        this.gson = gson;
-    }
-
+    private val gson: Gson
+) : TypeAdapter<EnergyComponent<*>?>() {
     /**
      * Serializes the given EnergyComponent to the given JsonWriter.
      * @param out The JsonWriter to write the EnergyComponent to.
      * @param value The EnergyComponent to serialize.
      * @throws IOException If an error occurs while writing to the JsonWriter.
      */
-    @Override
-    public void write(JsonWriter out, EnergyComponent<?> value) throws IOException {
-        out.beginObject();
+    override fun write(out: JsonWriter, value: EnergyComponent<*>?) {
+        out.beginObject()
 
-        out.name("energyType");
-        gson.toJson(value.getEnergyType(), EnergyType.class, out);
+        out.name("energyType")
+        gson.toJson(value?.energyType, EnergyType::class.java, out)
 
-        out.name("mechanic-class");
-        out.value(value.getMechanic().getClass().getName());
+        out.name("mechanic-class")
+        out.value(value?.mechanic?.javaClass?.getName())
 
-        out.name("mechanic");
-        String data = gson.toJson(value.getMechanic(), value.getMechanic().getClass());
-        out.value(data);
-        out.endObject();
+        out.name("mechanic")
+        val data = gson.toJson(value?.mechanic, value?.mechanic?.javaClass)
+        out.value(data)
+        out.endObject()
     }
 
     /**
@@ -57,38 +50,33 @@ public class EnergyComponentAdapter extends TypeAdapter<EnergyComponent<?>> {
      * @return The deserialized EnergyComponent.
      * @throws IOException If an error occurs while reading from the JsonReader.
      */
-    @Override
-    public EnergyComponent<?> read(JsonReader in) throws IOException {
-        EnergyType energyType = null;
-        Class<? extends EnergyMechanic> mechanic  = null;
-        String energyMechanicData = null;
+    @Throws(IOException::class)
+    override fun read(`in`: JsonReader): EnergyComponent<*> {
+        var energyType: EnergyType? = null
+        var mechanic: Class<out EnergyMechanic?>? = null
+        var energyMechanicData: String? = null
 
-        in.beginObject();
-        while (in.hasNext()) {
-            String name = in.nextName();
-            switch (name) {
-                case "energyType":
-                    energyType = gson.fromJson(in, EnergyType.class);
-                    break;
-                case "mechanic-class":
-                    String mechanicClass = in.nextString();
-                    Class<?> clazz;
+        `in`.beginObject()
+        while (`in`.hasNext()) {
+            val name = `in`.nextName()
+            when (name) {
+                "energyType" -> energyType = gson.fromJson<EnergyType?>(`in`, EnergyType::class.java)
+                "mechanic-class" -> {
+                    val mechanicClass = `in`.nextString()
+                    val clazz: Class<*>?
                     try {
-                        clazz = Class.forName(mechanicClass);
-                    } catch (ClassNotFoundException e) {
-                        throw new IllegalArgumentException("Class " + mechanicClass + " not found!");
+                        clazz = Class.forName(mechanicClass)
+                    } catch (e: ClassNotFoundException) {
+                        throw IllegalArgumentException("Class " + mechanicClass + " not found!")
                     }
-                    if(!EnergyMechanic.class.isAssignableFrom(clazz)) {
-                        throw new IllegalArgumentException("Class " + mechanicClass + " is not an EnergyMechanic!");
-                    }
-                    mechanic = clazz.asSubclass(EnergyMechanic.class);
-                    break;
-                case "mechanic":
-                    energyMechanicData = in.nextString();
-                    break;
+                    require(EnergyMechanic::class.java.isAssignableFrom(clazz)) { "Class " + mechanicClass + " is not an EnergyMechanic!" }
+                    mechanic = clazz.asSubclass<EnergyMechanic?>(EnergyMechanic::class.java)
+                }
+
+                "mechanic" -> energyMechanicData = `in`.nextString()
             }
         }
-        in.endObject();
-        return new EnergyComponent<>(energyType, gson.fromJson(energyMechanicData, mechanic));
+        `in`.endObject()
+        return EnergyComponent<EnergyMechanic?>(energyType, gson.fromJson(energyMechanicData, mechanic))
     }
 }

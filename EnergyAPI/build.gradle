@@ -1,5 +1,6 @@
 plugins {
     id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 publishing {
@@ -12,4 +13,13 @@ publishing {
 
 shadowJar {
     destinationDirectory = rootProject.apiFolder
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+kotlin {
+    jvmToolchain(21)
 }

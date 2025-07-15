@@ -1,47 +1,67 @@
-package fr.traqueur.energylib.api.components;
+package fr.traqueur.energylib.api.components
 
-import fr.traqueur.energylib.api.EnergyAPI;
-import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
-import fr.traqueur.energylib.api.mechanics.EnergyConsumer;
-import fr.traqueur.energylib.api.mechanics.EnergyProducer;
-import fr.traqueur.energylib.api.mechanics.EnergyStorage;
-import fr.traqueur.energylib.api.types.EnergyType;
-import fr.traqueur.energylib.api.types.MechanicType;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import fr.traqueur.energylib.api.EnergyAPI
+import fr.traqueur.energylib.api.EnergyManager
+import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException
+import fr.traqueur.energylib.api.mechanics.EnergyConsumer
+import fr.traqueur.energylib.api.mechanics.EnergyProducer
+import fr.traqueur.energylib.api.mechanics.EnergyStorage
+import fr.traqueur.energylib.api.types.EnergyType
+import fr.traqueur.energylib.api.types.MechanicType
+import org.bukkit.Chunk
+import org.bukkit.Location
+import org.bukkit.persistence.PersistentDataType
+import java.util.*
+import java.util.Map
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.stream.Collectors
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
+import kotlin.collections.MutableList
+import kotlin.collections.MutableMap
+import kotlin.collections.MutableSet
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.forEach
+import kotlin.collections.minusAssign
+import kotlin.collections.toTypedArray
 
 /**
  * Represents an energy network.
  */
-public class EnergyNetwork {
-
+class EnergyNetwork(
     /**
      * The API instance.
      */
-    private final EnergyAPI api;
-
+    private val api: EnergyAPI,
     /**
      * The network's unique identifier.
      */
-    private final UUID id;
+    val id: UUID?
+) {
+    /**
+     * Get the network's unique identifier.
+     *
+     * @return The network's unique identifier.
+     */
 
     /**
      * The network's chunk.
      */
-    private Chunk chunk;
+    var chunk: Chunk? = null
 
+    /**
+     * Get the network's components.
+     *
+     * @return The network's components.
+     */
     /**
      * The network's components.
      */
-    private final Map<Location, EnergyComponent<?>> components;
+    val components: MutableMap<Location?, EnergyComponent<*>?> = ConcurrentHashMap<Location?, EnergyComponent<*>?>()
 
     /**
      * Creates a new energy network.
@@ -50,22 +70,9 @@ public class EnergyNetwork {
      * @param component The component to add.
      * @param location  The location of the component.
      */
-    public EnergyNetwork(EnergyAPI api, EnergyComponent<?> component, Location location) {
-        this(api, UUID.randomUUID());
-        this.components.put(location, component);
-        this.chunk = location.getChunk();
-    }
-
-    /**
-     * Creates a new energy network.
-     *
-     * @param api The API instance.
-     * @param id  The network's unique identifier.
-     */
-    public EnergyNetwork(EnergyAPI api, UUID id) {
-        this.api = api;
-        this.id = id;
-        this.components = new ConcurrentHashMap<>();
+    constructor(api: EnergyAPI, component: EnergyComponent<*>?, location: Location) : this(api, UUID.randomUUID()) {
+        this.components.put(location, component)
+        this.chunk = location.getChunk()
     }
 
     /**
@@ -75,15 +82,17 @@ public class EnergyNetwork {
      * @param location  The location of the component.
      * @throws SameEnergyTypeException If the component is not the same type.
      */
-    public void addComponent(EnergyComponent<?> component, Location location) throws SameEnergyTypeException {
-        for (Map.Entry<Location, EnergyComponent<?>> entry : this.components.entrySet().stream()
-                .filter(entry -> entry.getKey().distance(location) == 1).toList()) {
-            entry.getValue().connect(component);
+    @Throws(SameEnergyTypeException::class)
+    fun addComponent(component: EnergyComponent<*>, location: Location) {
+        for (entry in this.components.entries.stream()
+            .filter { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? -> entry!!.key!!.distance(location) == 1.0 }
+            .toList()) {
+            entry.value!!.connect(component)
         }
         if (chunk == null) {
-            this.chunk = location.getChunk();
+            this.chunk = location.getChunk()
         }
-        this.components.put(location, component);
+        this.components.put(location, component)
     }
 
     /**
@@ -91,11 +100,13 @@ public class EnergyNetwork {
      *
      * @param location The location of the component.
      */
-    public void removeComponent(Location location) {
-        this.components.entrySet().stream().filter(entry -> entry.getKey().distance(location) == 1).forEach(entry -> {
-            entry.getValue().disconnect(this.components.get(location));
-        });
-        this.components.remove(location);
+    fun removeComponent(location: Location) {
+        this.components.entries.stream()
+            .filter { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? -> entry!!.key!!.distance(location) == 1.0 }
+            .forEach { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? ->
+                entry!!.value!!.disconnect(this.components[location]!!)
+            }
+        this.components.remove(location)
     }
 
     /**
@@ -104,8 +115,8 @@ public class EnergyNetwork {
      * @param location The location to check.
      * @return If the network contains the location.
      */
-    public boolean contains(Location location) {
-        return this.components.containsKey(location);
+    fun contains(location: Location?): Boolean {
+        return this.components.containsKey(location)
     }
 
     /**
@@ -113,134 +124,135 @@ public class EnergyNetwork {
      *
      * @param network The network to merge with.
      */
-    public void mergeWith(EnergyNetwork network) {
-        this.components.putAll(network.components);
+    fun mergeWith(network: EnergyNetwork) {
+        this.components.putAll(network.components)
     }
 
     /**
      * Update the network.
      */
-    public void update() {
-        this.handleProduction().thenAccept((t) -> {
-            this.handleConsumers().thenAccept((t1) -> {
-                this.handleExcess();
-            });
-        });
+    fun update() {
+        this.handleProduction().thenAccept(Consumer { t: Void? ->
+            this.handleConsumers().thenAccept(Consumer { t1: Void? ->
+                this.handleExcess()
+            })
+        })
     }
 
     /**
      * Update the network production asynchronously.
      */
-    private CompletableFuture<Void> handleProduction() {
-        Map<Location, EnergyComponent<?>> producers = this.getComponentByType(MechanicType.PRODUCER);
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        producers.forEach((location, producer) -> {
-            var future = this.api.getScheduler().runAtLocation(location, (t) -> {
-                ((EnergyProducer) producer.getMechanic()).produce(location);
-            });
-            futures.add(future);
-        });
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    private fun handleProduction(): CompletableFuture<Void?> {
+        val producers = this.getComponentByType(MechanicType.PRODUCER)
+        val futures: MutableList<CompletableFuture<Void?>?> = ArrayList()
+        producers.forEach { (location: Location?, producer: EnergyComponent<*>?) ->
+            val future =
+                this.api.scheduler?.runAtLocation(location, { t ->
+                    (producer!!.mechanic as EnergyProducer).produce(location)
+                })
+            futures.add(future)
+        }
+        return CompletableFuture.allOf(*futures.toTypedArray<CompletableFuture<*>?>())
     }
 
     /**
      * Update the network excess asynchronously.
      */
-    private void handleExcess() {
-        Map<Location, EnergyComponent<?>> producers = getComponentByType(MechanicType.PRODUCER);
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        producers.forEach((location, producerComponent) -> {
-            var future = this.api.getScheduler().runAtLocation(location, (t) -> {
-                EnergyProducer producer = (EnergyProducer) producerComponent.getMechanic();
-                double excessEnergy = producer.getExcessEnergy();
+    private fun handleExcess() {
+        val producers = getComponentByType(MechanicType.PRODUCER)
+        val futures: MutableList<CompletableFuture<Void?>?> = ArrayList()
+        producers.forEach { (location: Location?, producerComponent: EnergyComponent<*>?) ->
+            val future =
+                this.api.scheduler?.runAtLocation(location, { t ->
+                    val producer = producerComponent!!.mechanic as EnergyProducer
+                    var excessEnergy = producer.excessEnergy
 
-                if (excessEnergy > 0) {
-                    List<EnergyComponent<?>> connectedStorages =
-                            getConnectedComponents(producerComponent, MechanicType.STORAGE);
+                    if (excessEnergy > 0) {
+                        val connectedStorages =
+                            getConnectedComponents(producerComponent, MechanicType.STORAGE)
 
-                    for (EnergyComponent<?> storageComponent : connectedStorages) {
-                        EnergyStorage storage = (EnergyStorage) storageComponent.getMechanic();
-                        double energyStored = storage.storeEnergy(excessEnergy);
-                        excessEnergy -= energyStored;
+                        for (storageComponent in connectedStorages) {
+                            val storage = storageComponent.mechanic as EnergyStorage
+                            val energyStored = storage.storeEnergy(excessEnergy)
+                            excessEnergy -= energyStored
 
-                        if (excessEnergy <= 0) {
-                            break;
+                            if (excessEnergy <= 0) {
+                                break
+                            }
                         }
                     }
-                }
-
-                if (excessEnergy > 0 && api.isDebug()) {
-                    System.out.println("L'énergie excédentaire du producteur " + producerComponent + " est perdue.");
-                }
-            });
-            futures.add(future);
-        });
+                    if (excessEnergy > 0 && api.isDebug) {
+                        println("L'énergie excédentaire du producteur " + producerComponent + " est perdue.")
+                    }
+                })
+            futures.add(future)
+        }
     }
 
     /**
      * Update the network consumers asynchronously.
      */
-    private CompletableFuture<Void> handleConsumers() {
-        Map<Location, EnergyComponent<?>> consumers = this.getComponentByType(MechanicType.CONSUMER);
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        consumers.forEach((location, consumerComponent) -> {
-            var future = this.api.getScheduler().runAtLocation(location, (t) -> {
-                EnergyConsumer consumer = (EnergyConsumer) consumerComponent.getMechanic();
-                double requiredEnergy = consumer.getEnergyDemand();
-                double providedEnergy = 0;
+    private fun handleConsumers(): CompletableFuture<Void?> {
+        val consumers = this.getComponentByType(MechanicType.CONSUMER)
+        val futures: MutableList<CompletableFuture<Void?>?> = ArrayList()
+        consumers.forEach { (location: Location?, consumerComponent: EnergyComponent<*>?) ->
+            val future =
+                this.api.scheduler?.runAtLocation(location, { t ->
+                    val consumer = consumerComponent!!.mechanic as EnergyConsumer
+                    var requiredEnergy = consumer.energyDemand
+                    var providedEnergy = 0.0
 
-                List<EnergyComponent<?>> connectedProducers =
-                        getConnectedComponents(consumerComponent, MechanicType.PRODUCER);
+                    val connectedProducers =
+                        getConnectedComponents(consumerComponent, MechanicType.PRODUCER)
 
-                for (EnergyComponent<?> producerComponent : connectedProducers) {
-                    EnergyProducer producer = (EnergyProducer) producerComponent.getMechanic();
-                    double energyAvailable = producer.extractEnergy(requiredEnergy);
-                    requiredEnergy -= energyAvailable;
-                    providedEnergy += energyAvailable;
-                    if (requiredEnergy <= 0) {
-                        break;
-                    }
-                }
-
-                if (requiredEnergy > 0) {
-                    List<EnergyComponent<?>> connectedStorages =
-                            getConnectedComponents(consumerComponent, MechanicType.STORAGE);
-
-                    for (EnergyComponent<?> storageComponent : connectedStorages) {
-                        EnergyStorage storage = (EnergyStorage) storageComponent.getMechanic();
-                        double energyFromStorage = storage.consumeEnergy(requiredEnergy);
-                        requiredEnergy -= energyFromStorage;
-                        providedEnergy += energyFromStorage;
-
+                    for (producerComponent in connectedProducers) {
+                        val producer = producerComponent.mechanic as EnergyProducer
+                        val energyAvailable = producer.extractEnergy(requiredEnergy)
+                        requiredEnergy -= energyAvailable
+                        providedEnergy += energyAvailable
                         if (requiredEnergy <= 0) {
-                            break;
+                            break
                         }
                     }
-                }
 
-                consumer.receiveEnergy(providedEnergy);
-                if (requiredEnergy > 0) {
-                    if (api.isDebug()) {
-                        System.out.println("Le consommateur " + consumerComponent + " n'a pas reçu assez d'énergie.");
+                    if (requiredEnergy > 0) {
+                        val connectedStorages =
+                            getConnectedComponents(consumerComponent, MechanicType.STORAGE)
+
+                        for (storageComponent in connectedStorages) {
+                            val storage = storageComponent.mechanic as EnergyStorage
+                            val energyFromStorage = storage.consumeEnergy(requiredEnergy)
+                            requiredEnergy -= energyFromStorage
+                            providedEnergy += energyFromStorage
+
+                            if (requiredEnergy <= 0) {
+                                break
+                            }
+                        }
                     }
-                    consumer.setEnable(false);
-                } else {
-                    consumer.setEnable(true);
-                }
-            });
-            futures.add(future);
-        });
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+                    consumer.receiveEnergy(providedEnergy)
+                    if (requiredEnergy > 0) {
+                        if (api.isDebug) {
+                            println("Le consommateur " + consumerComponent + " n'a pas reçu assez d'énergie.")
+                        }
+                        consumer.isEnable = false
+                    } else {
+                        consumer.isEnable = true
+                    }
+                })
+            futures.add(future)
+        }
+        return CompletableFuture.allOf(*futures.toTypedArray<CompletableFuture<*>?>())
     }
 
-    /**
-     * Get if the network is empty.
-     *
-     * @return If the network is empty.
-     */
-    public boolean isEmpty() {
-        return this.components.isEmpty();
-    }
+    val isEmpty: Boolean
+        /**
+         * Get if the network is empty.
+         *
+         * @return If the network is empty.
+         */
+        get() = this.components.isEmpty()
 
     /**
      * Get if the network is in a chunk.
@@ -248,85 +260,73 @@ public class EnergyNetwork {
      * @param chunk The chunk to check.
      * @return If the network is in the chunk.
      */
-    public boolean isInChunk(Chunk chunk) {
-        return this.components.keySet()
-                .stream()
-                .anyMatch(location -> this.isSameChunk(chunk, location.getChunk()));
+    fun isInChunk(chunk: Chunk): Boolean {
+        return this.components.keys
+            .stream()
+            .anyMatch { location: Location? -> this.isSameChunk(chunk, location!!.getChunk()) }
     }
 
 
     /**
      * Save the network in the chunk.
      */
-    public void save() {
-        EnergyManager manager = this.api.getManager();
-        Chunk chunk = this.getChunk();
-        PersistentDataContainer container = chunk.getPersistentDataContainer();
-        var gson = manager.getGson();
-        String json = gson.toJson(this, EnergyNetwork.class);
+    fun save() {
+        val manager: EnergyManager = this.api.manager!!
+        val chunk = this.chunk
+        val container = chunk?.persistentDataContainer
+        val gson = manager.gson
+        val json: String? = gson?.toJson(this, EnergyNetwork::class.java)
 
-        List<String> networks =
-                container.getOrDefault(manager.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
-        networks = new ArrayList<>(networks);
-        networks.removeIf(network -> {
-            EnergyNetwork energyNetwork = gson.fromJson(network, EnergyNetwork.class);
-            return energyNetwork.getId().equals(this.id);
-        });
-        networks.add(json);
+        var networks =
+            container?.getOrDefault(
+                manager.networkKey!!,
+                PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+                ArrayList<String?>()
+            )
+        networks = ArrayList<String?>(networks)
+        networks.removeIf { network: String? ->
+            val energyNetwork: EnergyNetwork? = gson?.fromJson(network, EnergyNetwork::class.java)
+            energyNetwork?.id == this.id
+        }
+        networks.add(json)
 
-        container.set(manager.getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), networks);
+        container?.set(
+            manager.networkKey!!,
+            PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+            networks
+        )
     }
 
     /**
      * Delete the network from the chunk.
      */
-    public void delete() {
-        PersistentDataContainer container = chunk.getPersistentDataContainer();
-        List<String> networks =
-                container.getOrDefault(this.api.getManager().getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), new ArrayList<>());
-        networks = new ArrayList<>(networks);
-        networks.removeIf(json -> {
-            EnergyNetwork network = this.api.getManager().getGson().fromJson(json, EnergyNetwork.class);
-            return network.getId().equals(this.id);
-        });
-        container.set(this.api.getManager().getNetworkKey(), PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING), networks);
+    fun delete() {
+        val container = chunk!!.getPersistentDataContainer()
+        var networks: MutableList<String?> =
+            container.getOrDefault(
+                this.api.manager!!.networkKey!!,
+                PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING),
+                mutableListOf<String?>()
+            )
+        networks = ArrayList(networks)
+        networks.removeIf { json: String? ->
+            val network: EnergyNetwork? = this.api.manager!!.gson?.fromJson(json, EnergyNetwork::class.java)
+            network?.id == this.id
+        }
+        container.set(
+            this.api.manager!!.networkKey!!,
+            PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+            networks
+        )
     }
 
-    /**
-     * Get the network's components.
-     *
-     * @return The network's components.
-     */
-    public Map<Location, EnergyComponent<?>> getComponents() {
-        return this.components;
-    }
-
-    /**
-     * Get the network's energy type.
-     *
-     * @return The network's energy type.
-     */
-    public EnergyType getEnergyType() {
-        return this.getRoot().getEnergyType();
-    }
-
-    /**
-     * Get the network's unique identifier.
-     *
-     * @return The network's unique identifier.
-     */
-    public UUID getId() {
-        return id;
-    }
-
-    /**
-     * Get the chunk.
-     *
-     * @return The chunk.
-     */
-    public Chunk getChunk() {
-        return this.chunk;
-    }
+    val energyType: EnergyType?
+        /**
+         * Get the network's energy type.
+         *
+         * @return The network's energy type.
+         */
+        get() = this.root!!.energyType
 
     /**
      * Check if two chunks are the same.
@@ -335,19 +335,18 @@ public class EnergyNetwork {
      * @param chunk1 The second chunk.
      * @return If the chunks are the same.
      */
-    private boolean isSameChunk(Chunk chunk, Chunk chunk1) {
-        return chunk.getX() == chunk1.getX() && chunk.getZ() == chunk1.getZ()
-                && chunk.getWorld().getName().equals(chunk1.getWorld().getName());
+    private fun isSameChunk(chunk: Chunk, chunk1: Chunk): Boolean {
+        return chunk.x == chunk1.x && chunk.z == chunk1.z && chunk.world
+            .name == chunk1.world.name
     }
 
-    /**
-     * Get the root component.
-     *
-     * @return The root component.
-     */
-    private EnergyComponent<?> getRoot() {
-        return this.components.values().iterator().next();
-    }
+    private val root: EnergyComponent<*>?
+        /**
+         * Get the root component.
+         *
+         * @return The root component.
+         */
+        get() = this.components.values.iterator().next()
 
     /**
      * Get the connected components.
@@ -356,11 +355,14 @@ public class EnergyNetwork {
      * @param type      The type of the component.
      * @return The connected components.
      */
-    private List<EnergyComponent<?>> getConnectedComponents(EnergyComponent<?> component, MechanicType type) {
-        Set<EnergyComponent<?>> visited = new HashSet<>();
-        List<EnergyComponent<?>> connectedComponents = new ArrayList<>();
-        this.dfsConnectedComponents(component, visited, connectedComponents, type);
-        return connectedComponents;
+    private fun getConnectedComponents(
+        component: EnergyComponent<*>,
+        type: MechanicType
+    ): MutableList<EnergyComponent<*>> {
+        val visited: MutableSet<EnergyComponent<*>?> = HashSet()
+        val connectedComponents: MutableList<EnergyComponent<*>> = ArrayList()
+        this.dfsConnectedComponents(component, visited, connectedComponents, type)
+        return connectedComponents
     }
 
     /**
@@ -371,21 +373,26 @@ public class EnergyNetwork {
      * @param connectedComponents The connected components.
      * @param type                The type of the component.
      */
-    private void dfsConnectedComponents(EnergyComponent<?> component, Set<EnergyComponent<?>> visited,
-                                        List<EnergyComponent<?>> connectedComponents, MechanicType type) {
+    private fun dfsConnectedComponents(
+        component: EnergyComponent<*>, visited: MutableSet<EnergyComponent<*>?>,
+        connectedComponents: MutableList<EnergyComponent<*>>, type: MechanicType
+    ) {
         if (visited.contains(component)) {
-            return;
+            return
         }
 
-        visited.add(component);
+        visited.add(component)
 
         if (type.isInstance(component)) {
-            connectedComponents.add(component);
+            connectedComponents.add(component)
         }
 
-        for (EnergyComponent<?> neighbor : component.getConnectedComponents()) {
-            if (!visited.contains(neighbor) && (MechanicType.TRANSPORTER.isInstance(neighbor) || type.isInstance(neighbor))) {
-                this.dfsConnectedComponents(neighbor, visited, connectedComponents, type);
+        for (neighbor in component.connectedComponents) {
+            if (!visited.contains(neighbor) && (MechanicType.TRANSPORTER.isInstance(neighbor!!) || type.isInstance(
+                    neighbor
+                ))
+            ) {
+                this.dfsConnectedComponents(neighbor, visited, connectedComponents, type)
             }
         }
     }
@@ -396,11 +403,14 @@ public class EnergyNetwork {
      * @param type The type of the component.
      * @return The components by type.
      */
-    private Map<Location, EnergyComponent<?>> getComponentByType(MechanicType type) {
-        return this.components.entrySet()
-                .stream()
-                .filter(entry -> type.getClazz().isAssignableFrom(entry.getValue().getMechanic().getClass()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    private fun getComponentByType(type: MechanicType): MutableMap<Location, EnergyComponent<*>> {
+        return this.components.entries
+            .stream()
+            .filter { entry ->
+                type.clazz.isAssignableFrom(
+                    entry!!.value!!.mechanic!!.javaClass
+                )
+            }
+            .collect(Collectors.toMap({ it.key }, { it.value }))
     }
-
 }

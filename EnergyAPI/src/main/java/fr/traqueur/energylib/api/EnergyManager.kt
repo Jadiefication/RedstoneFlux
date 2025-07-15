@@ -1,26 +1,23 @@
-package fr.traqueur.energylib.api;
+package fr.traqueur.energylib.api
 
-import com.google.gson.Gson;
-import fr.traqueur.energylib.api.components.EnergyComponent;
-import fr.traqueur.energylib.api.components.EnergyNetwork;
-import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException;
-import fr.traqueur.energylib.api.mechanics.EnergyMechanic;
-import fr.traqueur.energylib.api.types.EnergyType;
-import fr.traqueur.energylib.api.types.MechanicType;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-
-import java.util.Optional;
-import java.util.Set;
+import com.google.gson.Gson
+import fr.traqueur.energylib.api.components.EnergyComponent
+import fr.traqueur.energylib.api.components.EnergyNetwork
+import fr.traqueur.energylib.api.exceptions.SameEnergyTypeException
+import fr.traqueur.energylib.api.mechanics.EnergyMechanic
+import fr.traqueur.energylib.api.types.EnergyType
+import fr.traqueur.energylib.api.types.MechanicType
+import org.bukkit.Chunk
+import org.bukkit.Location
+import org.bukkit.NamespacedKey
+import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
+import java.util.*
 
 /**
  * The EnergyManager is the principale class of the API, it is used to manage the energy components and networks.
  */
-public interface EnergyManager {
-
+interface EnergyManager {
     /**
      * Handle the placement of a component in the world.
      *
@@ -28,7 +25,8 @@ public interface EnergyManager {
      * @param location  The location where the component will be placed.
      * @throws SameEnergyTypeException If a component of the different type is next to the location.
      */
-    void placeComponent(EnergyComponent<?> component, Location location) throws SameEnergyTypeException;
+    @Throws(SameEnergyTypeException::class)
+    fun placeComponent(component: EnergyComponent<*>?, location: Location?)
 
     /**
      * Handle the break of a component in the world.
@@ -36,7 +34,7 @@ public interface EnergyManager {
      * @param player
      * @param location The location of the component to break.
      */
-    void breakComponent(Player player, Location location);
+    fun breakComponent(player: Player?, location: Location?)
 
     /**
      * Get the energy type of an item.
@@ -44,7 +42,7 @@ public interface EnergyManager {
      * @param item The item to get the energy type from.
      * @return The energy type of the item.
      */
-    Optional<EnergyType> getEnergyType(ItemStack item);
+    fun getEnergyType(item: ItemStack?): Optional<EnergyType?>?
 
     /**
      * Get the mechanic type of an item.
@@ -52,7 +50,7 @@ public interface EnergyManager {
      * @param item The item to get the mechanic type from.
      * @return The mechanic type of the item.
      */
-    Optional<String> getMechanicClass(ItemStack item);
+    fun getMechanicClass(item: ItemStack?): Optional<String?>?
 
     /**
      * Get the mechanic of an item.
@@ -60,7 +58,7 @@ public interface EnergyManager {
      * @param item The item to get the mechanic from.
      * @return The mechanic of the item.
      */
-    Optional<? extends EnergyMechanic> getMechanic(ItemStack item);
+    fun getMechanic(item: ItemStack?): Optional<out EnergyMechanic?>?
 
     /**
      * Check if a location is a block component.
@@ -68,7 +66,7 @@ public interface EnergyManager {
      * @param location The location to check.
      * @return True if the location is a block component, false otherwise.
      */
-    boolean isBlockComponent(Location location);
+    fun isBlockComponent(location: Location?): Boolean
 
     /**
      * Create a component from an item.
@@ -76,7 +74,7 @@ public interface EnergyManager {
      * @param item The item to create the component from.
      * @return The component created.
      */
-    EnergyComponent<?> createComponent(ItemStack item);
+    fun createComponent(item: ItemStack?): EnergyComponent<*>?
 
     /**
      * Check if an item is a component.
@@ -84,7 +82,7 @@ public interface EnergyManager {
      * @param item The item to check.
      * @return True if the item is a component, false otherwise.
      */
-    boolean isComponent(ItemStack item);
+    fun isComponent(item: ItemStack?): Boolean
 
     /**
      * Create an item from energytype, mechanictype and mechanic.
@@ -94,75 +92,75 @@ public interface EnergyManager {
      * @param mechanic     The mechanic of the item.
      * @return The item created.
      */
-    ItemStack createItemComponent(EnergyType type, MechanicType mechanicType, EnergyMechanic mechanic);
+    fun createItemComponent(type: EnergyType?, mechanicType: MechanicType?, mechanic: EnergyMechanic?): ItemStack?
 
     /**
      * Start the network updater.
      * The network updater is used to update the energy networks.
      * It is used to update the energy networks every tick.
      */
-    void startNetworkUpdater();
+    fun startNetworkUpdater()
 
     /**
      * Stop the network updater.
      * The network updater is used to update the energy networks.
      * It is used to update the energy networks every tick.
      */
-    void stopNetworkUpdater();
+    fun stopNetworkUpdater()
 
     /**
      * Delete a network.
      *
      * @param network The network to delete.
      */
-    void deleteNetwork(EnergyNetwork network);
+    fun deleteNetwork(network: EnergyNetwork?)
 
     /**
      * Get the energy type key.
      *
      * @return The energy type key.
      */
-    NamespacedKey getEnergyTypeKey();
+    val energyTypeKey: NamespacedKey?
 
     /**
      * Get the mechanic class key.
      *
      * @return The mechanic class key.
      */
-    NamespacedKey getMechanicClassKey();
+    val mechanicClassKey: NamespacedKey?
 
     /**
      * Get the mechanic key.
      *
      * @return The mechanic key.
      */
-    NamespacedKey getMechanicKey();
+    val mechanicKey: NamespacedKey?
 
     /**
      * Get the network key.
      *
      * @return The network key.
      */
-    NamespacedKey getNetworkKey();
+    val networkKey: NamespacedKey?
 
     /**
      * Get all the networks.
      *
      * @return The networks.
      */
-    Set<EnergyNetwork> getNetworks();
+    val networks: MutableSet<EnergyNetwork?>?
 
     /**
      * Save the networks.
      */
-    void saveNetworks();
+    fun saveNetworks()
 
     /**
      * Load the networks.
      *
      * @param chunk The chunk to load the networks from.
      */
-    void loadNetworks(Chunk chunk);
+    fun loadNetworks(chunk: Chunk?)
 
     /**
      * Get the component from a block.
@@ -170,12 +168,12 @@ public interface EnergyManager {
      * @param location The location of the block.
      * @return The component of the block.
      */
-    Optional<EnergyComponent<?>> getComponentFromBlock(Location location);
+    fun getComponentFromBlock(location: Location?): Optional<EnergyComponent<*>?>?
 
     /**
      * Get the gson instance.
      *
      * @return The gson instance.
      */
-    Gson getGson();
+    val gson: Gson?
 }

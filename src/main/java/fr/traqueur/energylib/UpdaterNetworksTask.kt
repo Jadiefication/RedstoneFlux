@@ -1,21 +1,13 @@
-package fr.traqueur.energylib;
+package fr.traqueur.energylib
 
-import fr.traqueur.energylib.api.EnergyManager;
+import fr.traqueur.energylib.api.EnergyManager
 
-public class UpdaterNetworksTask implements Runnable {
-
-    private final EnergyManager manager;
-
-    public UpdaterNetworksTask(EnergyManager manager) {
-        this.manager = manager;
-    }
-
-    @Override
-    public void run() {
-        manager.getNetworks().forEach(energyNetwork -> {
-            if (energyNetwork.getChunk().isLoaded()) {
-                energyNetwork.update();
+class UpdaterNetworksTask(private val manager: EnergyManager) : Runnable {
+    override fun run() {
+        manager.networks!!.forEach({ energyNetwork ->
+            if (energyNetwork!!.chunk?.isLoaded == true) {
+                energyNetwork.update()
             }
-        });
+        })
     }
 }

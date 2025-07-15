@@ -1,18 +1,17 @@
-package fr.traqueur.energylib.api.persistents.adapters;
+package fr.traqueur.energylib.api.persistents.adapters
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import fr.traqueur.energylib.api.types.EnergyType;
-
-import java.io.IOException;
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
+import fr.traqueur.energylib.api.types.EnergyType
+import java.io.IOException
+import java.util.function.Supplier
 
 /**
  * This class is a Gson adapter for EnergyTypes.
  * It is used to serialize and deserialize EnergyTypes.
  */
-public class EnergyTypeAdapter extends TypeAdapter<EnergyType> {
-
+class EnergyTypeAdapter : TypeAdapter<EnergyType?>() {
     /**
      * Writes an EnergyType to a JsonWriter.
      *
@@ -20,11 +19,11 @@ public class EnergyTypeAdapter extends TypeAdapter<EnergyType> {
      * @param energyType The EnergyType.
      * @throws IOException If an I/O error occurs.
      */
-    @Override
-    public void write(JsonWriter jsonWriter, EnergyType energyType) throws IOException {
-        jsonWriter.beginObject();
-        jsonWriter.name("name").value(energyType.getName());
-        jsonWriter.endObject();
+    @Throws(IOException::class)
+    override fun write(jsonWriter: JsonWriter, value: EnergyType?) {
+        jsonWriter.beginObject()
+        jsonWriter.name("name").value(value?.name)
+        jsonWriter.endObject()
     }
 
     /**
@@ -34,18 +33,20 @@ public class EnergyTypeAdapter extends TypeAdapter<EnergyType> {
      * @return The EnergyType.
      * @throws IOException If an I/O error occurs.
      */
-    @Override
-    public EnergyType read(JsonReader jsonReader) throws IOException {
-        String name = null;
-        jsonReader.beginObject();
+    @Throws(IOException::class)
+    override fun read(jsonReader: JsonReader): EnergyType? {
+        var name: String? = null
+        jsonReader.beginObject()
         while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if (key.equals("name")) {
-                name = jsonReader.nextString();
+            val key = jsonReader.nextName()
+            if (key == "name") {
+                name = jsonReader.nextString()
             }
         }
-        jsonReader.endObject();
-        String finalName = name;
-        return EnergyType.TYPES.stream().filter(type -> type.getName().equals(finalName)).findFirst().orElseThrow(() -> new IOException("EnergyType not found."));
+        jsonReader.endObject()
+        val finalName = name
+        return EnergyType.Companion.TYPES.stream().filter { type: EnergyType? -> type!!.name == finalName }
+            .findFirst().orElseThrow(
+                Supplier { IOException("EnergyType not found.") })
     }
 }

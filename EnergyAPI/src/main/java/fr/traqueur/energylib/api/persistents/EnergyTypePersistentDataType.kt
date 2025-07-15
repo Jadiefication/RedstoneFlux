@@ -1,35 +1,27 @@
-package fr.traqueur.energylib.api.persistents;
+package fr.traqueur.energylib.api.persistents
 
-import fr.traqueur.energylib.api.types.EnergyType;
-import org.bukkit.persistence.PersistentDataAdapterContext;
-import org.bukkit.persistence.PersistentDataType;
+import fr.traqueur.energylib.api.types.EnergyType
+import org.bukkit.persistence.PersistentDataAdapterContext
+import org.bukkit.persistence.PersistentDataType
 
 /**
  * This class is used to save the EnergyType in a ItemStack
  */
-public class EnergyTypePersistentDataType implements PersistentDataType<String, EnergyType> {
-
-    /**
-     * The instance of the class
-     */
-    public static final EnergyTypePersistentDataType INSTANCE = new EnergyTypePersistentDataType();
-
+class EnergyTypePersistentDataType : PersistentDataType<String, EnergyType> {
     /**
      * Get the primitive type of the class
      * @return the primitive type
      */
-    @Override
-    public Class<String> getPrimitiveType() {
-        return String.class;
+    override fun getPrimitiveType(): Class<String?> {
+        return String::class.java as Class<String?>
     }
 
     /**
      * Get the complex type of the class
      * @return the complex type
      */
-    @Override
-    public Class<EnergyType> getComplexType() {
-        return EnergyType.class;
+    override fun getComplexType(): Class<EnergyType?> {
+        return EnergyType::class.java as Class<EnergyType?>
     }
 
     /**
@@ -38,9 +30,11 @@ public class EnergyTypePersistentDataType implements PersistentDataType<String, 
      * @param persistentDataAdapterContext the context
      * @return the primitive type
      */
-    @Override
-    public String toPrimitive(EnergyType energyType, PersistentDataAdapterContext persistentDataAdapterContext) {
-        return energyType.getName();
+    override fun toPrimitive(
+        energyType: EnergyType,
+        persistentDataAdapterContext: PersistentDataAdapterContext
+    ): String {
+        return energyType.name!!
     }
 
     /**
@@ -49,12 +43,17 @@ public class EnergyTypePersistentDataType implements PersistentDataType<String, 
      * @param persistentDataAdapterContext the context
      * @return the EnergyType
      */
-    
-    @Override
-    public EnergyType fromPrimitive(String s, PersistentDataAdapterContext persistentDataAdapterContext) {
-        return EnergyType.TYPES.stream()
-                .filter(type -> type.getName().equals(s))
-                .findFirst()
-                .orElseThrow();
+    override fun fromPrimitive(s: String, persistentDataAdapterContext: PersistentDataAdapterContext): EnergyType {
+        return EnergyType.Companion.TYPES.stream()
+            .filter { type: EnergyType? -> type!!.name == s }
+            .findFirst()
+            .orElseThrow()!!
+    }
+
+    companion object {
+        /**
+         * The instance of the class
+         */
+        val INSTANCE: EnergyTypePersistentDataType = EnergyTypePersistentDataType()
     }
 }

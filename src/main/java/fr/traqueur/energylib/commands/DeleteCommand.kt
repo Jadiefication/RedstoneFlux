@@ -1,29 +1,28 @@
-package fr.traqueur.energylib.commands;
+package fr.traqueur.energylib.commands
 
-import fr.traqueur.commands.api.Arguments;
-import fr.traqueur.commands.api.Command;
-import fr.traqueur.energylib.EnergyLib;
-import fr.traqueur.energylib.api.EnergyManager;
-import fr.traqueur.energylib.api.components.EnergyNetwork;
-import org.bukkit.command.CommandSender;
+import fr.traqueur.commands.api.Arguments
+import fr.traqueur.commands.api.Command
+import fr.traqueur.energylib.EnergyLib
+import fr.traqueur.energylib.api.EnergyManager
+import fr.traqueur.energylib.api.components.EnergyNetwork
+import org.bukkit.command.CommandSender
 
-public class DeleteCommand extends Command<EnergyLib> {
+class DeleteCommand(plugin: EnergyLib) : Command<EnergyLib?>(plugin, "delete") {
+    private val manager: EnergyManager = plugin.getManager()
 
-    private final EnergyManager manager;
-
-    public DeleteCommand(EnergyLib plugin) {
-        super(plugin, "delete");
-        this.manager = plugin.getManager();
-        this.setPermission("energy.admin.delete");
-        this.setUsage("/energy-admin delete <network>");
-        this.setDescription("Delete a network.");
-        this.addArgs("network:network");
+    init {
+        this.permission = "energy.admin.delete"
+        this.usage = "/energy-admin delete <network>"
+        this.description = "Delete a network."
+        this.addArgs("network:network")
     }
 
-    @Override
-    public void execute(CommandSender commandSender, Arguments arguments) {
-        EnergyNetwork network = arguments.get("network");
-        manager.deleteNetwork(network);
-        commandSender.sendMessage("§aThe network §e" + network.getId() + " §ain chunk §e" + network.getChunk().getX() + " " + network.getChunk().getZ() + " §ahas been deleted.");
+    override fun execute(commandSender: CommandSender, arguments: Arguments) {
+        val network = arguments.get<EnergyNetwork>("network")
+        manager.deleteNetwork(network)
+        commandSender.sendMessage(
+            "§aThe network §e" + network.id + " §ain chunk §e" + network.getChunk()
+                .x + " " + network.getChunk().z + " §ahas been deleted."
+        )
     }
 }

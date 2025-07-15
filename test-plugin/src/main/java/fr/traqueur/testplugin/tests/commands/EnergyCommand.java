@@ -26,13 +26,14 @@ public class EnergyCommand extends Command<TestPlugin> {
         Player player = (Player) commandSender;
         EnergyAPI api = this.getPlugin().getServer().getServicesManager().getRegistration(EnergyAPI.class).getProvider();
 
-        EnergyManager energyManager = api.getManager();
+        EnergyManager energyManager = api.manager;
         MechanicType componentType = arguments.get("component-type");
         var item = switch (componentType) {
             case PRODUCER -> energyManager.createItemComponent(EnergyTypes.RF, componentType, new BlockProducer());
             case CONSUMER -> energyManager.createItemComponent(EnergyTypes.RF, componentType, new BlockConsumer());
             case STORAGE -> energyManager.createItemComponent(EnergyTypes.RF, componentType, new BlockStorage());
-            case TRANSPORTER -> energyManager.createItemComponent(EnergyTypes.RF, componentType, new BlockTransporter());
+            case TRANSPORTER ->
+                    energyManager.createItemComponent(EnergyTypes.RF, componentType, new BlockTransporter());
         };
         player.getInventory().addItem(item);
         player.sendMessage("§aVous avez reçu un composant d'énergie.");

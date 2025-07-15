@@ -1,10 +1,9 @@
-package fr.traqueur.energylib.api.types;
+package fr.traqueur.energylib.api.types
 
 /**
  * Represents an energy type.
  */
-public enum EnergyTypes implements EnergyType {
-
+enum class EnergyTypes : EnergyType {
     /**
      * Represents the energy type of the United States.
      */
@@ -15,12 +14,4 @@ public enum EnergyTypes implements EnergyType {
      */
     EU,
     ;
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getName() {
-        return this.name();
-    }
 }
