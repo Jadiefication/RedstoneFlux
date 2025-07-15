@@ -5,11 +5,15 @@ plugins {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        release(MavenPublication) {
             from components.java
+            groupId = "com.github.Jadiefication"
+            artifactId = "RedstoneFlux"
+            version = project.version.toString()
         }
     }
 }
+
 
 shadowJar {
     destinationDirectory = rootProject.apiFolder
