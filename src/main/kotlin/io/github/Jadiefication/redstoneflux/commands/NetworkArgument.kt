@@ -8,7 +8,8 @@ import org.bukkit.command.CommandSender
 import java.util.*
 import java.util.stream.Collectors
 
-class NetworkArgument(private val manager: EnergyManager) : ArgumentConverter<EnergyNetwork?>, TabCompleter<CommandSender> {
+class NetworkArgument(private val manager: EnergyManager) : ArgumentConverter<EnergyNetwork?>,
+    TabCompleter<CommandSender> {
     override fun apply(s: String): EnergyNetwork? {
         try {
             val uuid = UUID.fromString(s)

@@ -1,6 +1,8 @@
 # RedstoneFlux
 
-**RedstoneFlux** is a modern fork of [EnergyLib](https://github.com/Traqueur-dev/EnergyLib), rewritten with Kotlin DSLs and optimized for performance and developer experience. Designed with simplicity, flexibility, and future-proofing in mind, RedstoneFlux provides a universal energy system for Minecraft plugins.
+**RedstoneFlux** is a modern fork of [EnergyLib](https://github.com/Traqueur-dev/EnergyLib), rewritten with Kotlin DSLs
+and optimized for performance and developer experience. Designed with simplicity, flexibility, and future-proofing in
+mind, RedstoneFlux provides a universal energy system for Minecraft plugins.
 
 ---
 
@@ -53,7 +55,8 @@ dependencies {
 
 ## 🧱 Status
 
-This project is currently under active development. Usage documentation and public APIs will be stabilized and documented in future releases.
+This project is currently under active development. Usage documentation and public APIs will be stabilized and
+documented in future releases.
 
 For now, you can explore the codebase directly or check the `test-plugin` module for example usage.
 

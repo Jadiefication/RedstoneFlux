@@ -16,15 +16,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.stream.Collectors
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
-import kotlin.collections.MutableList
-import kotlin.collections.MutableMap
-import kotlin.collections.MutableSet
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.forEach
-import kotlin.collections.toTypedArray
 
 /**
  * Represents an energy network.
@@ -179,7 +170,7 @@ class EnergyNetwork(
                         }
                     }
                     if (excessEnergy > 0 && api.isDebug) {
-                        println("L'énergie excédentaire du producteur " + producerComponent + " est perdue.")
+                        println("The excess energy from the producer $producerComponent is lost.")
                     }
                 })
             futures.add(future)

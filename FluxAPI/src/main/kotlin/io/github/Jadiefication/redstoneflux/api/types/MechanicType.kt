@@ -1,12 +1,7 @@
 package io.github.Jadiefication.redstoneflux.api.types
 
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
-import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
-import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
-import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMeter
-import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyProducer
-import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyStorage
-import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyTransporter
+import io.github.Jadiefication.redstoneflux.api.mechanics.*
 
 /**
  * The type of a mechanic.

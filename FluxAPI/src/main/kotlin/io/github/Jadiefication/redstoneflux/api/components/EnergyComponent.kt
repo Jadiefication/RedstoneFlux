@@ -9,7 +9,10 @@ import io.github.Jadiefication.redstoneflux.api.types.EnergyType
  * @param <T> The mechanic that this component uses.
 </T> */
 class EnergyComponent<T : EnergyMechanic?>(
-    energyType: EnergyType?,
+    /**
+     * The type of energy that this component uses.
+     */
+    val energyType: EnergyType?,
     /**
      * The mechanic that this component uses.
      */
@@ -18,10 +21,6 @@ class EnergyComponent<T : EnergyMechanic?>(
     /**
      * Get the type of energy that this component uses.
      */
-    /**
-     * The type of energy that this component uses.
-     */
-    val energyType: EnergyType?
 
     /**
      * Get the mechanic that this component uses.
@@ -33,17 +32,7 @@ class EnergyComponent<T : EnergyMechanic?>(
     /**
      * The components that this component is connected to.
      */
-    val connectedComponents: MutableSet<EnergyComponent<*>?>
-
-    /**
-     * Creates a new energy component.
-     * @param energyType The type of energy that this component uses.
-     * @param mechanic The mechanic that this component uses.
-     */
-    init {
-        this.connectedComponents = HashSet<EnergyComponent<*>?>()
-        this.energyType = energyType
-    }
+    val connectedComponents: MutableSet<EnergyComponent<*>?> = HashSet<EnergyComponent<*>?>()
 
     /**
      * Connects this component to another component.

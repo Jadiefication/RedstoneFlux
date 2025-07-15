@@ -13,7 +13,7 @@ import org.bukkit.plugin.PluginManager
 import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.ServicesManager
 import org.bukkit.plugin.java.JavaPlugin
-import java.util.Arrays
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 

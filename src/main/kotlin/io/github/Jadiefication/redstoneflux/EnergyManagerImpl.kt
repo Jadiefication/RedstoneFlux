@@ -16,23 +16,15 @@ import io.github.Jadiefication.redstoneflux.api.persistents.adapters.EnergyNetwo
 import io.github.Jadiefication.redstoneflux.api.persistents.adapters.EnergyTypeAdapter
 import io.github.Jadiefication.redstoneflux.api.types.EnergyType
 import io.github.Jadiefication.redstoneflux.api.types.MechanicType
-import org.bukkit.Chunk
-import org.bukkit.GameMode
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.NamespacedKey
+import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
-import java.util.AbstractMap
-import java.util.LinkedList
+import java.util.*
 import java.util.List
-import java.util.Optional
-import java.util.Queue
-import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.function.Function
@@ -107,7 +99,8 @@ class EnergyManagerImpl(energyLib: EnergyLib) : EnergyManager {
         for (neibhorFace in NEIBHORS) {
             val neighbor = location?.block?.getRelative(neibhorFace)
             val networkNeighbor: Optional<EnergyNetwork?> =
-                this.networks.stream().filter { network: EnergyNetwork? -> network?.contains(neighbor?.location) == true }
+                this.networks.stream()
+                    .filter { network: EnergyNetwork? -> network?.contains(neighbor?.location) == true }
                     .findFirst()
             if (networkNeighbor.isPresent) {
                 if (!energyNetworks.contains(networkNeighbor.get())) energyNetworks.add(networkNeighbor.get())
@@ -139,7 +132,8 @@ class EnergyManagerImpl(energyLib: EnergyLib) : EnergyManager {
      */
     override fun breakComponent(player: Player?, location: Location?) {
         val network: EnergyNetwork? =
-            this.networks.stream().filter { n: EnergyNetwork? -> n?.contains(location) == true }.findFirst().orElse(null)
+            this.networks.stream().filter { n: EnergyNetwork? -> n?.contains(location) == true }.findFirst()
+                .orElse(null)
         if (network == null) {
             return
         }
@@ -169,7 +163,11 @@ class EnergyManagerImpl(energyLib: EnergyLib) : EnergyManager {
      * {@inheritDoc}
      */
     override fun getEnergyType(item: ItemStack?): Optional<EnergyType?>? {
-        return this.getPersistentData<String, EnergyType>(item!!, this.energyTypeKey, EnergyTypePersistentDataType.INSTANCE)
+        return this.getPersistentData<String, EnergyType>(
+            item!!,
+            this.energyTypeKey,
+            EnergyTypePersistentDataType.INSTANCE
+        )
     }
 
     /**
