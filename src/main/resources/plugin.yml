@@ -1,6 +1,6 @@
 name: EnergyLib
 version: '${version}'
-main: fr.traqueur.energylib.EnergyLib
+main: io.github.Jadiefication.redstoneflux.EnergyLib
 author: Traqueur
 description: 'A library for energy system.'
 api-version: '1.21'

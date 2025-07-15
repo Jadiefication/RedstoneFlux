@@ -20,7 +20,7 @@ project.ext {
     apiFolder = file("target-api/")
 }
 
-group = 'fr.traqueur.energylib'
+group = 'io.github.Jadiefication.redstoneflux'
 version = property('version')
 
 allprojects {
@@ -90,8 +90,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":EnergyAPI"))
-    implementation "com.tcoded:FoliaLib:0.5.1"
+    implementation(project(":FluxAPI"))
     implementation "com.github.Traqueur-dev:CommandsAPI:4.2.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
@@ -130,8 +129,6 @@ shadowJar {
 
     delete fileTree(rootProject.targetFolder.getAbsolutePath())
 
-    relocate 'com.tcoded.folialib', 'fr.traqueur.energylib.api.platform.folia'
-
     archiveFileName = rootProject.name + "-" + rootProject.version + ".jar"
     destinationDirectory = rootProject.targetFolder
 
@@ -149,7 +146,7 @@ build {
 }
 
 tasks.register('publish') {
-    dependsOn ':EnergyAPI:publish'
+    dependsOn ':FluxAPI:publish'
 }
 
 publish.shouldRunAfter shadowJar
