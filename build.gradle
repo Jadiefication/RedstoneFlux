@@ -148,16 +148,9 @@ build {
     dependsOn clean
 }
 
-tasks.register('copyFiles', Copy) {
-    from rootProject.targetFolder
-    into rootProject.testFolder
-}
-
 tasks.register('publish') {
     dependsOn ':EnergyAPI:publish'
 }
-
-build.finalizedBy(copyFiles)
 
 publish.shouldRunAfter shadowJar
 shadowJar.shouldRunAfter build
