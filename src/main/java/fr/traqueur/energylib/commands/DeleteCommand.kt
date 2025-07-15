@@ -8,7 +8,7 @@ import fr.traqueur.energylib.api.components.EnergyNetwork
 import org.bukkit.command.CommandSender
 
 class DeleteCommand(plugin: EnergyLib) : Command<EnergyLib?>(plugin, "delete") {
-    private val manager: EnergyManager = plugin.getManager()
+    private val manager: EnergyManager? = plugin.manager
 
     init {
         this.permission = "energy.admin.delete"
@@ -19,10 +19,10 @@ class DeleteCommand(plugin: EnergyLib) : Command<EnergyLib?>(plugin, "delete") {
 
     override fun execute(commandSender: CommandSender, arguments: Arguments) {
         val network = arguments.get<EnergyNetwork>("network")
-        manager.deleteNetwork(network)
+        manager?.deleteNetwork(network)
         commandSender.sendMessage(
-            "§aThe network §e" + network.id + " §ain chunk §e" + network.getChunk()
-                .x + " " + network.getChunk().z + " §ahas been deleted."
+            "§aThe network §e" + network.id + " §ain chunk §e" + network.chunk
+                ?.x + " " + network.chunk?.z + " §ahas been deleted."
         )
     }
 }
