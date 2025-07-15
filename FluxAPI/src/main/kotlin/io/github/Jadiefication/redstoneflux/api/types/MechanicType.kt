@@ -39,7 +39,12 @@ enum class MechanicType
     /**
      * Represents an energy meter
      */
-    METER(EnergyMeter::class.java);
+    METER(EnergyMeter::class.java),
+
+    /**
+     *
+     */
+    CONVERTER(EnergyConverter::class.java);
 
     /**
      * Get the class of the mechanic.
