@@ -47,7 +47,7 @@ class Updater
                     Updater::class.java.getClassLoader()
                         .getResourceAsStream("version.properties")
                 )
-                return prop.getProperty("version")
+                return "v${prop.getProperty("version")}"
             } catch (e: IOException) {
                 throw RuntimeException(e)
             }
@@ -123,6 +123,6 @@ class Updater
         /**
          * The URL of the GitHub API
          */
-        private const val API_URL = "https://api.github.com/repos/Traqueur-dev/{name}/releases/latest"
+        private const val API_URL = "https://api.github.com/repos/Jadiefication/{name}/releases/latest"
     }
 }
