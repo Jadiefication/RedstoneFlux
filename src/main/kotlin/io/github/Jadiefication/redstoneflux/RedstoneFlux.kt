@@ -8,6 +8,9 @@ import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import io.github.Jadiefication.redstoneflux.commands.EnergyCommand
 import io.github.Jadiefication.redstoneflux.commands.NetworkArgument
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.bukkit.Chunk
 import org.bukkit.plugin.PluginManager
 import org.bukkit.plugin.ServicePriority
@@ -26,6 +29,11 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
      * The scheduler of the plugin.
      */
     override var scheduler: PlatformScheduler? = null
+
+    /**
+     * The coroutine scope of the plugin.
+     */
+    override val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /**
      * The energy manager of the plugin.

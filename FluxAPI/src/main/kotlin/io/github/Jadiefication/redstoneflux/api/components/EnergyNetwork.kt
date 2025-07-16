@@ -8,13 +8,14 @@ import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyProducer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyStorage
 import io.github.Jadiefication.redstoneflux.api.types.EnergyType
 import io.github.Jadiefication.redstoneflux.api.types.MechanicType
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
-import java.util.function.Consumer
 import java.util.stream.Collectors
 
 /**
@@ -119,28 +120,25 @@ class EnergyNetwork(
     /**
      * Update the network.
      */
-    fun update() {
-        this.handleProduction().thenAccept(Consumer { t: Void? ->
-            this.handleConsumers().thenAccept(Consumer { t1: Void? ->
-                this.handleExcess()
-            })
-        })
+    suspend fun update() {
+        handleProduction()
+        handleConsumers()
+        handleExcess()
     }
 
     /**
      * Update the network production asynchronously.
      */
-    private fun handleProduction(): CompletableFuture<Void?> {
+    private suspend fun handleProduction(): List<Unit> {
         val producers = this.getComponentByType(MechanicType.PRODUCER)
-        val futures: MutableList<CompletableFuture<Void?>?> = ArrayList()
-        producers.forEach { (location: Location?, producer: EnergyComponent<*>?) ->
-            val future =
-                this.api.scheduler?.runAtLocation(location, { t ->
-                    (producer!!.mechanic as EnergyProducer).produce(location)
-                })
-            futures.add(future)
+        val defers = mutableListOf<Deferred<Unit>>()
+        producers.forEach { (location, producer) ->
+            val defer = api.scope.async {
+                (producer.mechanic as EnergyProducer).produce(location)
+            }
+            defers.add(defer)
         }
-        return CompletableFuture.allOf(*futures.toTypedArray<CompletableFuture<*>?>())
+        return defers.awaitAll()
     }
 
     /**
@@ -148,90 +146,98 @@ class EnergyNetwork(
      */
     private fun handleExcess() {
         val producers = getComponentByType(MechanicType.PRODUCER)
-        val futures: MutableList<CompletableFuture<Void?>?> = ArrayList()
-        producers.forEach { (location: Location?, producerComponent: EnergyComponent<*>?) ->
-            val future =
-                this.api.scheduler?.runAtLocation(location, { t ->
-                    val producer = producerComponent!!.mechanic as EnergyProducer
-                    var excessEnergy = producer.excessEnergy
+        val defers = mutableListOf<Deferred<Unit>>()
+        producers.forEach { (location, producer) ->
+            val defer = api.scope.async {
+                asyncExcessEnergy(producer)
+            }
+            defers.add(defer)
+        }
+    }
+    /**
+     * Internal async method to update the network excess asynchronously.
+     */
+    private fun asyncExcessEnergy(producerC: EnergyComponent<*>) {
+        val producer = producerC.mechanic as EnergyProducer
+        var excessEnergy = producer.excessEnergy
 
-                    if (excessEnergy > 0) {
-                        val connectedStorages =
-                            getConnectedComponents(producerComponent, MechanicType.STORAGE)
+        if (excessEnergy > 0) {
+            val connectedStorages =
+                getConnectedComponents(producerC, MechanicType.STORAGE)
 
-                        for (storageComponent in connectedStorages) {
-                            val storage = storageComponent.mechanic as EnergyStorage
-                            val energyStored = storage.storeEnergy(excessEnergy)
-                            excessEnergy -= energyStored
+            for (storageComponent in connectedStorages) {
+                val storage = storageComponent.mechanic as EnergyStorage
+                val energyStored = storage.storeEnergy(excessEnergy)
+                excessEnergy -= energyStored
 
-                            if (excessEnergy <= 0) {
-                                break
-                            }
-                        }
-                    }
-                    if (excessEnergy > 0 && api.isDebug) {
-                        println("The excess energy from the producer $producerComponent is lost.")
-                    }
-                })
-            futures.add(future)
+                if (excessEnergy <= 0) {
+                    break
+                }
+            }
+        }
+        if (excessEnergy > 0 && api.isDebug) {
+            println("The excess energy from the producer $producerC is lost.")
         }
     }
 
     /**
      * Update the network consumers asynchronously.
      */
-    private fun handleConsumers(): CompletableFuture<Void?> {
+    private suspend fun handleConsumers(): List<Unit> {
         val consumers = this.getComponentByType(MechanicType.CONSUMER)
-        val futures: MutableList<CompletableFuture<Void?>?> = ArrayList()
-        consumers.forEach { (location: Location?, consumerComponent: EnergyComponent<*>?) ->
-            val future =
-                this.api.scheduler?.runAtLocation(location, { t ->
-                    val consumer = consumerComponent!!.mechanic as EnergyConsumer
-                    var requiredEnergy = consumer.energyDemand
-                    var providedEnergy = 0.0
-
-                    val connectedProducers =
-                        getConnectedComponents(consumerComponent, MechanicType.PRODUCER)
-
-                    for (producerComponent in connectedProducers) {
-                        val producer = producerComponent.mechanic as EnergyProducer
-                        val energyAvailable = producer.extractEnergy(requiredEnergy)
-                        requiredEnergy -= energyAvailable
-                        providedEnergy += energyAvailable
-                        if (requiredEnergy <= 0) {
-                            break
-                        }
-                    }
-
-                    if (requiredEnergy > 0) {
-                        val connectedStorages =
-                            getConnectedComponents(consumerComponent, MechanicType.STORAGE)
-
-                        for (storageComponent in connectedStorages) {
-                            val storage = storageComponent.mechanic as EnergyStorage
-                            val energyFromStorage = storage.consumeEnergy(requiredEnergy)
-                            requiredEnergy -= energyFromStorage
-                            providedEnergy += energyFromStorage
-
-                            if (requiredEnergy <= 0) {
-                                break
-                            }
-                        }
-                    }
-
-                    consumer.receiveEnergy(providedEnergy)
-                    if (requiredEnergy > 0) {
-                        if (api.isDebug) {
-                            println("Le consommateur " + consumerComponent + " n'a pas reçu assez d'énergie.")
-                        }
-                        consumer.isEnable = false
-                    } else {
-                        consumer.isEnable = true
-                    }
-                })
-            futures.add(future)
+        val defers = mutableListOf<Deferred<Unit>>()
+        consumers.forEach { (location, consumerComponent) ->
+            val future = api.scope.async {
+                asyncConsumerUpdate(consumerComponent)
+            }
+            defers.add(future)
         }
-        return CompletableFuture.allOf(*futures.toTypedArray<CompletableFuture<*>?>())
+        return defers.awaitAll()
+    }
+
+    private fun asyncConsumerUpdate(consumerComponent: EnergyComponent<*>) {
+        val consumer = consumerComponent.mechanic as EnergyConsumer
+        var requiredEnergy = consumer.energyDemand
+        var providedEnergy = 0.0
+
+        val connectedProducers =
+            getConnectedComponents(consumerComponent, MechanicType.PRODUCER)
+
+        for (producerComponent in connectedProducers) {
+            val producer = producerComponent.mechanic as EnergyProducer
+            val energyAvailable = producer.extractEnergy(requiredEnergy)
+            requiredEnergy -= energyAvailable
+            providedEnergy += energyAvailable
+            if (requiredEnergy <= 0) {
+                break
+            }
+        }
+
+        if (requiredEnergy > 0) {
+            val connectedStorages =
+                getConnectedComponents(consumerComponent, MechanicType.STORAGE)
+
+            for (storageComponent in connectedStorages) {
+                val storage = storageComponent.mechanic as EnergyStorage
+                val energyFromStorage = storage.consumeEnergy(requiredEnergy)
+                requiredEnergy -= energyFromStorage
+                providedEnergy += energyFromStorage
+
+                if (requiredEnergy <= 0) {
+                    break
+                }
+            }
+        }
+
+        consumer.receiveEnergy(providedEnergy)
+        if (requiredEnergy > 0) {
+            if (api.isDebug) {
+                println("The consumer $consumerComponent did not receive enough energy.")
+            }
+            consumer.isEnable = false
+        } else {
+            consumer.isEnable = true
+        }
     }
 
     val isEmpty: Boolean

@@ -1,6 +1,7 @@
 package io.github.Jadiefication.redstoneflux.api
 
 import com.tcoded.folialib.impl.PlatformScheduler
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * The main class of the API.
@@ -11,6 +12,12 @@ interface EnergyAPI {
      * @return the instance of the manager.
      */
     val manager: EnergyManager?
+
+    /**
+     * Get the coroutine scope.
+     * @return the coroutine scope.
+     */
+    val scope: CoroutineScope
 
     /**
      * Get the instance of the scheduler.
