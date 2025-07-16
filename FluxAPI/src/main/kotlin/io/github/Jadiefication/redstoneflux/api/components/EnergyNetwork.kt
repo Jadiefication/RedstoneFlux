@@ -14,6 +14,7 @@ import kotlinx.coroutines.awaitAll
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.persistence.PersistentDataType
+import org.jetbrains.annotations.ApiStatus
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.stream.Collectors
@@ -157,6 +158,7 @@ class EnergyNetwork(
     /**
      * Internal async method to update the network excess asynchronously.
      */
+    @ApiStatus.Internal
     private fun asyncExcessEnergy(producerC: EnergyComponent<*>) {
         val producer = producerC.mechanic as EnergyProducer
         var excessEnergy = producer.excessEnergy
@@ -195,6 +197,7 @@ class EnergyNetwork(
         return defers.awaitAll()
     }
 
+    @ApiStatus.Internal
     private fun asyncConsumerUpdate(consumerComponent: EnergyComponent<*>) {
         val consumer = consumerComponent.mechanic as EnergyConsumer
         var requiredEnergy = consumer.energyDemand
