@@ -24,6 +24,7 @@ object ItemsFactory {
     fun <T : EnergyMechanic> registerItemHolder(builder: ItemHolder<T>.() -> Unit) {
         val item = ItemHolder<T>()
         item.builder()
+        item.modify()
         ITEM_STACKS_MAP.put(item.mechanic!!.javaClass, item.item!!)
     }
 
@@ -33,7 +34,8 @@ object ItemsFactory {
     fun <T : EnergyMechanic> registerItem(builder: MaterialHolder<T>.() -> Unit) {
         val item = MaterialHolder<T>()
         item.builder()
-        ITEM_STACKS_MAP.put(item.mechanic!!.javaClass, ItemStack(item.item!!))
+        item.modify()
+        ITEM_STACKS_MAP.put(item.mechanic!!.javaClass, item.actualItem)
     }
 
     /**

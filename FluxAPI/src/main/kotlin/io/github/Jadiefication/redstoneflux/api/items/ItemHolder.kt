@@ -1,6 +1,7 @@
 package io.github.Jadiefication.redstoneflux.api.items
 
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
+import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
@@ -19,9 +20,15 @@ data class ItemHolder<T : EnergyMechanic>(
      */
     override var modify: (T.() -> Unit)? = null
 ) : ItemCreation<T> {
-    init {
+    internal fun modify() {
         if (modify != null && mechanic != null) {
             modify?.invoke(mechanic!!)
+        }
+        if (name != null) {
+            item!!.setData(DataComponentTypes.ITEM_NAME, name!!)
+        }
+        if (lore != null) {
+            item!!.setData(DataComponentTypes.LORE, lore!!)
         }
     }
 }
@@ -38,9 +45,18 @@ data class MaterialHolder<T : EnergyMechanic>(
      */
     override var modify: (T.() -> Unit)? = null
 ) : ItemCreation<T> {
-    init {
+
+    internal var actualItem: ItemStack? = null
+    internal fun modify() {
+        actualItem = ItemStack.of(item!!)
         if (modify != null && mechanic != null) {
             modify?.invoke(mechanic!!)
+        }
+        if (name != null) {
+            actualItem!!.setData(DataComponentTypes.ITEM_NAME, name!!)
+        }
+        if (lore != null) {
+            actualItem!!.setData(DataComponentTypes.LORE, lore!!)
         }
     }
 }
