@@ -34,7 +34,7 @@ interface EnergyManager {
      * @param player
      * @param location The location of the component to break.
      */
-    fun breakComponent(player: Player?, location: Location?)
+    suspend fun breakComponent(player: Player?, location: Location?)
 
     /**
      * Get the energy type of an item.

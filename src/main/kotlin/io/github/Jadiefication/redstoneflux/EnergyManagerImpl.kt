@@ -16,6 +16,15 @@ import io.github.Jadiefication.redstoneflux.api.persistents.adapters.EnergyNetwo
 import io.github.Jadiefication.redstoneflux.api.persistents.adapters.EnergyTypeAdapter
 import io.github.Jadiefication.redstoneflux.api.types.EnergyType
 import io.github.Jadiefication.redstoneflux.api.types.MechanicType
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.NonCancellable.isActive
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.Player
@@ -25,7 +34,6 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
 import java.util.List
-import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
@@ -74,7 +82,7 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
     /**
      * The task that updates the networks.
      */
-    private var updaterTask: WrappedTask? = null
+    private var updaterTask: Job? = null
 
     /**
      * Create a new EnergyManagerImpl instance.
@@ -130,7 +138,7 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
     /**
      * {@inheritDoc}
      */
-    override fun breakComponent(player: Player?, location: Location?) {
+    override suspend fun breakComponent(player: Player?, location: Location?) {
         val network: EnergyNetwork? =
             this.networks.stream().filter { n: EnergyNetwork? -> n?.contains(location) == true }.findFirst()
                 .orElse(null)
@@ -151,7 +159,7 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
 
         network.removeComponent(location!!)
 
-        if (network?.isEmpty == true) {
+        if (network.isEmpty) {
             this.deleteNetwork(network)
             return
         }
@@ -262,8 +270,12 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
      * {@inheritDoc}
      */
     override fun startNetworkUpdater() {
-        this.updaterTask = this.api.scheduler
-            ?.runTimerAsync(UpdaterNetworksTask(this), 0L, 1L)
+        this.updaterTask = api.scope.launch {
+            withContext(NonCancellable) {
+                UpdaterNetworksTask(this@EnergyManagerImpl).run()
+                delay(1000L)  // adjust delay as needed
+            }
+        }
     }
 
     /**
@@ -329,36 +341,39 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
      *
      * @param network the network
      */
-    private fun splitNetworkIfNecessary(network: EnergyNetwork) {
+    private suspend fun splitNetworkIfNecessary(network: EnergyNetwork) {
         val visited: MutableSet<Location?> = HashSet()
         val newNetworks: MutableList<EnergyNetwork?> = ArrayList()
-        val futures: MutableList<CompletableFuture<Void?>?> = ArrayList()
-        for (component in network.components.keys) {
-            val future =
-                this.api.scheduler?.runAtLocation(component, { t ->
-                    if (!visited.contains(component)) {
-                        val subNetworkComponents: MutableSet<MutableMap.MutableEntry<Location?, EnergyComponent<*>?>> =
-                            discoverSubNetwork(component, visited)
-                        if (!subNetworkComponents.isEmpty()) {
-                            val newNetwork = EnergyNetwork(this.api, UUID.randomUUID())
-                            for (subComponent in subNetworkComponents) {
-                                try {
-                                    newNetwork.addComponent(subComponent.value!!, subComponent.key!!)
-                                } catch (e: SameEnergyTypeException) {
-                                    throw RuntimeException(e)
-                                }
-                            }
-                            newNetworks.add(newNetwork)
-                        }
-                    }
-                })
-            futures.add(future)
+        val defers = mutableListOf<Deferred<Unit>>()
+        network.components.keys.forEach { component ->
+            val defer = api.scope.async {
+                asyncNetworkSplit(visited, component, newNetworks)
+            }
+            defers.add(defer)
         }
 
-        CompletableFuture.allOf(*futures.toTypedArray<CompletableFuture<*>?>()).thenAccept(Consumer { t: Void? ->
+        defers.awaitAll().forEach { _ ->
             this.deleteNetwork(network)
             this.networks.addAll(newNetworks)
-        })
+        }
+    }
+
+    private fun asyncNetworkSplit(visited: MutableSet<Location?>, component: Location?, newNetworks: MutableList<EnergyNetwork?>) {
+        if (!visited.contains(component)) {
+            val subNetworkComponents: MutableSet<MutableMap.MutableEntry<Location?, EnergyComponent<*>?>> =
+                discoverSubNetwork(component, visited)
+            if (!subNetworkComponents.isEmpty()) {
+                val newNetwork = EnergyNetwork(this.api, UUID.randomUUID())
+                for (subComponent in subNetworkComponents) {
+                    try {
+                        newNetwork.addComponent(subComponent.value!!, subComponent.key!!)
+                    } catch (e: SameEnergyTypeException) {
+                        throw RuntimeException(e)
+                    }
+                }
+                newNetworks.add(newNetwork)
+            }
+        }
     }
 
     /**

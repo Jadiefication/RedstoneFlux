@@ -4,6 +4,7 @@ import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.mechanics.InteractableMechanic
+import kotlinx.coroutines.launch
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
@@ -66,14 +67,14 @@ class EnergyListener(
      */
     @EventHandler
     fun onEnergyComponentBreak(event: BlockBreakEvent) {
-        val location = event.getBlock().getLocation()
+        val location = event.getBlock().location
         if (!this.energyManager.isBlockComponent(location)) {
             return
         }
         event.isCancelled = true
-        this.api.scheduler?.runAtLocation(
-            location,
-            { t -> this.energyManager.breakComponent(event.getPlayer(), location) })
+        this.api.scope.launch {
+            this@EnergyListener.energyManager.breakComponent(event.player, location)
+        }
     }
 
     /**
