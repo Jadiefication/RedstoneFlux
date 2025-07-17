@@ -141,7 +141,10 @@ class EnergyNetwork(
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
             val defer = api.scope.async {
-                val produceEvent = EnergyProduceEvent((producer.mechanic as EnergyProducer).produce(location), producer)
+                val produceEvent = EnergyProduceEvent(
+                    (producer.mechanic as EnergyProducer).produce(location),
+                    producer as EnergyComponent<EnergyProducer>
+                )
                 Bukkit.getServer().pluginManager.callEvent(produceEvent)
             }
             defers.add(defer)
@@ -178,7 +181,11 @@ class EnergyNetwork(
             for (storageComponent in connectedStorages) {
                 val storage = storageComponent.mechanic as EnergyStorage
                 val energyStored = storage.storeEnergy(excessEnergy)
-                val storeEvent = StoreEnergyEvent(energyStored, storageComponent, producerC)
+                val storeEvent = StoreEnergyEvent(
+                    energyStored,
+                    storageComponent as EnergyComponent<EnergyStorage>,
+                    producerC as EnergyComponent<EnergyProducer>
+                )
                 Bukkit.getServer().pluginManager.callEvent(storeEvent)
                 excessEnergy -= energyStored
 
@@ -222,7 +229,7 @@ class EnergyNetwork(
             val produceEvent = EnergyConsumeEvent(
                 energyAvailable,
                 producerComponent,
-                consumerComponent
+                consumerComponent as EnergyComponent<EnergyConsumer>
             )
             Bukkit.getServer().pluginManager.callEvent(produceEvent)
             requiredEnergy -= energyAvailable
@@ -242,7 +249,7 @@ class EnergyNetwork(
                 val produceEvent = EnergyConsumeEvent(
                     energyFromStorage,
                     storageComponent,
-                    consumerComponent
+                    consumerComponent as EnergyComponent<EnergyConsumer>
                 )
                 Bukkit.getServer().pluginManager.callEvent(produceEvent)
                 requiredEnergy -= energyFromStorage
@@ -256,7 +263,11 @@ class EnergyNetwork(
 
         consumer.receiveEnergy(providedEnergy)
         if (requiredEnergy > 0) {
-            val notEnoughEnergyEvent = NotEnoughEnergyEvent(requiredEnergy, providedEnergy, consumerComponent)
+            val notEnoughEnergyEvent = NotEnoughEnergyEvent(
+                requiredEnergy,
+                providedEnergy,
+                consumerComponent as EnergyComponent<EnergyConsumer>
+            )
             Bukkit.getServer().pluginManager.callEvent(notEnoughEnergyEvent)
             if (api.isDebug) {
                 println("The consumer $consumerComponent did not receive enough energy.")

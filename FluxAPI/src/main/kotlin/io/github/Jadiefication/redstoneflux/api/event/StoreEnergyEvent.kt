@@ -1,6 +1,8 @@
 package io.github.Jadiefication.redstoneflux.api.event
 
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
+import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyProducer
+import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyStorage
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
@@ -12,8 +14,8 @@ import org.bukkit.event.HandlerList
  */
 class StoreEnergyEvent(
     val amount: Double,
-    val target: EnergyComponent<*>,
-    val producer: EnergyComponent<*>
+    val target: EnergyComponent<EnergyStorage>,
+    val producer: EnergyComponent<EnergyProducer>
 ) : Event(true) {
 
     override fun getHandlers(): HandlerList {

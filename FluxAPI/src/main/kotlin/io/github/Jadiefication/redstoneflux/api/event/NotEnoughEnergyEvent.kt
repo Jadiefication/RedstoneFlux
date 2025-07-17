@@ -1,6 +1,7 @@
 package io.github.Jadiefication.redstoneflux.api.event
 
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
+import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
@@ -13,7 +14,7 @@ import org.bukkit.event.HandlerList
 class NotEnoughEnergyEvent(
     val requiredEnergy: Double,
     val givenEnergy: Double,
-    val consumer: EnergyComponent<*>
+    val consumer: EnergyComponent<EnergyConsumer>
 ) : Event(true) {
 
     override fun getHandlers(): HandlerList {
