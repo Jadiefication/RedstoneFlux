@@ -1,8 +1,11 @@
 package io.github.Jadiefication.redstoneflux.api.components
 
+import io.github.Jadiefication.redstoneflux.api.event.EnergyComponentConnectEvent
+import io.github.Jadiefication.redstoneflux.api.event.EnergyComponentDisconnectEvent
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import io.github.Jadiefication.redstoneflux.api.types.EnergyType
+import org.bukkit.Bukkit
 
 /**
  * Represents a component that can be connected to other components.
@@ -36,6 +39,8 @@ open class EnergyComponent<T : EnergyMechanic?>(
         if (this.connectedComponents.contains(component)) {
             return
         }
+        val componentConnectEvent = EnergyComponentConnectEvent(component, this)
+        Bukkit.getServer().pluginManager.callEvent(componentConnectEvent)
         this.connectedComponents.add(component)
         component.connect(this)
     }
@@ -48,6 +53,8 @@ open class EnergyComponent<T : EnergyMechanic?>(
         if (!this.connectedComponents.contains(component)) {
             return
         }
+        val componentDisconnectEvent = EnergyComponentDisconnectEvent(component, this)
+        Bukkit.getServer().pluginManager.callEvent(componentDisconnectEvent)
         this.connectedComponents.remove(component)
         component.disconnect(this)
     }
