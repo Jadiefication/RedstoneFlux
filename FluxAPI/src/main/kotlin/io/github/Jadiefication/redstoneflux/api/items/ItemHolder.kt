@@ -1,11 +1,19 @@
 package io.github.Jadiefication.redstoneflux.api.items
 
+import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
+import io.github.Jadiefication.redstoneflux.api.persistents.EnergyTypePersistentDataType
+import io.github.Jadiefication.redstoneflux.api.types.EnergyTypes
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
+
+private val energyTypeKey = NamespacedKey("redstoneflux", "energy-type")
+private val mechanicClassKey = NamespacedKey("redstoneflux", "mechanic-class")
 
 /**
  * Holder of items defined by ItemStack
@@ -14,7 +22,7 @@ data class ItemHolder<T : EnergyMechanic>(
     var item: ItemStack? = null,
     override var name: Component? = null,
     override var lore: ItemLore? = null,
-    override var mechanic: T? = null,
+    override var mechanic: EnergyComponent<T>? = null,
     /**
      * Applicable modify function to affect the mechanic.
      */
@@ -22,7 +30,7 @@ data class ItemHolder<T : EnergyMechanic>(
 ) : ItemCreation<T> {
     internal fun modify() {
         if (modify != null && mechanic != null) {
-            modify?.invoke(mechanic!!)
+            modify?.invoke(mechanic!!.mechanic!!)
         }
         if (name != null) {
             item!!.setData(DataComponentTypes.ITEM_NAME, name!!)
@@ -30,6 +38,9 @@ data class ItemHolder<T : EnergyMechanic>(
         if (lore != null) {
             item!!.setData(DataComponentTypes.LORE, lore!!)
         }
+
+        item!!.itemMeta.persistentDataContainer.set(energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
+        item!!.itemMeta.persistentDataContainer.set(mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
     }
 }
 /**
@@ -39,7 +50,7 @@ data class MaterialHolder<T : EnergyMechanic>(
     var item: Material? = null,
     override var name: Component? = null,
     override var lore: ItemLore? = null,
-    override var mechanic: T? = null,
+    override var mechanic: EnergyComponent<T>? = null,
     /**
      * Applicable modify function to affect the mechanic.
      */
@@ -50,7 +61,7 @@ data class MaterialHolder<T : EnergyMechanic>(
     internal fun modify() {
         actualItem = ItemStack.of(item!!)
         if (modify != null && mechanic != null) {
-            modify?.invoke(mechanic!!)
+            modify?.invoke(mechanic!!.mechanic!!)
         }
         if (name != null) {
             actualItem!!.setData(DataComponentTypes.ITEM_NAME, name!!)
@@ -58,5 +69,7 @@ data class MaterialHolder<T : EnergyMechanic>(
         if (lore != null) {
             actualItem!!.setData(DataComponentTypes.LORE, lore!!)
         }
+        actualItem!!.itemMeta.persistentDataContainer.set(energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
+        actualItem!!.itemMeta.persistentDataContainer.set(mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
     }
 }

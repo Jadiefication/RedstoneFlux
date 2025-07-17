@@ -21,7 +21,7 @@ open class EnergyComponent<T : EnergyMechanic?>(
     /**
      * The components that this component is connected to.
      */
-    val connectedComponents: MutableSet<EnergyComponent<*>?> = HashSet<EnergyComponent<*>?>()
+    internal val connectedComponents: MutableSet<EnergyComponent<*>?> = HashSet<EnergyComponent<*>?>()
 
     /**
      * Connects this component to another component.

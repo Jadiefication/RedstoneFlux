@@ -1,5 +1,6 @@
 package io.github.Jadiefication.redstoneflux.api.items
 
+import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
@@ -21,21 +22,21 @@ object ItemsFactory {
     /**
      * This method is used to register all the items for each EnergyMechanic.
      */
-    fun <T : EnergyMechanic> registerItemHolder(builder: ItemHolder<T>.() -> Unit) {
-        val item = ItemHolder<T>()
+    fun <N : EnergyMechanic, M : EnergyComponent<N>> registerItemHolder(builder: ItemHolder<N>.() -> Unit) {
+        val item = ItemHolder<N>()
         item.builder()
         item.modify()
-        ITEM_STACKS_MAP.put(item.mechanic!!.javaClass, item.item!!)
+        ITEM_STACKS_MAP.put(item.mechanic!!.mechanic!!.javaClass, item.item!!)
     }
 
     /**
      * This method is used to register all the items for each EnergyMechanic.
      */
-    fun <T : EnergyMechanic> registerItem(builder: MaterialHolder<T>.() -> Unit) {
-        val item = MaterialHolder<T>()
+    fun <N : EnergyMechanic, M : EnergyComponent<N>> registerItem(builder: MaterialHolder<N>.() -> Unit) {
+        val item = MaterialHolder<N>()
         item.builder()
         item.modify()
-        ITEM_STACKS_MAP.put(item.mechanic!!.javaClass, item.actualItem)
+        ITEM_STACKS_MAP.put(item.mechanic!!.mechanic!!.javaClass, item.actualItem)
     }
 
     /**
