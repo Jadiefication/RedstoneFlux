@@ -216,9 +216,7 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
      * {@inheritDoc}
      */
     override fun createComponent(item: ItemStack?): EnergyComponent<*>? {
-        val energyType: EnergyType? = this.getEnergyType(item)?.orElseThrow()
-        val mechanic: EnergyMechanic = this.getMechanic(item)!!.orElseThrow()
-        return EnergyComponent<EnergyMechanic>(energyType, mechanic)
+        return ItemsFactory.getComponent(item!!).orElseThrow()
     }
 
     /**

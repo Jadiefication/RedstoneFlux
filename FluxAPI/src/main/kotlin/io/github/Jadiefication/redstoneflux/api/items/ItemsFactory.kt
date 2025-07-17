@@ -44,4 +44,9 @@ object ItemsFactory {
     fun getItem(component: EnergyComponent<*>): Optional<ItemStack> {
         return Optional.ofNullable(ITEM_STACKS_MAP[component])
     }
+
+    fun getComponent(item: ItemStack): Optional<EnergyComponent<*>> {
+        return Optional.ofNullable(ITEM_STACKS_MAP.entries
+            .find { it.value == item }?.key)
+    }
 }
