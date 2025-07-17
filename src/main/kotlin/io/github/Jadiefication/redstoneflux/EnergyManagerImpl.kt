@@ -149,11 +149,10 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
         val component: EnergyComponent<*>? = network.components[location]
         val energyType: EnergyType? = component?.energyType
         val mechanicType: MechanicType = MechanicType.fromComponent(component!!)
-        val mechanic: EnergyMechanic? = component.mechanic
 
         location?.block?.type = Material.AIR
         if (player?.gameMode != GameMode.CREATIVE) {
-            val result: ItemStack? = this.createItemComponent(energyType, mechanicType, mechanic)
+            val result: ItemStack? = this.createItemComponent(energyType, mechanicType, component)
             player?.world?.dropItemNaturally(location!!, result!!)
         }
 
@@ -237,11 +236,11 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
     override fun createItemComponent(
         type: EnergyType?,
         mechanicType: MechanicType?,
-        mechanic: EnergyMechanic?
+        mechanic: EnergyComponent<*>?
     ): ItemStack? {
-        require(mechanic?.javaClass?.isAssignableFrom(mechanicType?.clazz) == true) { "Mechanic type " + mechanicType?.clazz + " is not compatible with mechanic " + mechanic?.javaClass }
+        require(mechanic?.javaClass?.isAssignableFrom(mechanicType?.clazz) == true) { "Mechanic type " + mechanicType?.clazz + " is not compatible with mechanic " + mechanic?.mechanic?.javaClass }
 
-        val item: ItemStack = ItemsFactory.getItem(mechanic.javaClass)
+        val item: ItemStack = ItemsFactory.getItem(mechanic)
             .orElseThrow(Supplier { IllegalArgumentException("Item not found for mechanic " + mechanic.javaClass) })
 
         val meta: ItemMeta? = item.itemMeta

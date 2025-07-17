@@ -92,7 +92,7 @@ interface EnergyManager {
      * @param mechanic     The mechanic of the item.
      * @return The item created.
      */
-    fun createItemComponent(type: EnergyType?, mechanicType: MechanicType?, mechanic: EnergyMechanic?): ItemStack?
+    fun createItemComponent(type: EnergyType?, mechanicType: MechanicType?, mechanic: EnergyComponent<*>?): ItemStack?
 
     /**
      * Start the network updater.
