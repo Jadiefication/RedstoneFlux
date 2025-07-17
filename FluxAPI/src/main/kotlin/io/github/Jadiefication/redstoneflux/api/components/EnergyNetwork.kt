@@ -139,7 +139,7 @@ class EnergyNetwork(
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
             val defer = api.scope.async {
-                val produceEvent = EnergyProduceEvent((producer.mechanic as EnergyProducer).produce(location))
+                val produceEvent = EnergyProduceEvent((producer.mechanic as EnergyProducer).produce(location), producer)
                 Bukkit.getServer().pluginManager.callEvent(produceEvent)
             }
             defers.add(defer)

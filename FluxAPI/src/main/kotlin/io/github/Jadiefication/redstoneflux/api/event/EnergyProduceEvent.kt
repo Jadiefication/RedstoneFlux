@@ -1,5 +1,6 @@
 package io.github.Jadiefication.redstoneflux.api.event
 
+import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
@@ -8,7 +9,8 @@ import org.bukkit.event.HandlerList
  * @param energyProduced the energy produced by the machine.
  */
 class EnergyProduceEvent(
-    val energyProduced: Double
+    val energyProduced: Double,
+    val producer: EnergyComponent<*>
 ) : Event(true) {
 
     override fun getHandlers(): HandlerList {
