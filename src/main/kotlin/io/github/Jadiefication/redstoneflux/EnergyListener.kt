@@ -111,6 +111,10 @@ class EnergyListener(
                 interactableMechanic.onLeftClick(event)
             }
 
+            Action.PHYSICAL -> {
+                interactableMechanic.onPhysicalInteraction(event)
+            }
+
             else -> {}
         }
     }

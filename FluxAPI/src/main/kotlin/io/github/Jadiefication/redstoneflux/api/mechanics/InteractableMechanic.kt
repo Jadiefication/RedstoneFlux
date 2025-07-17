@@ -17,4 +17,16 @@ interface InteractableMechanic {
      * @param event the event
      */
     fun onLeftClick(event: PlayerInteractEvent?)
+
+    /**
+     * Called when the mechanic is for example:
+     *      <ul>
+     *      <li>Jumping on soil
+     *      <li>Standing on pressure plate
+     *      <li>Triggering redstone ore
+     *      <li>Triggering tripwire
+     *      </ul>
+     * @param event the event
+     */
+    fun onPhysicalInteraction(event: PlayerInteractEvent?)
 }
