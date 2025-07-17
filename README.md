@@ -47,7 +47,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.Jadiefication:RedstoneFlux:1.0.0")
+    implementation("com.github.Jadiefication:RedstoneFlux:<version>")
 }
 ```
 
@@ -58,7 +58,7 @@ dependencies {
 This project is currently under active development. Usage documentation and public APIs will be stabilized and
 documented in future releases.
 
-For now, you can explore the codebase directly or check the `test-plugin` module for example usage.
+For now, you can explore the codebase directly or check the [`Nodal`](https://github.com/Jadiefication/Nodal) for example usage.
 
 ---
 
