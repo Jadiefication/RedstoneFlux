@@ -29,7 +29,7 @@ interface EnergyProducer : EnergyMechanic {
      * Produce energy at the given location.
      * @param location the location to produce energy at
      */
-    fun produce(location: Location?)
+    fun produce(location: Location?): Double
 
     /**
      * Extract energy from this energy producer.

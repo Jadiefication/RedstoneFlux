@@ -2,6 +2,7 @@ package io.github.Jadiefication.redstoneflux.api.components
 
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
+import io.github.Jadiefication.redstoneflux.api.event.EnergyProduceEvent
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyProducer
@@ -11,6 +12,7 @@ import io.github.Jadiefication.redstoneflux.api.types.MechanicType
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.persistence.PersistentDataType
@@ -135,7 +137,8 @@ class EnergyNetwork(
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
             val defer = api.scope.async {
-                (producer.mechanic as EnergyProducer).produce(location)
+                val produceEvent = EnergyProduceEvent((producer.mechanic as EnergyProducer).produce(location))
+                Bukkit.getServer().pluginManager.callEvent(produceEvent)
             }
             defers.add(defer)
         }
