@@ -145,7 +145,7 @@ class EnergyNetwork(
     /**
      * Update the network excess asynchronously.
      */
-    private fun handleExcess() {
+    private suspend fun handleExcess(): List<Unit> {
         val producers = getComponentByType(MechanicType.PRODUCER)
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
@@ -154,6 +154,7 @@ class EnergyNetwork(
             }
             defers.add(defer)
         }
+        return defers.awaitAll()
     }
     /**
      * Internal async method to update the network excess asynchronously.
