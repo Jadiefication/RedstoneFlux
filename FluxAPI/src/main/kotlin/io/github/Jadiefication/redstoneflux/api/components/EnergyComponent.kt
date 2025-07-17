@@ -8,7 +8,7 @@ import io.github.Jadiefication.redstoneflux.api.types.EnergyType
  * Represents a component that can be connected to other components.
  * @param <T> The mechanic that this component uses.
 </T> */
-class EnergyComponent<T : EnergyMechanic?>(
+open class EnergyComponent<T : EnergyMechanic?>(
     /**
      * The type of energy that this component uses.
      */
@@ -18,17 +18,6 @@ class EnergyComponent<T : EnergyMechanic?>(
      */
     val mechanic: T?
 ) {
-    /**
-     * Get the type of energy that this component uses.
-     */
-
-    /**
-     * Get the mechanic that this component uses.
-     */
-
-    /**
-     * Get the components that this component is connected to.
-     */
     /**
      * The components that this component is connected to.
      */
@@ -40,7 +29,7 @@ class EnergyComponent<T : EnergyMechanic?>(
      * @throws SameEnergyTypeException If the component uses not the same energy type as this component.
      */
     @Throws(SameEnergyTypeException::class)
-    fun connect(component: EnergyComponent<*>) {
+    internal fun connect(component: EnergyComponent<*>) {
         if (this.energyType !== component.energyType) {
             throw SameEnergyTypeException()
         }
@@ -55,7 +44,7 @@ class EnergyComponent<T : EnergyMechanic?>(
      * Disconnects this component from another component.
      * @param component The component to disconnect from.
      */
-    fun disconnect(component: EnergyComponent<*>) {
+    internal fun disconnect(component: EnergyComponent<*>) {
         if (!this.connectedComponents.contains(component)) {
             return
         }
