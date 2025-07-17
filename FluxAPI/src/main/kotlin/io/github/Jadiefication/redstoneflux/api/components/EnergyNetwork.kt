@@ -2,9 +2,11 @@ package io.github.Jadiefication.redstoneflux.api.components
 
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
+import io.github.Jadiefication.redstoneflux.api.event.EnergyConsumeEvent
 import io.github.Jadiefication.redstoneflux.api.event.EnergyProduceEvent
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
+import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyProducer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyStorage
 import io.github.Jadiefication.redstoneflux.api.types.EnergyType
@@ -213,6 +215,12 @@ class EnergyNetwork(
         for (producerComponent in connectedProducers) {
             val producer = producerComponent.mechanic as EnergyProducer
             val energyAvailable = producer.extractEnergy(requiredEnergy)
+            val produceEvent = EnergyConsumeEvent(
+                energyAvailable,
+                producerComponent,
+                consumerComponent
+            )
+            Bukkit.getServer().pluginManager.callEvent(produceEvent)
             requiredEnergy -= energyAvailable
             providedEnergy += energyAvailable
             if (requiredEnergy <= 0) {
@@ -227,6 +235,12 @@ class EnergyNetwork(
             for (storageComponent in connectedStorages) {
                 val storage = storageComponent.mechanic as EnergyStorage
                 val energyFromStorage = storage.consumeEnergy(requiredEnergy)
+                val produceEvent = EnergyConsumeEvent(
+                    energyFromStorage,
+                    storageComponent,
+                    consumerComponent
+                )
+                Bukkit.getServer().pluginManager.callEvent(produceEvent)
                 requiredEnergy -= energyFromStorage
                 providedEnergy += energyFromStorage
 
