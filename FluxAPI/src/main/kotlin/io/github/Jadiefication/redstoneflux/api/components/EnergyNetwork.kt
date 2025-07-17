@@ -5,6 +5,7 @@ import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.event.EnergyConsumeEvent
 import io.github.Jadiefication.redstoneflux.api.event.EnergyProduceEvent
 import io.github.Jadiefication.redstoneflux.api.event.NotEnoughEnergyEvent
+import io.github.Jadiefication.redstoneflux.api.event.StoreEnergyEvent
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
@@ -177,6 +178,8 @@ class EnergyNetwork(
             for (storageComponent in connectedStorages) {
                 val storage = storageComponent.mechanic as EnergyStorage
                 val energyStored = storage.storeEnergy(excessEnergy)
+                val storeEvent = StoreEnergyEvent(energyStored, storageComponent, producerC)
+                Bukkit.getServer().pluginManager.callEvent(storeEvent)
                 excessEnergy -= energyStored
 
                 if (excessEnergy <= 0) {
