@@ -4,6 +4,7 @@ import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.event.EnergyConsumeEvent
 import io.github.Jadiefication.redstoneflux.api.event.EnergyProduceEvent
+import io.github.Jadiefication.redstoneflux.api.event.NotEnoughEnergyEvent
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
@@ -252,6 +253,8 @@ class EnergyNetwork(
 
         consumer.receiveEnergy(providedEnergy)
         if (requiredEnergy > 0) {
+            val notEnoughEnergyEvent = NotEnoughEnergyEvent(requiredEnergy, providedEnergy, consumerComponent)
+            Bukkit.getServer().pluginManager.callEvent(notEnoughEnergyEvent)
             if (api.isDebug) {
                 println("The consumer $consumerComponent did not receive enough energy.")
             }
