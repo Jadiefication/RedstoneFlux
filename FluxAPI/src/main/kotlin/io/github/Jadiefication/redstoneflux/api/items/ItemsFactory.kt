@@ -1,5 +1,6 @@
 package io.github.Jadiefication.redstoneflux.api.items
 
+import com.google.gson.Gson
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import org.bukkit.NamespacedKey
@@ -39,6 +40,11 @@ object ItemsFactory {
      */
     private val ITEM_STACKS_MAP: MutableMap<EnergyComponent<*>, ItemStack?> =
         mutableMapOf()
+
+    /**
+     * Used for serialization of mechanics
+     */
+    lateinit var gson: Gson
 
     /**
      * This method is used to register all the items for each EnergyMechanic.

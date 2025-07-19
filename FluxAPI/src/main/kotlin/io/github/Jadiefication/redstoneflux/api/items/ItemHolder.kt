@@ -39,6 +39,7 @@ data class ItemHolder<T : EnergyMechanic>(
         val meta = item!!.itemMeta
         meta.persistentDataContainer.set(ItemsFactory.energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
         meta.persistentDataContainer.set(ItemsFactory.mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
+        meta.persistentDataContainer.set(ItemsFactory.mechanicKey, PersistentDataType.STRING, ItemsFactory.gson.toJson(mechanic!!.mechanic!!))
         item!!.itemMeta = meta
     }
 }
@@ -72,6 +73,7 @@ data class MaterialHolder<T : EnergyMechanic>(
         val container = meta.persistentDataContainer
         container.set(ItemsFactory.energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
         container.set(ItemsFactory.mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
+        container.set(ItemsFactory.mechanicKey, PersistentDataType.STRING, ItemsFactory.gson.toJson(mechanic!!.mechanic!!))
         actualItem!!.itemMeta = meta
     }
 }
