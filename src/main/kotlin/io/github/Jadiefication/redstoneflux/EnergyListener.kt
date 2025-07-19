@@ -48,8 +48,7 @@ class EnergyListener(
     @EventHandler
     fun onEnergyComponentPlace(event: BlockPlaceEvent) {
         val item = event.getItemInHand()
-        val component = ItemsFactory.getComponent(item)
-        if (component.isEmpty || !this.energyManager.isComponent(item)) {
+        if (!this.energyManager.isComponent(item)) {
             return
         }
         val location = event.blockPlaced.location
