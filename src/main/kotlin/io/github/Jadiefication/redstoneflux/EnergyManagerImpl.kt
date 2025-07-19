@@ -77,7 +77,7 @@ class EnergyManagerImpl(
     @Throws(SameEnergyTypeException::class)
     override fun placeComponent(component: EnergyComponent<*>?, location: Location?) {
         var energyNetworks: MutableList<EnergyNetwork> = ArrayList()
-        for (neibhorFace in NEIBHORS) {
+        for (neibhorFace in NEIGHBORS) {
             val neighbor = location?.block?.getRelative(neibhorFace)
             val networkNeighbor: Optional<EnergyNetwork?> =
                 this.networks.stream()
@@ -101,7 +101,7 @@ class EnergyManagerImpl(
             val firstNetwork: EnergyNetwork = energyNetworks.first()
             firstNetwork.addComponent(component!!, location!!)
             for (i in 1..<energyNetworks.size) {
-                val network: EnergyNetwork = energyNetworks.get(i)
+                val network: EnergyNetwork = energyNetworks[i]
                 firstNetwork.mergeWith(network)
                 this.deleteNetwork(network)
             }
@@ -294,7 +294,7 @@ class EnergyManagerImpl(
      * {@inheritDoc}
      */
     override fun loadNetworks(chunk: Chunk?) {
-        val chunkData: PersistentDataContainer? = chunk?.getPersistentDataContainer()
+        val chunkData: PersistentDataContainer? = chunk?.persistentDataContainer
         if (chunkData?.has(
                 energyLib.networkKey,
                 PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING)
@@ -303,7 +303,7 @@ class EnergyManagerImpl(
             val networkDatas: MutableList<String?> =
                 chunkData.getOrDefault(
                     energyLib.networkKey,
-                    PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING),
+                    PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
                     ArrayList<String?>()
                 )
             for (networkData in networkDatas) {
@@ -398,7 +398,7 @@ class EnergyManagerImpl(
                     )
                 )
 
-                for (face in NEIBHORS) {
+                for (face in NEIGHBORS) {
                     val neighbor = current.block.getRelative(face).location
                     if (isBlockComponent(neighbor) && !visited.contains(neighbor)) {
                         queue.add(neighbor)
@@ -424,7 +424,7 @@ class EnergyManagerImpl(
         key: NamespacedKey,
         type: PersistentDataType<P, C>
     ): Optional<C?> {
-        val meta: ItemMeta? = item.getItemMeta()
+        val meta: ItemMeta? = item.itemMeta
         if (meta == null) {
             return Optional.empty<C?>() as Optional<C?>
         }
@@ -456,7 +456,7 @@ class EnergyManagerImpl(
         /**
          * The list of the 6 block faces.
          */
-        private val NEIBHORS: MutableList<BlockFace> = List.of<BlockFace?>(
+        private val NEIGHBORS = listOf(
             BlockFace.UP,
             BlockFace.DOWN,
             BlockFace.NORTH,
