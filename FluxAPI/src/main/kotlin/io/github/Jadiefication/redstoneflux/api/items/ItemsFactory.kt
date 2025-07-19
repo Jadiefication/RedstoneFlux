@@ -5,6 +5,7 @@ import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.Plugin
 import java.util.*
 
@@ -76,7 +77,31 @@ object ItemsFactory {
     }
 
     fun getComponent(item: ItemStack): Optional<EnergyComponent<*>> {
-        return Optional.ofNullable(ITEM_STACKS_MAP.entries
-            .find { it.value == item }?.key)
+        if (!item.hasItemMeta()) return Optional.empty()
+
+        val meta = item.itemMeta!!
+        if (!meta.persistentDataContainer.has(mechanicKey) || !meta.persistentDataContainer.has(mechanicClassKey)) return Optional.empty()
+
+        return try {
+            val mechanicJson = meta.persistentDataContainer.get(
+                mechanicKey,
+                PersistentDataType.STRING
+            )
+            val clazz = Class.forName(meta.persistentDataContainer.get(
+                mechanicClassKey,
+                PersistentDataType.STRING
+            ))
+            val mechanicClazz: Class<out EnergyMechanic?> = clazz.asSubclass(EnergyMechanic::class.java)
+            val mechanic = gson.fromJson(mechanicJson, mechanicClazz)
+
+            // Find the component that matches this mechanic
+            ITEM_STACKS_MAP.entries
+                .find { (component, _) -> component.mechanic == mechanic }
+                ?.let { Optional.of(it.key) }
+                ?: Optional.empty()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Optional.empty()
+        }
     }
 }

@@ -2,7 +2,6 @@ package io.github.Jadiefication.redstoneflux
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.tcoded.folialib.wrapper.task.WrappedTask
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
@@ -16,15 +15,7 @@ import io.github.Jadiefication.redstoneflux.api.persistents.adapters.EnergyNetwo
 import io.github.Jadiefication.redstoneflux.api.persistents.adapters.EnergyTypeAdapter
 import io.github.Jadiefication.redstoneflux.api.types.EnergyType
 import io.github.Jadiefication.redstoneflux.api.types.MechanicType
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.NonCancellable.isActive
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.Player
@@ -34,11 +25,13 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
 import java.util.List
+import java.util.Queue
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
+
 
 /**
  * This class is the implementation of the EnergyManager interface.
@@ -206,7 +199,14 @@ class EnergyManagerImpl(
      * {@inheritDoc}
      */
     override fun createComponent(item: ItemStack?): EnergyComponent<*>? {
-        return ItemsFactory.getComponent(item!!).orElseThrow()
+        val component = ItemsFactory.getComponent(item!!)
+        return if (component.isEmpty) {
+            val energyType = this.getEnergyType(item)!!.orElseThrow()!!
+            val mechanic = this.getMechanic(item)!!.orElseThrow()
+            return EnergyComponent(energyType, mechanic)
+        } else {
+            component.get()
+        }
     }
 
     /**
