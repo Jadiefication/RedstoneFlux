@@ -12,8 +12,8 @@ import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 
-private val energyTypeKey = NamespacedKey("redstoneflux", "energy-type")
-private val mechanicClassKey = NamespacedKey("redstoneflux", "mechanic-class")
+private val energyTypeKey = NamespacedKey(ItemsFactory.plugin, "energy-type")
+private val mechanicClassKey = NamespacedKey(ItemsFactory.plugin, "mechanic-class")
 
 /**
  * Holder of items defined by ItemStack

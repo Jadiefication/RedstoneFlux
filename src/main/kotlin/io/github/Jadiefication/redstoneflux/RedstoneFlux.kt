@@ -6,6 +6,7 @@ import fr.traqueur.commands.spigot.CommandManager
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
+import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.commands.EnergyCommand
 import io.github.Jadiefication.redstoneflux.commands.NetworkArgument
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +56,7 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
      * Initialize the plugin.
      */
     override fun onEnable() {
+        ItemsFactory.plugin = this
         Updater.update("RedstoneFlux")
 
         this.scheduler = FoliaLib(this).scheduler

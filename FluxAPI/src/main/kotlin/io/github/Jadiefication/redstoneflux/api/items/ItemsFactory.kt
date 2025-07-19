@@ -3,6 +3,7 @@ package io.github.Jadiefication.redstoneflux.api.items
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import org.bukkit.inventory.ItemStack
+import org.bukkit.plugin.Plugin
 import java.util.*
 
 /**
@@ -15,6 +16,7 @@ object ItemsFactory {
     /**
      * This map contains all the items registered for each EnergyMechanic.
      */
+    lateinit var plugin: Plugin
     private val ITEM_STACKS_MAP: MutableMap<EnergyComponent<*>, ItemStack?> =
         mutableMapOf()
 
