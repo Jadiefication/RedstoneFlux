@@ -43,7 +43,9 @@ import java.util.stream.Collectors
  * This class is the implementation of the EnergyManager interface.
  * It allows to place and break energy components in the world.
  */
-class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
+class EnergyManagerImpl(
+    val energyLib: RedstoneFlux
+) : EnergyManager {
     /**
      * The EnergyLib instance.
      */
@@ -53,26 +55,6 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
      * The Gson instance.
      */
     override val gson: Gson
-
-    /**
-     * The key to store the energy type in the item meta.
-     */
-    override val energyTypeKey: NamespacedKey
-
-    /**
-     * The key to store the mechanic class in the item meta.
-     */
-    override val mechanicClassKey: NamespacedKey
-
-    /**
-     * The key to store the mechanic in the item meta.
-     */
-    override val mechanicKey: NamespacedKey
-
-    /**
-     * The key to store the network in the chunk.
-     */
-    override val networkKey: NamespacedKey
 
     /**
      * The set of all the energy networks.
@@ -92,10 +74,6 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
     init {
         this.gson = this.createGson()
         this.networks = HashSet<EnergyNetwork?>()
-        this.energyTypeKey = NamespacedKey(energyLib, "energy-type")
-        this.mechanicClassKey = NamespacedKey(energyLib, "mechanic-class")
-        this.mechanicKey = NamespacedKey(energyLib, "mechanic")
-        this.networkKey = NamespacedKey(energyLib, "network")
     }
 
     /**
@@ -172,7 +150,7 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
     override fun getEnergyType(item: ItemStack?): Optional<EnergyType?>? {
         return this.getPersistentData<String, EnergyType>(
             item!!,
-            this.energyTypeKey,
+            energyLib.energyTypeKey,
             EnergyTypePersistentDataType.INSTANCE
         )
     }
@@ -181,7 +159,7 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
      * {@inheritDoc}
      */
     override fun getMechanicClass(item: ItemStack?): Optional<String?>? {
-        return this.getPersistentData<String, String>(item!!, this.mechanicClassKey, PersistentDataType.STRING)
+        return this.getPersistentData<String, String>(item!!, energyLib.mechanicClassKey, PersistentDataType.STRING)
     }
 
     /**
@@ -197,7 +175,7 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
         }
         require(EnergyMechanic::class.java.isAssignableFrom(clazz)) { "Class $mechanicClass is not an EnergyMechanic!" }
         val mechanicClazz: Class<out EnergyMechanic?> = clazz.asSubclass(EnergyMechanic::class.java)
-        val opt = this.getPersistentData<String, String>(item!!, this.mechanicKey, PersistentDataType.STRING)
+        val opt = this.getPersistentData<String, String>(item!!, energyLib.mechanicKey, PersistentDataType.STRING)
         if (opt.isEmpty) {
             return Optional.empty<EnergyMechanic?>()
         }
@@ -248,17 +226,17 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
         requireNotNull(meta) { "ItemMeta is null!" }
         val persistentDataContainer: PersistentDataContainer = meta.persistentDataContainer
         persistentDataContainer.set<String?, EnergyType?>(
-            this.energyTypeKey,
+            energyLib.energyTypeKey,
             EnergyTypePersistentDataType.INSTANCE,
             type!!
         )
         persistentDataContainer.set<String?, String?>(
-            this.mechanicClassKey,
+            energyLib.mechanicClassKey,
             PersistentDataType.STRING,
             mechanic.javaClass.getName()
         )
         persistentDataContainer.set<String?, String?>(
-            this.mechanicKey,
+            energyLib.mechanicKey,
             PersistentDataType.STRING,
             this.gson.toJson(mechanic, mechanic.javaClass)
         )
@@ -304,13 +282,13 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
     override fun loadNetworks(chunk: Chunk?) {
         val chunkData: PersistentDataContainer? = chunk?.getPersistentDataContainer()
         if (chunkData?.has(
-                this.networkKey,
+                energyLib.networkKey,
                 PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING)
             ) == true
         ) {
             val networkDatas: MutableList<String?> =
                 chunkData.getOrDefault(
-                    this.networkKey,
+                    energyLib.networkKey,
                     PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING),
                     ArrayList<String?>()
                 )

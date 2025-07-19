@@ -12,9 +12,6 @@ import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 
-private val energyTypeKey = NamespacedKey(ItemsFactory.plugin, "energy-type")
-private val mechanicClassKey = NamespacedKey(ItemsFactory.plugin, "mechanic-class")
-
 /**
  * Holder of items defined by ItemStack
  */
@@ -40,8 +37,8 @@ data class ItemHolder<T : EnergyMechanic>(
         }
 
         val meta = item!!.itemMeta
-        meta.persistentDataContainer.set(energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
-        meta.persistentDataContainer.set(mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
+        meta.persistentDataContainer.set(ItemsFactory.energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
+        meta.persistentDataContainer.set(ItemsFactory.mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
         item!!.itemMeta = meta
     }
 }
@@ -73,8 +70,8 @@ data class MaterialHolder<T : EnergyMechanic>(
         }
         val meta = actualItem!!.itemMeta
         val container = meta.persistentDataContainer
-        container.set(energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
-        container.set(mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
+        container.set(ItemsFactory.energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
+        container.set(ItemsFactory.mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
         actualItem!!.itemMeta = meta
     }
 }

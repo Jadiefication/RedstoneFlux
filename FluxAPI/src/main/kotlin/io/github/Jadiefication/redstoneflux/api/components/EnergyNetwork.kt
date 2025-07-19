@@ -7,6 +7,7 @@ import io.github.Jadiefication.redstoneflux.api.event.EnergyProduceEvent
 import io.github.Jadiefication.redstoneflux.api.event.NotEnoughEnergyEvent
 import io.github.Jadiefication.redstoneflux.api.event.StoreEnergyEvent
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
+import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyProducer
@@ -19,6 +20,7 @@ import kotlinx.coroutines.awaitAll
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
+import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataType
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
@@ -58,6 +60,11 @@ class EnergyNetwork(
      * The network's components.
      */
     val components: MutableMap<Location?, EnergyComponent<*>?> = ConcurrentHashMap<Location?, EnergyComponent<*>?>()
+
+    /**
+     * The key to store the network in the chunk.
+     */
+    var networkKey: NamespacedKey = ItemsFactory.networkKey
 
     /**
      * Creates a new energy network.
@@ -311,11 +318,11 @@ class EnergyNetwork(
 
         var networks =
             container?.getOrDefault(
-                manager.networkKey!!,
+                networkKey,
                 PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
-                ArrayList<String?>()
+                ArrayList()
             )
-        networks = ArrayList<String?>(networks)
+        networks = ArrayList(networks)
         networks.removeIf { network: String? ->
             val energyNetwork: EnergyNetwork? = gson?.fromJson(network, EnergyNetwork::class.java)
             energyNetwork?.id == this.id
@@ -323,7 +330,7 @@ class EnergyNetwork(
         networks.add(json)
 
         container?.set(
-            manager.networkKey!!,
+            networkKey,
             PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
             networks
         )
@@ -336,9 +343,9 @@ class EnergyNetwork(
         val container = chunk!!.getPersistentDataContainer()
         var networks: MutableList<String?> =
             container.getOrDefault(
-                this.api.manager!!.networkKey!!,
-                PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING),
-                mutableListOf<String?>()
+                networkKey,
+                PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+                mutableListOf()
             )
         networks = ArrayList(networks)
         networks.removeIf { json: String? ->
@@ -346,7 +353,7 @@ class EnergyNetwork(
             network?.id == this.id
         }
         container.set(
-            this.api.manager!!.networkKey!!,
+            networkKey,
             PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
             networks
         )

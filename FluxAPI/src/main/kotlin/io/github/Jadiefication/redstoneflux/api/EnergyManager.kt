@@ -116,34 +116,6 @@ interface EnergyManager {
     fun deleteNetwork(network: EnergyNetwork?)
 
     /**
-     * Get the energy type key.
-     *
-     * @return The energy type key.
-     */
-    val energyTypeKey: NamespacedKey?
-
-    /**
-     * Get the mechanic class key.
-     *
-     * @return The mechanic class key.
-     */
-    val mechanicClassKey: NamespacedKey?
-
-    /**
-     * Get the mechanic key.
-     *
-     * @return The mechanic key.
-     */
-    val mechanicKey: NamespacedKey?
-
-    /**
-     * Get the network key.
-     *
-     * @return The network key.
-     */
-    val networkKey: NamespacedKey?
-
-    /**
      * Get all the networks.
      *
      * @return The networks.

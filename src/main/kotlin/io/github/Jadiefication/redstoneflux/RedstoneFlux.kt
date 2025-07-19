@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.bukkit.Chunk
+import org.bukkit.NamespacedKey
 import org.bukkit.plugin.PluginManager
 import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.ServicesManager
@@ -53,10 +54,33 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
     override var isDebug: Boolean = false
 
     /**
+     * The key to store the energy type in the item meta.
+     */
+    val energyTypeKey: NamespacedKey = NamespacedKey(this, "energy-type")
+
+    /**
+     * The key to store the mechanic class in the item meta.
+     */
+    val mechanicClassKey: NamespacedKey = NamespacedKey(this, "mechanic-class")
+
+    /**
+     * The key to store the mechanic in the item meta.
+     */
+    val mechanicKey: NamespacedKey = NamespacedKey(this, "mechanic")
+
+    /**
+     * The key to store the network in the chunk.
+     */
+    val networkKey: NamespacedKey = NamespacedKey(this, "network")
+
+    /**
      * Initialize the plugin.
      */
     override fun onEnable() {
-        ItemsFactory.plugin = this
+        ItemsFactory.energyTypeKey = energyTypeKey
+        ItemsFactory.mechanicClassKey = mechanicClassKey
+        ItemsFactory.mechanicKey = mechanicKey
+        ItemsFactory.networkKey = networkKey
         Updater.update("RedstoneFlux")
 
         this.scheduler = FoliaLib(this).scheduler
