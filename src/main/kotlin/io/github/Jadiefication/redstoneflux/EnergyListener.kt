@@ -46,7 +46,7 @@ class EnergyListener(
      */
     @EventHandler
     fun onEnergyComponentPlace(event: BlockPlaceEvent) {
-        val item = event.getItemInHand().clone()
+        val item = event.getItemInHand()
         if (!this.energyManager.isComponent(item)) {
             return
         }
