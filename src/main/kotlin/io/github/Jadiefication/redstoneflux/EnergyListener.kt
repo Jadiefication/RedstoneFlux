@@ -3,6 +3,7 @@ package io.github.Jadiefication.redstoneflux
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
+import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.api.mechanics.InteractableMechanic
 import kotlinx.coroutines.launch
 import org.bukkit.event.EventHandler
@@ -47,7 +48,8 @@ class EnergyListener(
     @EventHandler
     fun onEnergyComponentPlace(event: BlockPlaceEvent) {
         val item = event.getItemInHand()
-        if (!this.energyManager.isComponent(item)) {
+        val component = ItemsFactory.getComponent(item)
+        if (component.isEmpty || !this.energyManager.isComponent(item)) {
             return
         }
         val location = event.blockPlaced.location

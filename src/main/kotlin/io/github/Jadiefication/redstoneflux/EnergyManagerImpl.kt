@@ -38,6 +38,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.stream.Collectors
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * This class is the implementation of the EnergyManager interface.
@@ -73,6 +74,7 @@ class EnergyManagerImpl(
      */
     init {
         this.gson = this.createGson()
+        ItemsFactory.gson = this.gson
         this.networks = HashSet<EnergyNetwork?>()
     }
 
@@ -148,18 +150,28 @@ class EnergyManagerImpl(
      * {@inheritDoc}
      */
     override fun getEnergyType(item: ItemStack?): Optional<EnergyType?>? {
-        return this.getPersistentData<String, EnergyType>(
+        val pdcOptional = this.getPersistentData<String, EnergyType>(
             item!!,
             energyLib.energyTypeKey,
             EnergyTypePersistentDataType.INSTANCE
         )
+        return (if (pdcOptional.isEmpty) {
+            Optional.ofNullable(ItemsFactory.getComponent(item).getOrNull()?.energyType)
+        } else {
+            pdcOptional
+        }) as Optional<EnergyType?>?
     }
 
     /**
      * {@inheritDoc}
      */
     override fun getMechanicClass(item: ItemStack?): Optional<String?>? {
-        return this.getPersistentData<String, String>(item!!, energyLib.mechanicClassKey, PersistentDataType.STRING)
+        val pdcOptional = this.getPersistentData<String, String>(item!!, energyLib.mechanicClassKey, PersistentDataType.STRING)
+        return (if (pdcOptional.isEmpty) {
+            Optional.ofNullable(ItemsFactory.getComponent(item).getOrNull()?.mechanic?.javaClass?.name)
+        } else {
+            pdcOptional
+        }) as Optional<String?>?
     }
 
     /**
