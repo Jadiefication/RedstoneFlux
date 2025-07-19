@@ -58,7 +58,8 @@ dependencies {
 This project is currently under active development. Usage documentation and public APIs will be stabilized and
 documented in future releases.
 
-For now, you can explore the codebase directly or check the [`Nodal`](https://github.com/Jadiefication/Nodal) for example usage.
+For now, you can explore the codebase directly or check the [`Nodal`](https://github.com/Jadiefication/Nodal) for
+example usage.
 
 ---
 

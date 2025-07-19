@@ -24,7 +24,6 @@ import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
-import java.util.List
 import java.util.Queue
 import java.util.function.Consumer
 import java.util.function.Function
@@ -159,7 +158,8 @@ class EnergyManagerImpl(
      * {@inheritDoc}
      */
     override fun getMechanicClass(item: ItemStack?): Optional<String?>? {
-        val pdcOptional = this.getPersistentData<String, String>(item!!, energyLib.mechanicClassKey, PersistentDataType.STRING)
+        val pdcOptional =
+            this.getPersistentData<String, String>(item!!, energyLib.mechanicClassKey, PersistentDataType.STRING)
         return (if (pdcOptional.isEmpty) {
             Optional.ofNullable(ItemsFactory.getComponent(item).getOrNull()?.mechanic?.javaClass?.name)
         } else {
@@ -350,7 +350,11 @@ class EnergyManagerImpl(
         }
     }
 
-    private fun asyncNetworkSplit(visited: MutableSet<Location?>, component: Location?, newNetworks: MutableList<EnergyNetwork?>) {
+    private fun asyncNetworkSplit(
+        visited: MutableSet<Location?>,
+        component: Location?,
+        newNetworks: MutableList<EnergyNetwork?>
+    ) {
         if (!visited.contains(component)) {
             val subNetworkComponents: MutableSet<MutableMap.MutableEntry<Location?, EnergyComponent<*>?>> =
                 discoverSubNetwork(component, visited)

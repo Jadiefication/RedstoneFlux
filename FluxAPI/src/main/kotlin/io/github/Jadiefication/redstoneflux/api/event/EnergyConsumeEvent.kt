@@ -2,7 +2,6 @@ package io.github.Jadiefication.redstoneflux.api.event
 
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
-import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 

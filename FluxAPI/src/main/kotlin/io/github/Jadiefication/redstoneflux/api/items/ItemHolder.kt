@@ -3,12 +3,10 @@ package io.github.Jadiefication.redstoneflux.api.items
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import io.github.Jadiefication.redstoneflux.api.persistents.EnergyTypePersistentDataType
-import io.github.Jadiefication.redstoneflux.api.types.EnergyTypes
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
-import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 
@@ -37,12 +35,25 @@ data class ItemHolder<T : EnergyMechanic>(
         }
 
         val meta = item!!.itemMeta
-        meta.persistentDataContainer.set(ItemsFactory.energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
-        meta.persistentDataContainer.set(ItemsFactory.mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
-        meta.persistentDataContainer.set(ItemsFactory.mechanicKey, PersistentDataType.STRING, ItemsFactory.gson.toJson(mechanic!!.mechanic!!))
+        meta.persistentDataContainer.set(
+            ItemsFactory.energyTypeKey,
+            EnergyTypePersistentDataType.INSTANCE,
+            mechanic!!.energyType!!
+        )
+        meta.persistentDataContainer.set(
+            ItemsFactory.mechanicClassKey,
+            PersistentDataType.STRING,
+            mechanic!!.mechanic!!.javaClass.name
+        )
+        meta.persistentDataContainer.set(
+            ItemsFactory.mechanicKey,
+            PersistentDataType.STRING,
+            ItemsFactory.gson.toJson(mechanic!!.mechanic!!)
+        )
         item!!.itemMeta = meta
     }
 }
+
 /**
  * Holder of items defined by Material
  */
@@ -73,7 +84,11 @@ data class MaterialHolder<T : EnergyMechanic>(
         val container = meta.persistentDataContainer
         container.set(ItemsFactory.energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
         container.set(ItemsFactory.mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
-        container.set(ItemsFactory.mechanicKey, PersistentDataType.STRING, ItemsFactory.gson.toJson(mechanic!!.mechanic!!))
+        container.set(
+            ItemsFactory.mechanicKey,
+            PersistentDataType.STRING,
+            ItemsFactory.gson.toJson(mechanic!!.mechanic!!)
+        )
         actualItem!!.itemMeta = meta
     }
 }

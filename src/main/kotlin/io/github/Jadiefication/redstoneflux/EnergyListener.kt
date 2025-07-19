@@ -3,7 +3,6 @@ package io.github.Jadiefication.redstoneflux
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
-import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.api.mechanics.InteractableMechanic
 import kotlinx.coroutines.launch
 import org.bukkit.event.EventHandler

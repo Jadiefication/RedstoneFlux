@@ -9,7 +9,6 @@ import io.github.Jadiefication.redstoneflux.api.types.EnergyType
 import io.github.Jadiefication.redstoneflux.api.types.MechanicType
 import org.bukkit.Chunk
 import org.bukkit.Location
-import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import java.util.*

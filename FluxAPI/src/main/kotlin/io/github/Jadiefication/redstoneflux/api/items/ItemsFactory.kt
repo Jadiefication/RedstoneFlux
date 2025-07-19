@@ -6,7 +6,6 @@ import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
-import org.bukkit.plugin.Plugin
 import java.util.*
 
 /**
@@ -87,10 +86,12 @@ object ItemsFactory {
                 mechanicKey,
                 PersistentDataType.STRING
             )
-            val clazz = Class.forName(meta.persistentDataContainer.get(
-                mechanicClassKey,
-                PersistentDataType.STRING
-            ))
+            val clazz = Class.forName(
+                meta.persistentDataContainer.get(
+                    mechanicClassKey,
+                    PersistentDataType.STRING
+                )
+            )
             val mechanicClazz: Class<out EnergyMechanic?> = clazz.asSubclass(EnergyMechanic::class.java)
             val mechanic = gson.fromJson(mechanicJson, mechanicClazz)
 

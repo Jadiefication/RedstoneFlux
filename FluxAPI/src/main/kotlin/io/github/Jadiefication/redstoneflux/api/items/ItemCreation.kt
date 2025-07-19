@@ -4,7 +4,6 @@ import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
-import org.bukkit.inventory.ItemStack
 
 /**
  * Base for holding custom energy items.

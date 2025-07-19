@@ -3,17 +3,14 @@ package io.github.Jadiefication.redstoneflux.commands
 import fr.traqueur.commands.api.arguments.Arguments
 import fr.traqueur.commands.api.models.Command
 import io.github.Jadiefication.redstoneflux.RedstoneFlux
-import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import org.bukkit.command.CommandSender
 
 class ShowCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(plugin, "show") {
-    private val manager: EnergyManager = plugin.manager!!
-
     init {
-        this.setPermission("energy.admin.show")
-        this.setUsage("/energy-admin show <network>")
-        this.setDescription("Show a network.")
+        this.permission = "energy.admin.show"
+        this.usage = "/energy-admin show <network>"
+        this.description = "Show a network."
         this.addArgs("network:network")
     }
 

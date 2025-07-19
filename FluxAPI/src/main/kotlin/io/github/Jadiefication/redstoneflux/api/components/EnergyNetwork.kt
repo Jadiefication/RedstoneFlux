@@ -9,7 +9,6 @@ import io.github.Jadiefication.redstoneflux.api.event.StoreEnergyEvent
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
-import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyProducer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyStorage
 import io.github.Jadiefication.redstoneflux.api.types.EnergyType
@@ -173,6 +172,7 @@ class EnergyNetwork(
         }
         return defers.awaitAll()
     }
+
     /**
      * Internal async method to update the network excess asynchronously.
      */
