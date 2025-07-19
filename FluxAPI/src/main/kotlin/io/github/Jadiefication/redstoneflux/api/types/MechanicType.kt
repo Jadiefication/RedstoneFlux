@@ -42,7 +42,7 @@ enum class MechanicType
     METER(EnergyMeter::class.java),
 
     /**
-     *
+     * Represents an energy converter
      */
     CONVERTER(EnergyConverter::class.java);
 
