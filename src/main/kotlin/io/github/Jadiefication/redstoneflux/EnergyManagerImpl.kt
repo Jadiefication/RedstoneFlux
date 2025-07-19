@@ -223,6 +223,9 @@ class EnergyManagerImpl(energyLib: RedstoneFlux) : EnergyManager {
      * {@inheritDoc}
      */
     override fun isComponent(item: ItemStack?): Boolean {
+        println("EnergyType: ${getEnergyType(item)}")
+        println("MechanicClass: ${getMechanicClass(item)}")
+        println("Mechanic: ${getMechanic(item)}")
         return this.getEnergyType(item)?.isPresent == true
                 && this.getMechanicClass(item)?.isPresent == true
                 && this.getMechanic(item)!!.isPresent

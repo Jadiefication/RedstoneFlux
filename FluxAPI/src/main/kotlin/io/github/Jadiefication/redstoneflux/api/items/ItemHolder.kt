@@ -39,8 +39,10 @@ data class ItemHolder<T : EnergyMechanic>(
             item!!.setData(DataComponentTypes.LORE, lore!!)
         }
 
-        item!!.itemMeta.persistentDataContainer.set(energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
-        item!!.itemMeta.persistentDataContainer.set(mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
+        val meta = item!!.itemMeta
+        meta.persistentDataContainer.set(energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
+        meta.persistentDataContainer.set(mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
+        item!!.itemMeta = meta
     }
 }
 /**
@@ -69,7 +71,10 @@ data class MaterialHolder<T : EnergyMechanic>(
         if (lore != null) {
             actualItem!!.setData(DataComponentTypes.LORE, lore!!)
         }
-        actualItem!!.itemMeta.persistentDataContainer.set(energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
-        actualItem!!.itemMeta.persistentDataContainer.set(mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
+        val meta = actualItem!!.itemMeta
+        val container = meta.persistentDataContainer
+        container.set(energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
+        container.set(mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
+        actualItem!!.itemMeta = meta
     }
 }
