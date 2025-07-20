@@ -12,7 +12,7 @@ import org.bukkit.event.HandlerList
 class EnergyComponentConnectEvent(
     val component1: EnergyComponent<*>,
     val component2: EnergyComponent<*>
-) : Event() {
+) : Event(true) {
 
     override fun getHandlers(): HandlerList {
         return HandlerList()
