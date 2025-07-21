@@ -72,9 +72,7 @@ class EnergyListener(
             return
         }
         event.isCancelled = true
-        this.api.scope.launch {
-            this@EnergyListener.energyManager.breakComponent(event.player, location)
-        }
+        this.energyManager.breakComponent(event.player, location)
     }
 
     /**

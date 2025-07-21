@@ -110,7 +110,7 @@ class EnergyManagerImpl(
     /**
      * {@inheritDoc}
      */
-    override suspend fun breakComponent(player: Player?, location: Location?) {
+    override fun breakComponent(player: Player?, location: Location?) {
         val network: EnergyNetwork? =
             this.networks.stream().filter { n: EnergyNetwork? -> n?.contains(location) == true }.findFirst()
                 .orElse(null)
@@ -135,7 +135,9 @@ class EnergyManagerImpl(
             return
         }
 
-        this.splitNetworkIfNecessary(network)
+        api.scope.launch {
+            this@EnergyManagerImpl.splitNetworkIfNecessary(network)
+        }
     }
 
     /**
