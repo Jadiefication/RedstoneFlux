@@ -9,6 +9,10 @@ import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import java.io.IOException
@@ -87,12 +91,19 @@ class EnergyNetworkAdapter
         `in`.endObject()
 
         val network = EnergyNetwork(api!!, UUID.fromString(id))
+        val defers = mutableListOf<Deferred<Unit>>()
         components.forEach { (location: Location?, component: EnergyComponent<*>?) ->
-            try {
-                network.addComponent(component!!, location!!)
-            } catch (e: SameEnergyTypeException) {
-                throw RuntimeException(e)
-            }
+            defers.add(api.scope.async {
+                try {
+                    network.addComponent(component!!, location!!)
+                } catch (e: SameEnergyTypeException) {
+                    throw RuntimeException(e)
+                }
+            })
+        }
+
+        api.scope.launch {
+            defers.awaitAll()
         }
 
         return network
