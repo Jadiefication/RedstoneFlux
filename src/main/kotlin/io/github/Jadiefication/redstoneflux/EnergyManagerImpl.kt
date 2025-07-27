@@ -128,6 +128,8 @@ class EnergyManagerImpl(
             player?.world?.dropItemNaturally(location!!, result!!)
         }
 
+        val originalComponents = network.components.toMap()
+
         api.scope.launch { network.removeComponent(location!!) }
 
         if (network.isEmpty) {
@@ -136,7 +138,7 @@ class EnergyManagerImpl(
         }
 
         api.scope.launch {
-            this@EnergyManagerImpl.splitNetworkIfNecessary(network)
+            this@EnergyManagerImpl.splitNetworkIfNecessary(network, originalComponents)
         }
     }
 
@@ -335,13 +337,16 @@ class EnergyManagerImpl(
      *
      * @param network the network
      */
-    private suspend fun splitNetworkIfNecessary(network: EnergyNetwork) {
+    private suspend fun splitNetworkIfNecessary(
+        network: EnergyNetwork,
+        originalComponents: Map<Location?, EnergyComponent<*>?>
+    ) {
         val visited: MutableSet<Location?> = HashSet()
         val newNetworks: MutableList<EnergyNetwork?> = ArrayList()
         val defers = mutableListOf<Deferred<Unit>>()
         network.components.keys.forEach { component ->
             val defer = api.scope.async {
-                asyncNetworkSplit(visited, component, newNetworks)
+                asyncNetworkSplit(visited, component, newNetworks, originalComponents)
             }
             defers.add(defer)
         }
@@ -355,24 +360,21 @@ class EnergyManagerImpl(
     private suspend fun asyncNetworkSplit(
         visited: MutableSet<Location?>,
         component: Location?,
-        newNetworks: MutableList<EnergyNetwork?>
+        newNetworks: MutableList<EnergyNetwork?>,
+        originalComponents: Map<Location?, EnergyComponent<*>?>
     ) {
         if (!visited.contains(component)) {
-            val subNetworkComponents: MutableSet<MutableMap.MutableEntry<Location?, EnergyComponent<*>?>> =
-                discoverSubNetwork(component, visited)
+            val subNetworkComponents: MutableSet<MutableMap.MutableEntry<Location, EnergyComponent<*>>> =
+                discoverSubNetwork(component, visited, originalComponents)
             if (!subNetworkComponents.isEmpty()) {
                 val newNetwork = EnergyNetwork(this.api, UUID.randomUUID())
-                val defers = mutableListOf<Deferred<Unit>>()
                 for (subComponent in subNetworkComponents) {
-                    defers.add(api.scope.async {
-                        try {
-                            newNetwork.addComponent(subComponent.value!!, subComponent.key!!)
-                        } catch (e: SameEnergyTypeException) {
-                            throw RuntimeException(e)
-                        }
-                    })
+                    try {
+                        newNetwork.addComponent(subComponent.value, subComponent.key)
+                    } catch (e: SameEnergyTypeException) {
+                        throw RuntimeException(e)
+                    }
                 }
-                defers.awaitAll()
                 newNetworks.add(newNetwork)
             }
         }
@@ -387,9 +389,10 @@ class EnergyManagerImpl(
      */
     private fun discoverSubNetwork(
         startBlock: Location?,
-        visited: MutableSet<Location?>
-    ): MutableSet<MutableMap.MutableEntry<Location?, EnergyComponent<*>?>> {
-        val subNetwork: MutableSet<MutableMap.MutableEntry<Location?, EnergyComponent<*>?>> =
+        visited: MutableSet<Location?>,
+        originalComponents: Map<Location?, EnergyComponent<*>?>
+    ): MutableSet<MutableMap.MutableEntry<Location, EnergyComponent<*>>> {
+        val subNetwork: MutableSet<MutableMap.MutableEntry<Location, EnergyComponent<*>>> =
             HashSet()
         val queue: Queue<Location> = LinkedList()
         queue.add(startBlock)
@@ -398,15 +401,10 @@ class EnergyManagerImpl(
             val current = queue.poll()
             if (!visited.contains(current)) {
                 visited.add(current)
-                subNetwork.add(
-                    AbstractMap.SimpleEntry<Location?, EnergyComponent<*>?>(
-                        current, this.networks.stream()
-                            .filter { network: EnergyNetwork? -> network?.contains(current) == true }
-                            .findFirst()
-                            .map { network: EnergyNetwork? -> network?.components?.get(current) }
-                            .orElse(null)
-                    )
-                )
+                val component = originalComponents[current]
+                if (component != null) {
+                    subNetwork.add(AbstractMap.SimpleEntry(current, component))
+                }
 
                 for (face in NEIGHBORS) {
                     val neighbor = current.block.getRelative(face).location

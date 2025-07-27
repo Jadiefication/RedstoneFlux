@@ -94,10 +94,10 @@ class EnergyNetwork(
                 entry.value!!.connect(component)
             })
         }
-        defers.awaitAll()
         if (chunk == null) {
             this.chunk = location.getChunk()
         }
+        defers.awaitAll()
         this.components.put(location, component)
     }
 
