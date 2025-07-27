@@ -16,7 +16,7 @@ class EnergyTypeAdapter : TypeAdapter<EnergyType?>() {
      * Writes an EnergyType to a JsonWriter.
      *
      * @param jsonWriter The JsonWriter.
-     * @param energyType The EnergyType.
+     * @param value The EnergyType.
      * @throws IOException If an I/O error occurs.
      */
     @Throws(IOException::class)

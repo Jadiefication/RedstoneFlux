@@ -67,10 +67,10 @@ class EnergyComponentAdapter
                     try {
                         clazz = Class.forName(mechanicClass)
                     } catch (e: ClassNotFoundException) {
-                        throw IllegalArgumentException("Class " + mechanicClass + " not found!")
+                        throw IllegalArgumentException("Class $mechanicClass not found!")
                     }
-                    require(EnergyMechanic::class.java.isAssignableFrom(clazz)) { "Class " + mechanicClass + " is not an EnergyMechanic!" }
-                    mechanic = clazz.asSubclass<EnergyMechanic?>(EnergyMechanic::class.java)
+                    require(EnergyMechanic::class.java.isAssignableFrom(clazz)) { "Class $mechanicClass is not an EnergyMechanic!" }
+                    mechanic = clazz.asSubclass(EnergyMechanic::class.java)
                 }
 
                 "mechanic" -> energyMechanicData = `in`.nextString()

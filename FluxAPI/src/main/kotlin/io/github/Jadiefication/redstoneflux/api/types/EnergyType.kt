@@ -32,6 +32,6 @@ interface EnergyType {
          * The default energy type.
          */
         val TYPES: MutableList<EnergyType?> =
-            ArrayList<EnergyType?>(List.of<EnergyTypes?>(*EnergyTypes.entries.toTypedArray()))
+            ArrayList<EnergyType?>(listOf<EnergyTypes?>(*EnergyTypes.entries.toTypedArray()))
     }
 }

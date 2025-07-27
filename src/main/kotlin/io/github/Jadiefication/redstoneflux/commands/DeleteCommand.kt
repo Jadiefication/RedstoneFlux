@@ -8,7 +8,6 @@ import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
-import net.kyori.adventure.text.format.TextColor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
@@ -27,7 +26,7 @@ class DeleteCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender
         manager?.deleteNetwork(network)
         commandSender.sendMessage(
             "§aThe network §e" + network.id + " §ain chunk §e" + network.chunk
-                ?.x + " " + network.chunk?.z + " §ahas been deleted."
+                .x + " " + network.chunk.z + " §ahas been deleted."
         )
     }
 }

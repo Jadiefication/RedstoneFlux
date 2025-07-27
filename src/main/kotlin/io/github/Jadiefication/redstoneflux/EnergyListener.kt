@@ -4,7 +4,6 @@ import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.mechanics.InteractableMechanic
-import kotlinx.coroutines.launch
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
@@ -90,7 +89,7 @@ class EnergyListener(
         val location = block.location
         val optComponent = this.energyManager.getComponentFromBlock(location)
 
-        if (optComponent!!.isEmpty) {
+        if (optComponent.isEmpty) {
             return
         }
 

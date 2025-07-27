@@ -18,10 +18,10 @@ class ListCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(
     override fun execute(commandSender: CommandSender, arguments: Arguments?) {
         val builder = StringBuilder()
         builder.append("§7Networks:\n")
-        manager.networks!!.forEach { network ->
-            builder.append("§e").append(network!!.id).append("§7: ").append("Chunk: §e").append(
-                network.chunk?.x
-            ).append(" ").append(network.chunk?.z).append("§7, §e").append(network.energyType)
+        manager.networks.forEach { network ->
+            builder.append("§e").append(network.id).append("§7: ").append("Chunk: §e").append(
+                network.chunk.x
+            ).append(" ").append(network.chunk.z).append("§7, §e").append(network.energyType)
                 .append("§7 energy.\n")
         }
         commandSender.sendMessage(builder.toString())

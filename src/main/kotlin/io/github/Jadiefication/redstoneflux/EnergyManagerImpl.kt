@@ -163,7 +163,7 @@ class EnergyManagerImpl(
      */
     override fun getMechanicClass(item: ItemStack): Optional<String?> {
         val pdcOptional =
-            this.getPersistentData<String, String>(item!!, energyLib.mechanicClassKey, PersistentDataType.STRING)
+            this.getPersistentData<String, String>(item, energyLib.mechanicClassKey, PersistentDataType.STRING)
         return (if (pdcOptional.isEmpty) {
             Optional.ofNullable(ItemsFactory.getComponent(item).getOrNull()?.mechanic?.javaClass?.name)
         } else {

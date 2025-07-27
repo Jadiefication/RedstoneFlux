@@ -17,10 +17,10 @@ class ShowCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(
     override fun execute(commandSender: CommandSender, arguments: Arguments) {
         val network = arguments.get<EnergyNetwork>("network")
         val builder = "§7Network §e" + network.id + "§7:\n" +
-                "§7- §eChunk: §7" + network.chunk?.x + " " + network.chunk?.z + "\n" +
+                "§7- §eChunk: §7" + network.chunk.x + " " + network.chunk.z + "\n" +
                 "§7- §eEnergy: §7" + network.energyType + "\n" +
                 "§7- §eComponents: §7" + network.components.size + "\n" +
-                "§7- §eLoaded: §7" + network.chunk?.isLoaded + "\n"
+                "§7- §eLoaded: §7" + network.chunk.isLoaded + "\n"
         commandSender.sendMessage(builder)
     }
 }

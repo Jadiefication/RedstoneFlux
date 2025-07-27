@@ -9,10 +9,6 @@ import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import java.io.IOException
@@ -51,7 +47,7 @@ class EnergyNetworkAdapter
         out.name("components")
         out.beginObject()
         for (entry in value?.components?.entries!!) {
-            out.name(this.fromLocation(entry.key!!))
+            out.name(this.fromLocation(entry.key))
             gson.toJson(entry.value, EnergyComponent::class.java, out)
         }
         out.endObject()

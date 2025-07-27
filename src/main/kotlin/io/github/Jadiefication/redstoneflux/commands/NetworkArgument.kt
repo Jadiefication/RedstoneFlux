@@ -13,7 +13,7 @@ class NetworkArgument(private val manager: EnergyManager) : ArgumentConverter<En
     override fun apply(s: String): EnergyNetwork? {
         try {
             val uuid = UUID.fromString(s)
-            return this.manager.networks!!
+            return this.manager.networks
                 .stream()
                 .filter { network -> network!!.id!! == uuid }
                 .findFirst()
@@ -24,7 +24,7 @@ class NetworkArgument(private val manager: EnergyManager) : ArgumentConverter<En
     }
 
     override fun onCompletion(commandSender: CommandSender, args: MutableList<String>): MutableList<String> {
-        return this.manager.networks!!
+        return this.manager.networks
             .stream()
             .map { network -> network!!.id.toString() }
             .collect(Collectors.toList())
