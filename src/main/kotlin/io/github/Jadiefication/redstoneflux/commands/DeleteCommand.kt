@@ -42,7 +42,7 @@ class DeleteAllCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSen
     }
 
     override fun execute(commandSender: CommandSender, arguments: Arguments) {
-        manager?.networks?.forEach { it?.delete() }
+        manager?.networks?.forEach { manager.deleteNetwork(it) }
         commandSender.sendMessage(Component.text {
             it.append(Component.text("All networks ", Style.style(NamedTextColor.GREEN)))
             it.append(Component.text(if (commandSender is Player) {
@@ -50,7 +50,7 @@ class DeleteAllCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSen
             } else {
                 ""
             }, Style.style(NamedTextColor.YELLOW)))
-            it.append(Component.text("have been deleted.", Style.style(NamedTextColor.GREEN)))
+            it.append(Component.text(" have been deleted.", Style.style(NamedTextColor.GREEN)))
         })
     }
 }
