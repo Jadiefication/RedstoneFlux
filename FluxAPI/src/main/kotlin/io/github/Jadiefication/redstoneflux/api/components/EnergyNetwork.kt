@@ -85,19 +85,15 @@ class EnergyNetwork(
      * @throws SameEnergyTypeException If the component is not the same type.
      */
     @Throws(SameEnergyTypeException::class)
-    suspend fun addComponent(component: EnergyComponent<*>, location: Location) {
-        val defers = mutableListOf<Deferred<Unit>>()
+    fun addComponent(component: EnergyComponent<*>, location: Location) {
         for (entry in this.components.entries.stream()
             .filter { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? -> entry!!.key!!.distance(location) == 1.0 }
             .toList()) {
-            defers.add(api.scope.async {
                 entry.value!!.connect(component)
-            })
         }
         if (chunk == null) {
-            this.chunk = location.getChunk()
+            this.chunk = location.chunk
         }
-        defers.awaitAll()
         this.components.put(location, component)
     }
 
@@ -393,7 +389,7 @@ class EnergyNetwork(
          *
          * @return The root component.
          */
-        get() = this.components.values.iterator().next()
+        get() = this.components.values.firstOrNull()
 
     /**
      * Get the connected components.

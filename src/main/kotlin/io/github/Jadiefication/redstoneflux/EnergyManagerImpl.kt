@@ -368,13 +368,17 @@ class EnergyManagerImpl(
                 discoverSubNetwork(component, visited, originalComponents)
             if (!subNetworkComponents.isEmpty()) {
                 val newNetwork = EnergyNetwork(this.api, UUID.randomUUID())
+                val defers = mutableListOf<Deferred<Unit>>()
                 for (subComponent in subNetworkComponents) {
-                    try {
-                        newNetwork.addComponent(subComponent.value, subComponent.key)
-                    } catch (e: SameEnergyTypeException) {
-                        throw RuntimeException(e)
-                    }
+                    defers.add(api.scope.async {
+                        try {
+                            newNetwork.addComponent(subComponent.value, subComponent.key)
+                        } catch (e: SameEnergyTypeException) {
+                            throw RuntimeException(e)
+                        }
+                    })
                 }
+                defers.awaitAll()
                 newNetworks.add(newNetwork)
             }
         }
