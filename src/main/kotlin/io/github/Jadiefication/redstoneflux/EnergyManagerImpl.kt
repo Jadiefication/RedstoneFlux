@@ -98,7 +98,7 @@ class EnergyManagerImpl(
             energyNetworks.first().addComponent(component, location)
         } else {
             val firstNetwork: EnergyNetwork = energyNetworks.first()
-            api.scope.launch { firstNetwork.addComponent(component, location) }
+            firstNetwork.addComponent(component, location)
             for (i in 1..<energyNetworks.size) {
                 val network: EnergyNetwork = energyNetworks[i]
                 firstNetwork.mergeWith(network)
@@ -369,7 +369,7 @@ class EnergyManagerImpl(
         }
     }
 
-    private suspend fun asyncNetworkSplit(
+    private fun asyncNetworkSplit(
         visited: MutableSet<Location>,
         component: Location,
         newNetworks: MutableList<EnergyNetwork>,
@@ -380,17 +380,13 @@ class EnergyManagerImpl(
                 discoverSubNetwork(component, visited, originalComponents)
             if (!subNetworkComponents.isEmpty()) {
                 val newNetwork = EnergyNetwork(this.api, UUID.randomUUID())
-                val defers = mutableListOf<Deferred<Unit>>()
                 for (subComponent in subNetworkComponents) {
-                    defers.add(api.scope.async {
-                        try {
-                            newNetwork.addComponent(subComponent.value, subComponent.key)
-                        } catch (e: SameEnergyTypeException) {
-                            throw RuntimeException(e)
-                        }
-                    })
+                    try {
+                        newNetwork.addComponent(subComponent.value, subComponent.key)
+                    } catch (e: SameEnergyTypeException) {
+                        throw RuntimeException(e)
+                    }
                 }
-                defers.awaitAll()
                 newNetworks.add(newNetwork)
             }
         }
