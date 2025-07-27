@@ -333,6 +333,20 @@ class EnergyManagerImpl(
     }
 
     /**
+     * {@inheritDoc}
+     */
+    override fun cleanUpNetworks() {
+        networks.removeIf {
+            if (it?.components?.isEmpty() == true) {
+                it.delete()
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    /**
      * Check if th network must be split.
      *
      * @param network the network

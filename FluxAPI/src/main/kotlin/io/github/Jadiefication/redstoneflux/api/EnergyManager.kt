@@ -142,6 +142,11 @@ interface EnergyManager {
     fun getComponentFromBlock(location: Location?): Optional<EnergyComponent<*>?>?
 
     /**
+     * Cleans up the networks
+     */
+    fun cleanUpNetworks()
+
+    /**
      * Get the gson instance.
      *
      * @return The gson instance.

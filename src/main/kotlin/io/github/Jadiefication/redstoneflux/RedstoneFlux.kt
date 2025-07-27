@@ -111,6 +111,7 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
 
             this.manager!!.startNetworkUpdater()
             this.scheduler!!.runTimerAsync({ _ -> this.manager!!.saveNetworks() }, 1, 1, TimeUnit.HOURS)
+            this.scheduler!!.runTimerAsync({ _ -> this.manager!!.cleanUpNetworks() }, 1, 1, TimeUnit.HOURS)
         }
     }
 
