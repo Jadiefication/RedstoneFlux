@@ -106,7 +106,7 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
         this.scheduler?.runNextTick { t ->
             this.server.worlds.forEach(Consumer { world ->
                 Arrays.stream(world.loadedChunks)
-                    .forEach { chunk: Chunk? -> this.manager!!.loadNetworks(chunk) }
+                    .forEach { chunk -> this.manager!!.loadNetworks(chunk) }
             })
 
             this.manager!!.startNetworkUpdater()

@@ -52,7 +52,7 @@ class EnergyManagerImpl(
     /**
      * The set of all the energy networks.
      */
-    override val networks: MutableSet<EnergyNetwork?>
+    override val networks: MutableSet<EnergyNetwork>
 
     /**
      * The task that updates the networks.
@@ -67,20 +67,20 @@ class EnergyManagerImpl(
     init {
         this.gson = this.createGson()
         ItemsFactory.gson = this.gson
-        this.networks = HashSet<EnergyNetwork?>()
+        this.networks = HashSet<EnergyNetwork>()
     }
 
     /**
      * {@inheritDoc}
      */
     @Throws(SameEnergyTypeException::class)
-    override fun placeComponent(component: EnergyComponent<*>?, location: Location?) {
+    override fun placeComponent(component: EnergyComponent<*>, location: Location) {
         var energyNetworks: MutableList<EnergyNetwork> = ArrayList()
         for (neibhorFace in NEIGHBORS) {
-            val neighbor = location?.block?.getRelative(neibhorFace)
+            val neighbor = location.block.getRelative(neibhorFace)
             val networkNeighbor: Optional<EnergyNetwork?> =
                 this.networks.stream()
-                    .filter { network: EnergyNetwork? -> network?.contains(neighbor?.location) == true }
+                    .filter { network: EnergyNetwork? -> network?.contains(neighbor.location) == true }
                     .findFirst()
             if (networkNeighbor.isPresent) {
                 if (!energyNetworks.contains(networkNeighbor.get())) energyNetworks.add(networkNeighbor.get())
@@ -88,17 +88,17 @@ class EnergyManagerImpl(
         }
 
         energyNetworks = energyNetworks.stream()
-            .filter { network: EnergyNetwork? -> network?.energyType === component?.energyType }
+            .filter { network: EnergyNetwork? -> network?.energyType === component.energyType }
             .collect(Collectors.toList())
 
         if (energyNetworks.isEmpty()) {
-            val network = EnergyNetwork(this.api, component, location!!)
+            val network = EnergyNetwork(this.api, component, location)
             this.networks.add(network)
         } else if (energyNetworks.size == 1) {
-            api.scope.launch { energyNetworks.first().addComponent(component!!, location!!) }
+            api.scope.launch { energyNetworks.first().addComponent(component, location) }
         } else {
             val firstNetwork: EnergyNetwork = energyNetworks.first()
-            api.scope.launch { firstNetwork.addComponent(component!!, location!!) }
+            api.scope.launch { firstNetwork.addComponent(component, location) }
             for (i in 1..<energyNetworks.size) {
                 val network: EnergyNetwork = energyNetworks[i]
                 firstNetwork.mergeWith(network)
@@ -110,9 +110,9 @@ class EnergyManagerImpl(
     /**
      * {@inheritDoc}
      */
-    override fun breakComponent(player: Player?, location: Location?) {
+    override fun breakComponent(player: Player, location: Location) {
         val network: EnergyNetwork? =
-            this.networks.stream().filter { n: EnergyNetwork? -> n?.contains(location) == true }.findFirst()
+            this.networks.stream().filter { n -> n.contains(location) }.findFirst()
                 .orElse(null)
         if (network == null) {
             return
@@ -122,15 +122,15 @@ class EnergyManagerImpl(
         val energyType: EnergyType? = component?.energyType
         val mechanicType: MechanicType = MechanicType.fromComponent(component!!)
 
-        location?.block?.type = Material.AIR
-        if (player?.gameMode != GameMode.CREATIVE) {
-            val result: ItemStack? = this.createItemComponent(energyType, mechanicType, component)
-            player?.world?.dropItemNaturally(location!!, result!!)
+        location.block.type = Material.AIR
+        if (player.gameMode != GameMode.CREATIVE) {
+            val result = this.createItemComponent(energyType!!, mechanicType, component)
+            player.world.dropItemNaturally(location, result)
         }
 
         val originalComponents = network.components.toMap()
 
-        api.scope.launch { network.removeComponent(location!!) }
+        api.scope.launch { network.removeComponent(location) }
 
         if (network.isEmpty) {
             this.deleteNetwork(network)
@@ -145,9 +145,9 @@ class EnergyManagerImpl(
     /**
      * {@inheritDoc}
      */
-    override fun getEnergyType(item: ItemStack?): Optional<EnergyType?>? {
+    override fun getEnergyType(item: ItemStack): Optional<EnergyType?> {
         val pdcOptional = this.getPersistentData<String, EnergyType>(
-            item!!,
+            item,
             energyLib.energyTypeKey,
             EnergyTypePersistentDataType.INSTANCE
         )
@@ -155,27 +155,27 @@ class EnergyManagerImpl(
             Optional.ofNullable(ItemsFactory.getComponent(item).getOrNull()?.energyType)
         } else {
             pdcOptional
-        }) as Optional<EnergyType?>?
+        }) as Optional<EnergyType?>
     }
 
     /**
      * {@inheritDoc}
      */
-    override fun getMechanicClass(item: ItemStack?): Optional<String?>? {
+    override fun getMechanicClass(item: ItemStack): Optional<String?> {
         val pdcOptional =
             this.getPersistentData<String, String>(item!!, energyLib.mechanicClassKey, PersistentDataType.STRING)
         return (if (pdcOptional.isEmpty) {
             Optional.ofNullable(ItemsFactory.getComponent(item).getOrNull()?.mechanic?.javaClass?.name)
         } else {
             pdcOptional
-        }) as Optional<String?>?
+        }) as Optional<String?>
     }
 
     /**
      * {@inheritDoc}
      */
-    override fun getMechanic(item: ItemStack?): Optional<out EnergyMechanic?>? {
-        val mechanicClass: String? = this.getMechanicClass(item)?.orElseThrow()
+    override fun getMechanic(item: ItemStack): Optional<out EnergyMechanic?> {
+        val mechanicClass: String? = this.getMechanicClass(item).orElseThrow()
         val clazz: Class<*>?
         try {
             clazz = Class.forName(mechanicClass)
@@ -184,7 +184,7 @@ class EnergyManagerImpl(
         }
         require(EnergyMechanic::class.java.isAssignableFrom(clazz)) { "Class $mechanicClass is not an EnergyMechanic!" }
         val mechanicClazz: Class<out EnergyMechanic?> = clazz.asSubclass(EnergyMechanic::class.java)
-        val opt = this.getPersistentData<String, String>(item!!, energyLib.mechanicKey, PersistentDataType.STRING)
+        val opt = this.getPersistentData<String, String>(item, energyLib.mechanicKey, PersistentDataType.STRING)
         if (opt.isEmpty) {
             return Optional.empty<EnergyMechanic?>()
         }
@@ -195,18 +195,18 @@ class EnergyManagerImpl(
     /**
      * {@inheritDoc}
      */
-    override fun isBlockComponent(location: Location?): Boolean {
+    override fun isBlockComponent(location: Location): Boolean {
         return this.networks.stream().anyMatch { network: EnergyNetwork? -> network?.contains(location) == true }
     }
 
     /**
      * {@inheritDoc}
      */
-    override fun createComponent(item: ItemStack?): EnergyComponent<*>? {
-        val component = ItemsFactory.getComponent(item!!)
+    override fun createComponent(item: ItemStack): EnergyComponent<*> {
+        val component = ItemsFactory.getComponent(item)
         return if (component.isEmpty) {
-            val energyType = this.getEnergyType(item)!!.orElseThrow()!!
-            val mechanic = this.getMechanic(item)!!.orElseThrow()
+            val energyType = this.getEnergyType(item).orElseThrow()!!
+            val mechanic = this.getMechanic(item).orElseThrow()
             return EnergyComponent(energyType, mechanic)
         } else {
             component.get()
@@ -216,26 +216,24 @@ class EnergyManagerImpl(
     /**
      * {@inheritDoc}
      */
-    override fun isComponent(item: ItemStack?): Boolean {
+    override fun isComponent(item: ItemStack): Boolean {
         if (api.isDebug) {
             println("EnergyType: ${getEnergyType(item)}")
             println("MechanicClass: ${getMechanicClass(item)}")
             println("Mechanic: ${getMechanic(item)}")
         }
-        return this.getEnergyType(item)?.isPresent == true
-                && this.getMechanicClass(item)?.isPresent == true
-                && this.getMechanic(item)!!.isPresent
+        return this.getEnergyType(item).isPresent && this.getMechanicClass(item).isPresent && this.getMechanic(item).isPresent
     }
 
     /**
      * {@inheritDoc}
      */
     override fun createItemComponent(
-        type: EnergyType?,
-        mechanicType: MechanicType?,
-        mechanic: EnergyComponent<*>?
-    ): ItemStack? {
-        require(mechanic?.javaClass?.isAssignableFrom(mechanicType?.clazz) == true) { "Mechanic type " + mechanicType?.clazz + " is not compatible with mechanic " + mechanic?.mechanic?.javaClass }
+        type: EnergyType,
+        mechanicType: MechanicType,
+        mechanic: EnergyComponent<*>
+    ): ItemStack {
+        require(mechanic.javaClass.isAssignableFrom(mechanicType.clazz)) { "Mechanic type " + mechanicType.clazz + " is not compatible with mechanic " + mechanic.mechanic?.javaClass }
 
         val item: ItemStack = ItemsFactory.getItem(mechanic)
             .orElseThrow(Supplier { IllegalArgumentException("Item not found for mechanic " + mechanic.javaClass) })
@@ -243,17 +241,17 @@ class EnergyManagerImpl(
         val meta: ItemMeta? = item.itemMeta
         requireNotNull(meta) { "ItemMeta is null!" }
         val persistentDataContainer: PersistentDataContainer = meta.persistentDataContainer
-        persistentDataContainer.set<String?, EnergyType?>(
+        persistentDataContainer.set(
             energyLib.energyTypeKey,
             EnergyTypePersistentDataType.INSTANCE,
-            type!!
+            type
         )
-        persistentDataContainer.set<String?, String?>(
+        persistentDataContainer.set(
             energyLib.mechanicClassKey,
             PersistentDataType.STRING,
             mechanic.javaClass.getName()
         )
-        persistentDataContainer.set<String?, String?>(
+        persistentDataContainer.set(
             energyLib.mechanicKey,
             PersistentDataType.STRING,
             this.gson.toJson(mechanic, mechanic.javaClass)
@@ -282,8 +280,8 @@ class EnergyManagerImpl(
         this.updaterTask!!.cancel()
     }
 
-    override fun deleteNetwork(network: EnergyNetwork?) {
-        network?.delete()
+    override fun deleteNetwork(network: EnergyNetwork) {
+        network.delete()
         this.networks.remove(network)
     }
 
@@ -297,8 +295,8 @@ class EnergyManagerImpl(
     /**
      * {@inheritDoc}
      */
-    override fun loadNetworks(chunk: Chunk?) {
-        val chunkData: PersistentDataContainer? = chunk?.persistentDataContainer
+    override fun loadNetworks(chunk: Chunk) {
+        val chunkData: PersistentDataContainer? = chunk.persistentDataContainer
         if (chunkData?.has(
                 energyLib.networkKey,
                 PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING)
@@ -322,12 +320,12 @@ class EnergyManagerImpl(
     /**
      * {@inheritDoc}
      */
-    override fun getComponentFromBlock(location: Location?): Optional<EnergyComponent<*>?>? {
+    override fun getComponentFromBlock(location: Location): Optional<EnergyComponent<*>> {
         val optionalEnergyNetwork: Optional<EnergyNetwork?> = this.networks.stream()
             .filter { network: EnergyNetwork? -> network?.contains(location) == true }
             .findFirst()
 
-        return optionalEnergyNetwork.map<EnergyComponent<*>?>(Function { energyNetwork: EnergyNetwork? ->
+        return optionalEnergyNetwork.map(Function { energyNetwork: EnergyNetwork? ->
             energyNetwork?.components?.get(location)
         })
     }
@@ -337,7 +335,7 @@ class EnergyManagerImpl(
      */
     override fun cleanUpNetworks() {
         networks.removeIf {
-            if (it?.components?.isEmpty() == true) {
+            if (it.components.isEmpty()) {
                 it.delete()
                 true
             } else {
@@ -353,10 +351,10 @@ class EnergyManagerImpl(
      */
     private suspend fun splitNetworkIfNecessary(
         network: EnergyNetwork,
-        originalComponents: Map<Location?, EnergyComponent<*>?>
+        originalComponents: Map<Location, EnergyComponent<*>>
     ) {
-        val visited: MutableSet<Location?> = HashSet()
-        val newNetworks: MutableList<EnergyNetwork?> = ArrayList()
+        val visited: MutableSet<Location> = HashSet()
+        val newNetworks: MutableList<EnergyNetwork> = ArrayList()
         val defers = mutableListOf<Deferred<Unit>>()
         network.components.keys.forEach { component ->
             val defer = api.scope.async {
@@ -372,10 +370,10 @@ class EnergyManagerImpl(
     }
 
     private suspend fun asyncNetworkSplit(
-        visited: MutableSet<Location?>,
-        component: Location?,
-        newNetworks: MutableList<EnergyNetwork?>,
-        originalComponents: Map<Location?, EnergyComponent<*>?>
+        visited: MutableSet<Location>,
+        component: Location,
+        newNetworks: MutableList<EnergyNetwork>,
+        originalComponents: Map<Location, EnergyComponent<*>>
     ) {
         if (!visited.contains(component)) {
             val subNetworkComponents: MutableSet<MutableMap.MutableEntry<Location, EnergyComponent<*>>> =
@@ -406,9 +404,9 @@ class EnergyManagerImpl(
      * @return the set of components
      */
     private fun discoverSubNetwork(
-        startBlock: Location?,
-        visited: MutableSet<Location?>,
-        originalComponents: Map<Location?, EnergyComponent<*>?>
+        startBlock: Location,
+        visited: MutableSet<Location>,
+        originalComponents: Map<Location, EnergyComponent<*>>
     ): MutableSet<MutableMap.MutableEntry<Location, EnergyComponent<*>>> {
         val subNetwork: MutableSet<MutableMap.MutableEntry<Location, EnergyComponent<*>>> =
             HashSet()

@@ -25,7 +25,7 @@ interface EnergyManager {
      * @throws SameEnergyTypeException If a component of the different type is next to the location.
      */
     @Throws(SameEnergyTypeException::class)
-    fun placeComponent(component: EnergyComponent<*>?, location: Location?)
+    fun placeComponent(component: EnergyComponent<*>, location: Location)
 
     /**
      * Handle the break of a component in the world.
@@ -33,7 +33,7 @@ interface EnergyManager {
      * @param player
      * @param location The location of the component to break.
      */
-    fun breakComponent(player: Player?, location: Location?)
+    fun breakComponent(player: Player, location: Location)
 
     /**
      * Get the energy type of an item.
@@ -41,7 +41,7 @@ interface EnergyManager {
      * @param item The item to get the energy type from.
      * @return The energy type of the item.
      */
-    fun getEnergyType(item: ItemStack?): Optional<EnergyType?>?
+    fun getEnergyType(item: ItemStack): Optional<EnergyType?>
 
     /**
      * Get the mechanic type of an item.
@@ -49,7 +49,7 @@ interface EnergyManager {
      * @param item The item to get the mechanic type from.
      * @return The mechanic type of the item.
      */
-    fun getMechanicClass(item: ItemStack?): Optional<String?>?
+    fun getMechanicClass(item: ItemStack): Optional<String?>
 
     /**
      * Get the mechanic of an item.
@@ -57,7 +57,7 @@ interface EnergyManager {
      * @param item The item to get the mechanic from.
      * @return The mechanic of the item.
      */
-    fun getMechanic(item: ItemStack?): Optional<out EnergyMechanic?>?
+    fun getMechanic(item: ItemStack): Optional<out EnergyMechanic?>
 
     /**
      * Check if a location is a block component.
@@ -65,7 +65,7 @@ interface EnergyManager {
      * @param location The location to check.
      * @return True if the location is a block component, false otherwise.
      */
-    fun isBlockComponent(location: Location?): Boolean
+    fun isBlockComponent(location: Location): Boolean
 
     /**
      * Create a component from an item.
@@ -73,7 +73,7 @@ interface EnergyManager {
      * @param item The item to create the component from.
      * @return The component created.
      */
-    fun createComponent(item: ItemStack?): EnergyComponent<*>?
+    fun createComponent(item: ItemStack): EnergyComponent<*>
 
     /**
      * Check if an item is a component.
@@ -81,7 +81,7 @@ interface EnergyManager {
      * @param item The item to check.
      * @return True if the item is a component, false otherwise.
      */
-    fun isComponent(item: ItemStack?): Boolean
+    fun isComponent(item: ItemStack): Boolean
 
     /**
      * Create an item from energytype, mechanictype and mechanic.
@@ -91,7 +91,7 @@ interface EnergyManager {
      * @param mechanic     The mechanic of the item.
      * @return The item created.
      */
-    fun createItemComponent(type: EnergyType?, mechanicType: MechanicType?, mechanic: EnergyComponent<*>?): ItemStack?
+    fun createItemComponent(type: EnergyType, mechanicType: MechanicType, mechanic: EnergyComponent<*>): ItemStack
 
     /**
      * Start the network updater.
@@ -112,14 +112,14 @@ interface EnergyManager {
      *
      * @param network The network to delete.
      */
-    fun deleteNetwork(network: EnergyNetwork?)
+    fun deleteNetwork(network: EnergyNetwork)
 
     /**
      * Get all the networks.
      *
      * @return The networks.
      */
-    val networks: MutableSet<EnergyNetwork?>?
+    val networks: MutableSet<EnergyNetwork>
 
     /**
      * Save the networks.
@@ -131,7 +131,7 @@ interface EnergyManager {
      *
      * @param chunk The chunk to load the networks from.
      */
-    fun loadNetworks(chunk: Chunk?)
+    fun loadNetworks(chunk: Chunk)
 
     /**
      * Get the component from a block.
@@ -139,7 +139,7 @@ interface EnergyManager {
      * @param location The location of the block.
      * @return The component of the block.
      */
-    fun getComponentFromBlock(location: Location?): Optional<EnergyComponent<*>?>?
+    fun getComponentFromBlock(location: Location): Optional<EnergyComponent<*>>
 
     /**
      * Cleans up the networks
@@ -151,5 +151,5 @@ interface EnergyManager {
      *
      * @return The gson instance.
      */
-    val gson: Gson?
+    val gson: Gson
 }

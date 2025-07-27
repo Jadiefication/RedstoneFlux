@@ -58,7 +58,7 @@ class EnergyNetwork(
     /**
      * The network's components.
      */
-    val components: MutableMap<Location?, EnergyComponent<*>?> = ConcurrentHashMap<Location?, EnergyComponent<*>?>()
+    val components: MutableMap<Location, EnergyComponent<*>> = ConcurrentHashMap<Location, EnergyComponent<*>>()
 
     /**
      * The key to store the network in the chunk.
@@ -72,7 +72,7 @@ class EnergyNetwork(
      * @param component The component to add.
      * @param location  The location of the component.
      */
-    constructor(api: EnergyAPI, component: EnergyComponent<*>?, location: Location) : this(api, UUID.randomUUID()) {
+    constructor(api: EnergyAPI, component: EnergyComponent<*>, location: Location) : this(api, UUID.randomUUID()) {
         this.components.put(location, component)
         this.chunk = location.getChunk()
     }
@@ -87,9 +87,9 @@ class EnergyNetwork(
     @Throws(SameEnergyTypeException::class)
     fun addComponent(component: EnergyComponent<*>, location: Location) {
         for (entry in this.components.entries.stream()
-            .filter { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? -> entry!!.key!!.distance(location) == 1.0 }
+            .filter { entry: MutableMap.MutableEntry<Location, EnergyComponent<*>> -> entry.key.distance(location) == 1.0 }
             .toList()) {
-                entry.value!!.connect(component)
+                entry.value.connect(component)
         }
         if (chunk == null) {
             this.chunk = location.chunk
@@ -105,10 +105,10 @@ class EnergyNetwork(
     suspend fun removeComponent(location: Location) {
         val defers = mutableListOf<Deferred<Unit>>()
         this.components.entries.stream()
-            .filter { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? -> entry!!.key!!.distance(location) == 1.0 }
-            .forEach { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? ->
+            .filter { entry: MutableMap.MutableEntry<Location, EnergyComponent<*>> -> entry.key.distance(location) == 1.0 }
+            .forEach { entry: MutableMap.MutableEntry<Location, EnergyComponent<*>> ->
                 defers.add(api.scope.async {
-                    entry!!.value!!.disconnect(this@EnergyNetwork.components[location]!!)
+                    entry.value.disconnect(this@EnergyNetwork.components[location]!!)
                 })
             }
         defers.awaitAll()
@@ -121,7 +121,7 @@ class EnergyNetwork(
      * @param location The location to check.
      * @return If the network contains the location.
      */
-    fun contains(location: Location?): Boolean {
+    fun contains(location: Location): Boolean {
         return this.components.containsKey(location)
     }
 
@@ -317,23 +317,27 @@ class EnergyNetwork(
         val manager: EnergyManager = this.api.manager!!
         val chunk = this.chunk
         val container = chunk?.persistentDataContainer
+        if (container == null) {
+            delete()
+            return
+        }
         val gson = manager.gson
-        val json: String? = gson?.toJson(this, EnergyNetwork::class.java)
+        val json: String? = gson.toJson(this, EnergyNetwork::class.java)
 
         var networks =
-            container?.getOrDefault(
+            container.getOrDefault(
                 networkKey,
                 PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
                 ArrayList()
             )
         networks = ArrayList(networks)
         networks.removeIf { network: String? ->
-            val energyNetwork: EnergyNetwork? = gson?.fromJson(network, EnergyNetwork::class.java)
+            val energyNetwork: EnergyNetwork? = gson.fromJson(network, EnergyNetwork::class.java)
             energyNetwork?.id == this.id
         }
         networks.add(json)
 
-        container?.set(
+        container.set(
             networkKey,
             PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
             networks
@@ -344,7 +348,7 @@ class EnergyNetwork(
      * Delete the network from the chunk.
      */
     fun delete() {
-        val container = chunk!!.getPersistentDataContainer()
+        val container = chunk?.persistentDataContainer ?: return
         var networks: MutableList<String?> =
             container.getOrDefault(
                 networkKey,
@@ -353,7 +357,7 @@ class EnergyNetwork(
             )
         networks = ArrayList(networks)
         networks.removeIf { json: String? ->
-            val network: EnergyNetwork? = this.api.manager!!.gson?.fromJson(json, EnergyNetwork::class.java)
+            val network: EnergyNetwork? = this.api.manager!!.gson.fromJson(json, EnergyNetwork::class.java)
             network?.id == this.id
         }
         container.set(
@@ -451,7 +455,7 @@ class EnergyNetwork(
             .stream()
             .filter { entry ->
                 type.clazz.isAssignableFrom(
-                    entry!!.value!!.mechanic!!.javaClass
+                    entry!!.value.mechanic!!.javaClass
                 )
             }
             .collect(Collectors.toMap({ it.key }, { it.value }))
