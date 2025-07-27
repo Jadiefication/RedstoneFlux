@@ -95,10 +95,10 @@ class EnergyManagerImpl(
             val network = EnergyNetwork(this.api, component, location!!)
             this.networks.add(network)
         } else if (energyNetworks.size == 1) {
-            energyNetworks.first().addComponent(component!!, location!!)
+            api.scope.launch { energyNetworks.first().addComponent(component!!, location!!) }
         } else {
             val firstNetwork: EnergyNetwork = energyNetworks.first()
-            firstNetwork.addComponent(component!!, location!!)
+            api.scope.launch { firstNetwork.addComponent(component!!, location!!) }
             for (i in 1..<energyNetworks.size) {
                 val network: EnergyNetwork = energyNetworks[i]
                 firstNetwork.mergeWith(network)
@@ -128,7 +128,7 @@ class EnergyManagerImpl(
             player?.world?.dropItemNaturally(location!!, result!!)
         }
 
-        network.removeComponent(location!!)
+        api.scope.launch { network.removeComponent(location!!) }
 
         if (network.isEmpty) {
             this.deleteNetwork(network)
@@ -352,7 +352,7 @@ class EnergyManagerImpl(
         }
     }
 
-    private fun asyncNetworkSplit(
+    private suspend fun asyncNetworkSplit(
         visited: MutableSet<Location?>,
         component: Location?,
         newNetworks: MutableList<EnergyNetwork?>
@@ -362,13 +362,17 @@ class EnergyManagerImpl(
                 discoverSubNetwork(component, visited)
             if (!subNetworkComponents.isEmpty()) {
                 val newNetwork = EnergyNetwork(this.api, UUID.randomUUID())
+                val defers = mutableListOf<Deferred<Unit>>()
                 for (subComponent in subNetworkComponents) {
-                    try {
-                        newNetwork.addComponent(subComponent.value!!, subComponent.key!!)
-                    } catch (e: SameEnergyTypeException) {
-                        throw RuntimeException(e)
-                    }
+                    defers.add(api.scope.async {
+                        try {
+                            newNetwork.addComponent(subComponent.value!!, subComponent.key!!)
+                        } catch (e: SameEnergyTypeException) {
+                            throw RuntimeException(e)
+                        }
+                    })
                 }
+                defers.awaitAll()
                 newNetworks.add(newNetwork)
             }
         }

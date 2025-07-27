@@ -85,12 +85,16 @@ class EnergyNetwork(
      * @throws SameEnergyTypeException If the component is not the same type.
      */
     @Throws(SameEnergyTypeException::class)
-    fun addComponent(component: EnergyComponent<*>, location: Location) {
+    suspend fun addComponent(component: EnergyComponent<*>, location: Location) {
+        val defers = mutableListOf<Deferred<Unit>>()
         for (entry in this.components.entries.stream()
             .filter { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? -> entry!!.key!!.distance(location) == 1.0 }
             .toList()) {
-            entry.value!!.connect(component)
+            defers.add(api.scope.async {
+                entry.value!!.connect(component)
+            })
         }
+        defers.awaitAll()
         if (chunk == null) {
             this.chunk = location.getChunk()
         }
@@ -102,12 +106,16 @@ class EnergyNetwork(
      *
      * @param location The location of the component.
      */
-    fun removeComponent(location: Location) {
+    suspend fun removeComponent(location: Location) {
+        val defers = mutableListOf<Deferred<Unit>>()
         this.components.entries.stream()
             .filter { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? -> entry!!.key!!.distance(location) == 1.0 }
             .forEach { entry: MutableMap.MutableEntry<Location?, EnergyComponent<*>?>? ->
-                entry!!.value!!.disconnect(this.components[location]!!)
+                defers.add(api.scope.async {
+                    entry!!.value!!.disconnect(this@EnergyNetwork.components[location]!!)
+                })
             }
+        defers.awaitAll()
         this.components.remove(location)
     }
 
