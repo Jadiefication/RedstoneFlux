@@ -91,19 +91,13 @@ class EnergyNetworkAdapter
         `in`.endObject()
 
         val network = EnergyNetwork(api!!, UUID.fromString(id))
-        val defers = mutableListOf<Deferred<Unit>>()
         components.forEach { (location: Location?, component: EnergyComponent<*>?) ->
-            defers.add(api.scope.async {
-                try {
-                    network.addComponent(component!!, location!!)
-                } catch (e: SameEnergyTypeException) {
-                    throw RuntimeException(e)
-                }
-            })
-        }
+            try {
+                network.addComponent(component!!, location!!)
+            } catch (e: SameEnergyTypeException) {
+                throw RuntimeException(e)
+            }
 
-        api.scope.launch {
-            defers.awaitAll()
         }
 
         return network

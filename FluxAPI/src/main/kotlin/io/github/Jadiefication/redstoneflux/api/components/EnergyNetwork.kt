@@ -20,6 +20,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
+import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
@@ -48,7 +49,7 @@ class EnergyNetwork(
     /**
      * The network's chunk.
      */
-    var chunk: Chunk? = null
+    lateinit var chunk: Chunk
 
     /**
      * Get the network's components.
@@ -74,7 +75,7 @@ class EnergyNetwork(
      */
     constructor(api: EnergyAPI, component: EnergyComponent<*>, location: Location) : this(api, UUID.randomUUID()) {
         this.components.put(location, component)
-        this.chunk = location.getChunk()
+        this.chunk = location.chunk
     }
 
     /**
@@ -91,7 +92,7 @@ class EnergyNetwork(
             .toList()) {
                 entry.value.connect(component)
         }
-        if (chunk == null) {
+        if (!::chunk.isInitialized) {
             this.chunk = location.chunk
         }
         this.components.put(location, component)
@@ -102,16 +103,12 @@ class EnergyNetwork(
      *
      * @param location The location of the component.
      */
-    suspend fun removeComponent(location: Location) {
-        val defers = mutableListOf<Deferred<Unit>>()
+    fun removeComponent(location: Location) {
         this.components.entries.stream()
             .filter { entry: MutableMap.MutableEntry<Location, EnergyComponent<*>> -> entry.key.distance(location) == 1.0 }
             .forEach { entry: MutableMap.MutableEntry<Location, EnergyComponent<*>> ->
-                defers.add(api.scope.async {
-                    entry.value.disconnect(this@EnergyNetwork.components[location]!!)
-                })
+                entry.value.disconnect(this@EnergyNetwork.components[location]!!)
             }
-        defers.awaitAll()
         this.components.remove(location)
     }
 
@@ -306,7 +303,7 @@ class EnergyNetwork(
     fun isInChunk(chunk: Chunk): Boolean {
         return this.components.keys
             .stream()
-            .anyMatch { location: Location? -> this.isSameChunk(chunk, location!!.getChunk()) }
+            .anyMatch { location: Location? -> this.isSameChunk(chunk, location!!.chunk) }
     }
 
 
@@ -315,9 +312,10 @@ class EnergyNetwork(
      */
     fun save() {
         val manager: EnergyManager = this.api.manager!!
-        val chunk = this.chunk
-        val container = chunk?.persistentDataContainer
-        if (container == null) {
+        val container: PersistentDataContainer
+        try {
+            container = chunk.persistentDataContainer
+        } catch (_: Exception) {
             delete()
             return
         }
@@ -348,7 +346,13 @@ class EnergyNetwork(
      * Delete the network from the chunk.
      */
     fun delete() {
-        val container = chunk?.persistentDataContainer ?: return
+        val container: PersistentDataContainer
+        try {
+            container = chunk.persistentDataContainer
+        } catch (_: Exception) {
+            api.manager?.networks?.remove(this)
+            return
+        }
         var networks: MutableList<String?> =
             container.getOrDefault(
                 networkKey,

@@ -95,7 +95,7 @@ class EnergyManagerImpl(
             val network = EnergyNetwork(this.api, component, location)
             this.networks.add(network)
         } else if (energyNetworks.size == 1) {
-            api.scope.launch { energyNetworks.first().addComponent(component, location) }
+            energyNetworks.first().addComponent(component, location)
         } else {
             val firstNetwork: EnergyNetwork = energyNetworks.first()
             api.scope.launch { firstNetwork.addComponent(component, location) }
@@ -130,7 +130,7 @@ class EnergyManagerImpl(
 
         val originalComponents = network.components.toMap()
 
-        api.scope.launch { network.removeComponent(location) }
+        network.removeComponent(location)
 
         if (network.isEmpty) {
             this.deleteNetwork(network)
