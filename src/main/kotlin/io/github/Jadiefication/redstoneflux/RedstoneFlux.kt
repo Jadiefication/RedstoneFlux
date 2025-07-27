@@ -77,6 +77,7 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
      * Initialize the plugin.
      */
     override fun onEnable() {
+        saveDefaultConfig()
         ItemsFactory.energyTypeKey = energyTypeKey
         ItemsFactory.mechanicClassKey = mechanicClassKey
         ItemsFactory.mechanicKey = mechanicKey

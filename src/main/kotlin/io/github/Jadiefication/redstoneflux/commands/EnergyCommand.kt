@@ -15,7 +15,8 @@ class EnergyCommand(plugin: RedstoneFlux?) : Command<RedstoneFlux?, CommandSende
         this.addSubCommand(
             DeleteCommand(plugin!!),
             ListCommand(plugin),
-            ShowCommand(plugin)
+            ShowCommand(plugin),
+            ReloadCommand(plugin)
         )
 
         this.setGameOnly(true)
