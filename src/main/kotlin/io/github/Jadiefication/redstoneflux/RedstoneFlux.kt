@@ -6,6 +6,7 @@ import fr.traqueur.commands.spigot.CommandManager
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.Manager
+import io.github.Jadiefication.redstoneflux.api.components.BaseNetwork
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.commands.EnergyCommand
@@ -97,9 +98,9 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
         val commandManager = CommandManager(this)
         commandManager.isDebug = this.isDebug
         commandManager.registerConverter(
-            EnergyNetwork::class.java,
+            BaseNetwork::class.java,
             "network",
-            NetworkArgument(this.managers.first { it is EnergyManager } as EnergyManager)
+            NetworkArgument(this.managers)
         )
         commandManager.registerCommand(EnergyCommand(this))
 
