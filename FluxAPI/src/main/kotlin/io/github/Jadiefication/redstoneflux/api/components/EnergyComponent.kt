@@ -15,11 +15,11 @@ open class EnergyComponent<T : EnergyMechanic>(
     /**
      * The type of energy that this component uses.
      */
-    var energyType: EnergyType?,
+    var energyType: EnergyType,
     /**
      * The mechanic that this component uses.
      */
-    var mechanic: T?
+    var mechanic: T
 ) : BaseComponent<EnergyComponent<*>>() {
     /**
      * The components that this component is connected to.
