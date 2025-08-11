@@ -5,6 +5,7 @@ import com.tcoded.folialib.impl.PlatformScheduler
 import fr.traqueur.commands.spigot.CommandManager
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
+import io.github.Jadiefication.redstoneflux.api.Manager
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.commands.EnergyCommand
@@ -39,7 +40,7 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
     /**
      * The energy manager of the plugin.
      */
-    override var manager: EnergyManager? = null
+    override var managers: MutableSet<Manager<*>> = mutableSetOf()
 
     /**
      * {@inheritDoc}
@@ -84,33 +85,41 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
         Updater.update("RedstoneFlux")
 
         this.scheduler = FoliaLib(this).scheduler
-        this.manager = EnergyManagerImpl(this)
+        this.managers.add(EnergyManagerImpl(this))
         this.isDebug = false
 
         val pluginManager: PluginManager = this.server.pluginManager
         pluginManager.registerEvents(EnergyListener(this), this)
 
         this.registerProvider(this, this::class.java as Class<RedstoneFlux?>)
-        this.registerProvider(this.manager, EnergyManager::class.java as Class<EnergyManager?>)
+        this.registerProvider(this.managers.first { it is EnergyManager } as EnergyManager, EnergyManager::class.java as Class<EnergyManager?>)
 
         val commandManager = CommandManager(this)
         commandManager.isDebug = this.isDebug
         commandManager.registerConverter(
             EnergyNetwork::class.java,
             "network",
-            NetworkArgument(this.manager!!)
+            NetworkArgument(this.managers.first { it is EnergyManager } as EnergyManager)
         )
         commandManager.registerCommand(EnergyCommand(this))
 
         this.scheduler?.runNextTick { t ->
             this.server.worlds.forEach(Consumer { world ->
                 Arrays.stream(world.loadedChunks)
-                    .forEach { chunk -> this.manager!!.loadNetworks(chunk) }
+                    .forEach { chunk -> this.managers.forEach {
+                        it.loadNetworks(chunk)
+                    } }
             })
 
-            this.manager!!.startNetworkUpdater()
-            this.scheduler!!.runTimerAsync({ _ -> this.manager!!.saveNetworks() }, 1, 1, TimeUnit.HOURS)
-            this.scheduler!!.runTimerAsync({ _ -> this.manager!!.cleanUpNetworks() }, 1, 1, TimeUnit.HOURS)
+            this.managers.forEach {
+                it.startNetworkUpdater()
+            }
+            this.scheduler!!.runTimerAsync({ _ -> this.managers.forEach {
+                it.saveNetworks()
+            } }, 1, 1, TimeUnit.HOURS)
+            this.scheduler!!.runTimerAsync({ _ -> this.managers.forEach {
+                it.cleanUpNetworks()
+            } }, 1, 1, TimeUnit.HOURS)
         }
     }
 
@@ -118,8 +127,12 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
      * Disable the plugin.
      */
     override fun onDisable() {
-        this.manager?.stopNetworkUpdater()
-        this.manager?.saveNetworks()
+        this.managers.forEach {
+            it.stopNetworkUpdater()
+        }
+        this.managers.forEach {
+            it.saveNetworks()
+        }
     }
 
     /**
