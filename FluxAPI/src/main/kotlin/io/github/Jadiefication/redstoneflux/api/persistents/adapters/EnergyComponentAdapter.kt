@@ -77,6 +77,6 @@ class EnergyComponentAdapter
             }
         }
         `in`.endObject()
-        return EnergyComponent<EnergyMechanic?>(energyType, gson.fromJson(energyMechanicData, mechanic))
+        return EnergyComponent(energyType, gson.fromJson(energyMechanicData, mechanic))
     }
 }

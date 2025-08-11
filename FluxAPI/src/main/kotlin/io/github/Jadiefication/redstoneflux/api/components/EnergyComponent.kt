@@ -11,7 +11,7 @@ import org.bukkit.Bukkit
  * Represents a component that can be connected to other components.
  * @param <T> The mechanic that this component uses.
 </T> */
-open class EnergyComponent<T : EnergyMechanic?>(
+open class EnergyComponent<T : EnergyMechanic>(
     /**
      * The type of energy that this component uses.
      */
@@ -20,42 +20,27 @@ open class EnergyComponent<T : EnergyMechanic?>(
      * The mechanic that this component uses.
      */
     var mechanic: T?
-) {
+) : BaseComponent<EnergyComponent<*>>() {
     /**
      * The components that this component is connected to.
      */
-    internal val connectedComponents: MutableSet<EnergyComponent<*>?> = HashSet<EnergyComponent<*>?>()
+    override val connectedComponents: MutableSet<EnergyComponent<*>> = HashSet<EnergyComponent<*>>()
 
-    /**
-     * Connects this component to another component.
-     * @param component The component to connect to.
-     * @throws SameEnergyTypeException If the component uses not the same energy type as this component.
-     */
-    @Throws(SameEnergyTypeException::class)
-    internal fun connect(component: EnergyComponent<*>) {
-        if (this.energyType !== component.energyType) {
-            throw SameEnergyTypeException()
-        }
-        if (this.connectedComponents.contains(component)) {
-            return
-        }
+    override fun connectionFunction(component: EnergyComponent<*>) {
         val componentConnectEvent = EnergyComponentConnectEvent(component, this)
         Bukkit.getServer().pluginManager.callEvent(componentConnectEvent)
-        this.connectedComponents.add(component)
-        component.connect(this)
     }
 
-    /**
-     * Disconnects this component from another component.
-     * @param component The component to disconnect from.
-     */
-    internal fun disconnect(component: EnergyComponent<*>) {
-        if (!this.connectedComponents.contains(component)) {
-            return
-        }
+    override fun disconnectionFunction(component: EnergyComponent<*>) {
         val componentDisconnectEvent = EnergyComponentDisconnectEvent(component, this)
         Bukkit.getServer().pluginManager.callEvent(componentDisconnectEvent)
-        this.connectedComponents.remove(component)
-        component.disconnect(this)
+    }
+
+    override fun checker(component: EnergyComponent<*>): Boolean {
+        if (this.energyType !== component.energyType) {
+            throw SameEnergyTypeException()
+        } else {
+            return true
+        }
     }
 }
