@@ -86,6 +86,7 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
         Updater.update("RedstoneFlux")
 
         this.scheduler = FoliaLib(this).scheduler
+        this.managers.addAll(Manager.managers)
         this.managers.add(EnergyManagerImpl(this))
         this.isDebug = false
 

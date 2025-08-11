@@ -122,4 +122,11 @@ interface Manager<C : BaseComponent<C>> {
      * @return The gson instance.
      */
     val gson: Gson
+
+    companion object {
+        /**
+         * Used for keeping a track of which managers to register
+         */
+        val managers: MutableSet<Manager<*>> = mutableSetOf()
+    }
 }
