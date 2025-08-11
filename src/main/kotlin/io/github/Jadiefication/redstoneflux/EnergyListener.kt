@@ -26,7 +26,7 @@ class EnergyListener(
     /**
      * The energy manager
      */
-    private val energyManager: EnergyManager = api.manager!!
+    private val energyManager: EnergyManager = api.managers.first { it is EnergyManager } as EnergyManager
 
     /**
      * Load energy networks in a chunk
