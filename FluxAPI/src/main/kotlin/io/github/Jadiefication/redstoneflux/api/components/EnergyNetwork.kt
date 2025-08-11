@@ -2,7 +2,6 @@ package io.github.Jadiefication.redstoneflux.api.components
 
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
-import io.github.Jadiefication.redstoneflux.api.Manager
 import io.github.Jadiefication.redstoneflux.api.event.EnergyConsumeEvent
 import io.github.Jadiefication.redstoneflux.api.event.EnergyProduceEvent
 import io.github.Jadiefication.redstoneflux.api.event.NotEnoughEnergyEvent
@@ -27,7 +26,6 @@ import org.jetbrains.annotations.ApiStatus
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.stream.Collectors
-import kotlin.reflect.KClass
 
 /**
  * Represents an energy network.
@@ -36,19 +34,37 @@ class EnergyNetwork(
     /**
      * The API instance.
      */
-    override val api: EnergyAPI,
+    private val api: EnergyAPI,
     /**
      * The network's unique identifier.
      */
-    override val id: UUID?
-): BaseNetwork<EnergyComponent<*>>() {
+    val id: UUID?
+) {
+    /**
+     * Get the network's unique identifier.
+     *
+     * @return The network's unique identifier.
+     */
+
+    /**
+     * The network's chunk.
+     */
+    lateinit var chunk: Chunk
+
+    /**
+     * Get the network's components.
+     *
+     * @return The network's components.
+     */
+    /**
+     * The network's components.
+     */
+    val components: MutableMap<Location, EnergyComponent<*>> = ConcurrentHashMap<Location, EnergyComponent<*>>()
 
     /**
      * The key to store the network in the chunk.
      */
-    override var networkKey: NamespacedKey = ItemsFactory.networkKey
-
-    override val manager: KClass<out Manager<EnergyComponent<*>>> = EnergyManager::class
+    var networkKey: NamespacedKey = ItemsFactory.networkKey
 
     /**
      * Creates a new energy network.
@@ -60,6 +76,59 @@ class EnergyNetwork(
     constructor(api: EnergyAPI, component: EnergyComponent<*>, location: Location) : this(api, UUID.randomUUID()) {
         this.components.put(location, component)
         this.chunk = location.chunk
+    }
+
+    /**
+     * Add a component to the network.
+     *
+     * @param component The component to add.
+     * @param location  The location of the component.
+     * @throws SameEnergyTypeException If the component is not the same type.
+     */
+    @Throws(SameEnergyTypeException::class)
+    fun addComponent(component: EnergyComponent<*>, location: Location) {
+        for (entry in this.components.entries.stream()
+            .filter { entry: MutableMap.MutableEntry<Location, EnergyComponent<*>> -> entry.key.distance(location) == 1.0 }
+            .toList()) {
+                entry.value.connect(component)
+        }
+        if (!::chunk.isInitialized) {
+            this.chunk = location.chunk
+        }
+        this.components.put(location, component)
+    }
+
+    /**
+     * Remove a component from the network.
+     *
+     * @param location The location of the component.
+     */
+    fun removeComponent(location: Location) {
+        this.components.entries.stream()
+            .filter { entry: MutableMap.MutableEntry<Location, EnergyComponent<*>> -> entry.key.distance(location) == 1.0 }
+            .forEach { entry: MutableMap.MutableEntry<Location, EnergyComponent<*>> ->
+                entry.value.disconnect(this@EnergyNetwork.components[location]!!)
+            }
+        this.components.remove(location)
+    }
+
+    /**
+     * Get if the network contains a location.
+     *
+     * @param location The location to check.
+     * @return If the network contains the location.
+     */
+    fun contains(location: Location): Boolean {
+        return this.components.containsKey(location)
+    }
+
+    /**
+     * Merge the network with another network.
+     *
+     * @param network The network to merge with.
+     */
+    fun mergeWith(network: EnergyNetwork) {
+        this.components.putAll(network.components)
     }
 
     /**
@@ -215,6 +284,91 @@ class EnergyNetwork(
         } else {
             consumer.isEnable = true
         }
+    }
+
+    val isEmpty: Boolean
+        /**
+         * Get if the network is empty.
+         *
+         * @return If the network is empty.
+         */
+        get() = this.components.isEmpty()
+
+    /**
+     * Get if the network is in a chunk.
+     *
+     * @param chunk The chunk to check.
+     * @return If the network is in the chunk.
+     */
+    fun isInChunk(chunk: Chunk): Boolean {
+        return this.components.keys
+            .stream()
+            .anyMatch { location: Location? -> this.isSameChunk(chunk, location!!.chunk) }
+    }
+
+
+    /**
+     * Save the network in the chunk.
+     */
+    fun save() {
+        val manager: EnergyManager = this.api.manager!!
+        val container: PersistentDataContainer
+        try {
+            container = chunk.persistentDataContainer
+        } catch (_: Exception) {
+            delete()
+            return
+        }
+        val gson = manager.gson
+        val json: String? = gson.toJson(this, EnergyNetwork::class.java)
+
+        var networks =
+            container.getOrDefault(
+                networkKey,
+                PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+                ArrayList()
+            )
+        networks = ArrayList(networks)
+        networks.removeIf { network: String? ->
+            val energyNetwork: EnergyNetwork? = gson.fromJson(network, EnergyNetwork::class.java)
+            energyNetwork?.id == this.id
+        }
+        networks.add(json)
+
+        container.set(
+            networkKey,
+            PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+            networks
+        )
+    }
+
+    /**
+     * Delete the network from the chunk.
+     */
+    fun delete() {
+        val container: PersistentDataContainer
+        try {
+            container = chunk.persistentDataContainer
+        } catch (_: Exception) {
+            api.manager?.networks?.remove(this)
+            return
+        }
+        var networks: MutableList<String?> =
+            container.getOrDefault(
+                networkKey,
+                PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+                mutableListOf()
+            )
+        networks = ArrayList(networks)
+        networks.removeIf { json: String? ->
+            val network: EnergyNetwork? = this.api.manager!!.gson.fromJson(json, EnergyNetwork::class.java)
+            network?.id == this.id
+        }
+        container.set(
+            networkKey,
+            PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+            networks
+        )
     }
 
     val energyType: EnergyType?

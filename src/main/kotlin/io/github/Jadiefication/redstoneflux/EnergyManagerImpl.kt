@@ -4,11 +4,8 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
-import io.github.Jadiefication.redstoneflux.api.components.BaseNetwork
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
-import io.github.Jadiefication.redstoneflux.api.components.EnergyComponentBuilder
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
-import io.github.Jadiefication.redstoneflux.api.components.ItemComponentBuilder
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
@@ -63,11 +60,6 @@ class EnergyManagerImpl(
     private var updaterTask: Job? = null
 
     /**
-     * Items builder for energy components.
-     */
-    private val builder: EnergyComponentBuilder
-
-    /**
      * Create a new EnergyManagerImpl instance.
      *
      * @param energyLib the EnergyLib instance
@@ -76,13 +68,6 @@ class EnergyManagerImpl(
         this.gson = this.createGson()
         ItemsFactory.gson = this.gson
         this.networks = HashSet<EnergyNetwork>()
-
-        builder = EnergyComponentBuilder(
-            gson,
-            energyLib.energyTypeKey,
-            energyLib.mechanicClassKey,
-            energyLib.mechanicKey
-        )
     }
 
     /**
@@ -139,7 +124,7 @@ class EnergyManagerImpl(
 
         location.block.type = Material.AIR
         if (player.gameMode != GameMode.CREATIVE) {
-            val result = this.createItemComponent(component, builder)
+            val result = this.createItemComponent(energyType!!, mechanicType, component)
             player.world.dropItemNaturally(location, result)
         }
 
@@ -243,11 +228,36 @@ class EnergyManagerImpl(
     /**
      * {@inheritDoc}
      */
-    override fun <T : ItemComponentBuilder<EnergyComponent<*>>> createItemComponent(
-        component: EnergyComponent<*>,
-        builder: T
+    override fun createItemComponent(
+        type: EnergyType,
+        mechanicType: MechanicType,
+        mechanic: EnergyComponent<*>
     ): ItemStack {
-        return (builder as EnergyComponentBuilder).buildItem(component)
+        require(mechanic.javaClass.isAssignableFrom(mechanicType.clazz)) { "Mechanic type " + mechanicType.clazz + " is not compatible with mechanic " + mechanic.mechanic?.javaClass }
+
+        val item: ItemStack = ItemsFactory.getItem(mechanic)
+            .orElseThrow(Supplier { IllegalArgumentException("Item not found for mechanic " + mechanic.javaClass) })
+
+        val meta: ItemMeta? = item.itemMeta
+        requireNotNull(meta) { "ItemMeta is null!" }
+        val persistentDataContainer: PersistentDataContainer = meta.persistentDataContainer
+        persistentDataContainer.set(
+            energyLib.energyTypeKey,
+            EnergyTypePersistentDataType.INSTANCE,
+            type
+        )
+        persistentDataContainer.set(
+            energyLib.mechanicClassKey,
+            PersistentDataType.STRING,
+            mechanic.javaClass.getName()
+        )
+        persistentDataContainer.set(
+            energyLib.mechanicKey,
+            PersistentDataType.STRING,
+            this.gson.toJson(mechanic, mechanic.javaClass)
+        )
+        item.setItemMeta(meta)
+        return item
     }
 
     /**
@@ -270,9 +280,9 @@ class EnergyManagerImpl(
         this.updaterTask!!.cancel()
     }
 
-    override fun <T : BaseNetwork<EnergyComponent<*>>> deleteNetwork(network: T) {
+    override fun deleteNetwork(network: EnergyNetwork) {
         network.delete()
-        this.networks.remove(network as EnergyNetwork)
+        this.networks.remove(network)
     }
 
     /**

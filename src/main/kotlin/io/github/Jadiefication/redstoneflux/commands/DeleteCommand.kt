@@ -4,9 +4,6 @@ import fr.traqueur.commands.api.arguments.Arguments
 import fr.traqueur.commands.api.models.Command
 import io.github.Jadiefication.redstoneflux.RedstoneFlux
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
-import io.github.Jadiefication.redstoneflux.api.Manager
-import io.github.Jadiefication.redstoneflux.api.components.BaseComponent
-import io.github.Jadiefication.redstoneflux.api.components.BaseNetwork
 import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -15,7 +12,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
 class DeleteCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(plugin, "delete") {
-    private val manager: Set<Manager<out BaseComponent<*>>> = plugin.managers
+    private val manager: EnergyManager? = plugin.manager
 
     init {
         this.permission = "energy.admin.delete"
@@ -25,12 +22,8 @@ class DeleteCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender
     }
 
     override fun execute(commandSender: CommandSender, arguments: Arguments) {
-        val network = arguments.get<BaseNetwork<*>>("network")
-        manager.forEach { mgr ->
-            (mgr.networks as Set<BaseNetwork<BaseComponent<*>>>).forEach { network ->
-                (mgr as Manager<BaseComponent<*>>).deleteNetwork(network)
-            }
-        }
+        val network = arguments.get<EnergyNetwork>("network")
+        manager?.deleteNetwork(network)
         commandSender.sendMessage(
             "§aThe network §e" + network.id + " §ain chunk §e" + network.chunk
                 .x + " " + network.chunk.z + " §ahas been deleted."
@@ -39,7 +32,7 @@ class DeleteCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender
 }
 
 class DeleteAllCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(plugin, "deleteAll") {
-    private val manager: Set<Manager<out BaseComponent<*>>> = plugin.managers
+    private val manager: EnergyManager? = plugin.manager
 
     init {
         this.permission = "energy.admin.deleteAll"
@@ -48,20 +41,15 @@ class DeleteAllCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSen
     }
 
     override fun execute(commandSender: CommandSender, arguments: Arguments) {
-        manager.forEach { mgr ->
-            @Suppress("UNCHECKED_CAST")
-            (mgr.networks as Set<BaseNetwork<BaseComponent<*>>>).forEach { network ->
-                (mgr as Manager<BaseComponent<*>>).deleteNetwork(network)
-            }
-            commandSender.sendMessage(Component.text {
-                it.append(Component.text("All networks ", Style.style(NamedTextColor.GREEN)))
-                it.append(Component.text(if (commandSender is Player) {
-                    "at ${commandSender.chunk}"
-                } else {
-                    ""
-                }, Style.style(NamedTextColor.YELLOW)))
-                it.append(Component.text(" have been deleted.", Style.style(NamedTextColor.GREEN)))
-            })
-        }
+        manager?.networks?.forEach { manager.deleteNetwork(it) }
+        commandSender.sendMessage(Component.text {
+            it.append(Component.text("All networks ", Style.style(NamedTextColor.GREEN)))
+            it.append(Component.text(if (commandSender is Player) {
+                "at ${commandSender.chunk}"
+            } else {
+                ""
+            }, Style.style(NamedTextColor.YELLOW)))
+            it.append(Component.text(" have been deleted.", Style.style(NamedTextColor.GREEN)))
+        })
     }
 }

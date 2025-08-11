@@ -11,7 +11,7 @@ interface EnergyAPI {
      * Get the instance of the manager.
      * @return the instance of the manager.
      */
-    val managers: MutableSet<Manager<*>>
+    val manager: EnergyManager?
 
     /**
      * Get the coroutine scope.
