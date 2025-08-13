@@ -2,13 +2,10 @@ package io.github.Jadiefication.redstoneflux.commands
 
 import fr.traqueur.commands.api.arguments.ArgumentConverter
 import fr.traqueur.commands.api.arguments.TabCompleter
-import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.Manager
 import io.github.Jadiefication.redstoneflux.api.components.BaseNetwork
-import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import org.bukkit.command.CommandSender
 import java.util.*
-import java.util.stream.Collectors
 
 class NetworkArgument(private val manager: Set<Manager<*>>) : ArgumentConverter<BaseNetwork<*>?>,
     TabCompleter<CommandSender> {

@@ -37,5 +37,17 @@ interface EnergyStorage : EnergyMechanic {
      * @param energyTaken the amount of energy to consume
      * @return the amount of energy that could be consumed
      */
+    @Deprecated(
+        message = "Weird naming, deprecated since 1.3.3",
+        replaceWith = ReplaceWith("grabEnergy"),
+        level = DeprecationLevel.HIDDEN
+    )
     fun consumeEnergy(energyTaken: Double): Double
+
+    /**
+     * Attempts to grab the wanted energy from the storage.
+     * @param wantedEnergy the amount of energy it wants.
+     * @return the amount of energy that could be given.
+     */
+    fun grabEnergy(wantedEnergy: Double): Double
 }

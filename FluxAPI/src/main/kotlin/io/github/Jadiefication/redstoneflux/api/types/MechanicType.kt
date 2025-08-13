@@ -34,7 +34,7 @@ enum class MechanicType
     /**
      * Represents an energy transporter.
      */
-    TRANSPORTER(EnergyTransporter::class.java),
+    TRANSPORTER(Transporter::class.java),
 
     /**
      * Represents an energy meter

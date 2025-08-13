@@ -7,7 +7,6 @@ import io.github.Jadiefication.redstoneflux.api.event.EnergyConsumeEvent
 import io.github.Jadiefication.redstoneflux.api.event.EnergyProduceEvent
 import io.github.Jadiefication.redstoneflux.api.event.NotEnoughEnergyEvent
 import io.github.Jadiefication.redstoneflux.api.event.StoreEnergyEvent
-import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
 import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyConsumer
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyProducer
@@ -21,11 +20,8 @@ import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
-import org.bukkit.persistence.PersistentDataContainer
-import org.bukkit.persistence.PersistentDataType
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import java.util.stream.Collectors
 import kotlin.reflect.KClass
 
@@ -184,7 +180,7 @@ class EnergyNetwork(
 
             for (storageComponent in connectedStorages) {
                 val storage = storageComponent.mechanic as EnergyStorage
-                val energyFromStorage = storage.consumeEnergy(requiredEnergy)
+                val energyFromStorage = storage.grabEnergy(requiredEnergy)
                 val produceEvent = EnergyConsumeEvent(
                     energyFromStorage,
                     storageComponent,
