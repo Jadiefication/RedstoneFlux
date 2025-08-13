@@ -184,7 +184,7 @@ class EnergyNetwork(
 
             for (storageComponent in connectedStorages) {
                 val storage = storageComponent.mechanic as EnergyStorage
-                val energyFromStorage = storage.consumeEnergy(requiredEnergy)
+                val energyFromStorage = storage.grabEnergy(requiredEnergy)
                 val produceEvent = EnergyConsumeEvent(
                     energyFromStorage,
                     storageComponent,
