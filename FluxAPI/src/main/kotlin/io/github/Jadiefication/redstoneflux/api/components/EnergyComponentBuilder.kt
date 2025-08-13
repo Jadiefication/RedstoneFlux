@@ -2,7 +2,6 @@ package io.github.Jadiefication.redstoneflux.api.components
 
 import com.google.gson.Gson
 import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
-import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import io.github.Jadiefication.redstoneflux.api.persistents.EnergyTypePersistentDataType
 import io.github.Jadiefication.redstoneflux.api.types.MechanicType
 import org.bukkit.NamespacedKey

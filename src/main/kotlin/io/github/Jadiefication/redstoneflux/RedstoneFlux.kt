@@ -7,7 +7,6 @@ import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.Manager
 import io.github.Jadiefication.redstoneflux.api.components.BaseNetwork
-import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import io.github.Jadiefication.redstoneflux.api.items.ItemsFactory
 import io.github.Jadiefication.redstoneflux.commands.EnergyCommand
 import io.github.Jadiefication.redstoneflux.commands.NetworkArgument

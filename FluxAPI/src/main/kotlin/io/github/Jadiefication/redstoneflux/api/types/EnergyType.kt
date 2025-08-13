@@ -1,7 +1,5 @@
 package io.github.Jadiefication.redstoneflux.api.types
 
-import java.util.List
-
 /**
  * Represents an energy type.
  */

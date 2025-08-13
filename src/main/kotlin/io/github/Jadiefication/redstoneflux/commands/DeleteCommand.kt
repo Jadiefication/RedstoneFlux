@@ -3,11 +3,9 @@ package io.github.Jadiefication.redstoneflux.commands
 import fr.traqueur.commands.api.arguments.Arguments
 import fr.traqueur.commands.api.models.Command
 import io.github.Jadiefication.redstoneflux.RedstoneFlux
-import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.Manager
 import io.github.Jadiefication.redstoneflux.api.components.BaseComponent
 import io.github.Jadiefication.redstoneflux.api.components.BaseNetwork
-import io.github.Jadiefication.redstoneflux.api.components.EnergyNetwork
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style

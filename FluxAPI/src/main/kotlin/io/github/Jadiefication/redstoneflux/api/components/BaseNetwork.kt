@@ -8,8 +8,7 @@ import org.bukkit.Location
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
-import java.util.ArrayList
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 
