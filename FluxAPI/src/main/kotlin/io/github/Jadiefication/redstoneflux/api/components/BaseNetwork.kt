@@ -16,7 +16,7 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
     /**
      * The API instance.
      */
-    internal abstract val api: EnergyAPI
+    abstract val api: EnergyAPI
     /**
      * The network's unique identifier.
      */
