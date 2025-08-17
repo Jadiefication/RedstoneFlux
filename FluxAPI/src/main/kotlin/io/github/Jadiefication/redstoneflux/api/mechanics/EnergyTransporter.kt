@@ -13,7 +13,7 @@ interface EnergyTransporter : EnergyMechanic
 /**
  * This interface is used to represent an energy transporter.
  */
-interface Transporter : EnergyMechanic, EnergyStorage {
+interface Transporter : EnergyStorage {
 
     /**
      * The rate at which the energy is being transferred.

@@ -5,26 +5,26 @@ abstract class BaseComponent<C : BaseComponent<C>> {
     /**
      * The components that this component is connected to.
      */
-    internal abstract val connectedComponents: MutableSet<C>
+    abstract val connectedComponents: MutableSet<C>
 
     /**
      * A function to run when connecting components.
      * @param component the component to check.
      * @return if to connect.
      */
-    internal abstract fun checker(component: C): Boolean
+    abstract fun checker(component: C): Boolean
 
     /**
      * Called after the component is connected.
      * @param component the component to do stuff with.
      */
-    internal abstract fun connectionFunction(component: C)
+    abstract fun connectionFunction(component: C)
 
     /**
      * Called after the component is disconnected.
      * @param component the component to do stuff with.
      */
-    internal abstract fun disconnectionFunction(component: C)
+    abstract fun disconnectionFunction(component: C)
 
     /**
      * Connects this component to another component.
