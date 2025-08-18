@@ -16,6 +16,29 @@ import java.util.*
 interface Manager<C : BaseComponent<C>> {
 
     /**
+     * The list of the 6 block faces.
+     */
+    val neighbours: List<BlockFace>
+        get() = listOf(
+            BlockFace.UP,
+            BlockFace.DOWN,
+            BlockFace.NORTH,
+            BlockFace.EAST,
+            BlockFace.SOUTH,
+            BlockFace.WEST
+        )
+
+    /**
+     * The RedstoneFlux instance for getting certain values.
+     */
+    val api: EnergyAPI
+
+    /**
+     * The builder for the itemstacks based on components.
+     */
+    val builder: ItemComponentBuilder<C>
+
+    /**
      * Handle the placement of a component in the world.
      *
      * @param component The component to place.
