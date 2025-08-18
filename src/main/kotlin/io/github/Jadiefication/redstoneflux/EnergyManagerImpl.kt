@@ -386,66 +386,6 @@ class EnergyManagerImpl(
     }
 
     /**
-     * Discover the sub network of a block.
-     *
-     * @param startBlock the start block
-     * @param visited    the set of visited blocks
-     * @return the set of components
-     */
-    private fun discoverSubNetwork(
-        startBlock: Location,
-        visited: MutableSet<Location>,
-        originalComponents: Map<Location, EnergyComponent<*>>
-    ): MutableSet<MutableMap.MutableEntry<Location, EnergyComponent<*>>> {
-        val subNetwork: MutableSet<MutableMap.MutableEntry<Location, EnergyComponent<*>>> =
-            HashSet()
-        val queue: Queue<Location> = LinkedList()
-        queue.add(startBlock)
-
-        while (!queue.isEmpty()) {
-            val current = queue.poll()
-            if (!visited.contains(current)) {
-                visited.add(current)
-                val component = originalComponents[current]
-                if (component != null) {
-                    subNetwork.add(AbstractMap.SimpleEntry(current, component))
-                }
-
-                for (face in NEIGHBORS) {
-                    val neighbor = current.block.getRelative(face).location
-                    if (isBlockComponent(neighbor) && !visited.contains(neighbor)) {
-                        queue.add(neighbor)
-                    }
-                }
-            }
-        }
-
-        return subNetwork
-    }
-
-    /**
-     * Get the persistent data of an item.
-     *
-     * @param item the item
-     * @param key  the key
-     * @param type the type
-     * @param <C>  the type of the data
-     * @return the optional of the data
-    </C> */
-    private fun <P : Any, C : Any> getPersistentData(
-        item: ItemStack,
-        key: NamespacedKey,
-        type: PersistentDataType<P, C>
-    ): Optional<C?> {
-        val meta: ItemMeta? = item.itemMeta
-        if (meta == null) {
-            return Optional.empty<C?>() as Optional<C?>
-        }
-        val persistentDataContainer: PersistentDataContainer = meta.persistentDataContainer
-        return Optional.ofNullable<C?>(persistentDataContainer.get(key, type)) as Optional<C?>
-    }
-
-    /**
      * Create the Gson instance.
      *
      * @return the Gson instance
