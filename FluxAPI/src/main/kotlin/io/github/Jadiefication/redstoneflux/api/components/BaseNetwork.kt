@@ -185,6 +185,8 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
             .name == chunk1.world.name
     }
 
+    abstract suspend fun update()
+
     private val root: C?
         /**
          * Get the root component.
