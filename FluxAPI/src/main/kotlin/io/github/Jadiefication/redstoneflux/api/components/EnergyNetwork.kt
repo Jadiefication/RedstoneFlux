@@ -61,7 +61,7 @@ class EnergyNetwork(
     /**
      * Update the network.
      */
-    suspend fun update() {
+    override suspend fun update() {
         handleProduction()
         handleConsumers()
         handleExcess()

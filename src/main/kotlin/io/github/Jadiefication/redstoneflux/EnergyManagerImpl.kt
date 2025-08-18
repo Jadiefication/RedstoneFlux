@@ -2,7 +2,6 @@ package io.github.Jadiefication.redstoneflux
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import io.github.Jadiefication.redstoneflux.api.EnergyAPI
 import io.github.Jadiefication.redstoneflux.api.EnergyManager
 import io.github.Jadiefication.redstoneflux.api.components.*
 import io.github.Jadiefication.redstoneflux.api.exceptions.SameEnergyTypeException
@@ -35,12 +34,8 @@ import kotlin.jvm.optionals.getOrNull
  * It allows to place and break energy components in the world.
  */
 class EnergyManagerImpl(
-    val energyLib: RedstoneFlux
+    override val api: RedstoneFlux
 ) : EnergyManager {
-    /**
-     * The EnergyLib instance.
-     */
-    private val api: EnergyAPI = energyLib
 
     /**
      * The Gson instance.
@@ -55,17 +50,17 @@ class EnergyManagerImpl(
     /**
      * The task that updates the networks.
      */
-    private var updaterTask: Job? = null
+    override var updaterTask: Job? = null
 
     /**
      * Items builder for energy components.
      */
-    private val builder: EnergyComponentBuilder
+    override val builder: EnergyComponentBuilder
 
     /**
      * Create a new EnergyManagerImpl instance.
      *
-     * @param energyLib the EnergyLib instance
+     * @param api the EnergyLib instance
      */
     init {
         this.gson = this.createGson()
@@ -74,9 +69,9 @@ class EnergyManagerImpl(
 
         builder = EnergyComponentBuilder(
             gson,
-            energyLib.energyTypeKey,
-            energyLib.mechanicClassKey,
-            energyLib.mechanicKey
+            api.energyTypeKey,
+            api.mechanicClassKey,
+            api.mechanicKey
         )
     }
 
@@ -115,6 +110,19 @@ class EnergyManagerImpl(
                 this.deleteNetwork(network)
             }
         }
+    }
+
+    override fun createNetwork(
+        uuid: UUID
+    ): BaseNetwork<EnergyComponent<*>> {
+        return EnergyNetwork(api, uuid)
+    }
+
+    override fun createNetwork(
+        component: EnergyComponent<*>,
+        location: Location
+    ): BaseNetwork<EnergyComponent<*>> {
+        return EnergyNetwork(api, component, location)
     }
 
     /**
@@ -158,7 +166,7 @@ class EnergyManagerImpl(
     override fun getEnergyType(item: ItemStack): Optional<EnergyType?> {
         val pdcOptional = this.getPersistentData<String, EnergyType>(
             item,
-            energyLib.energyTypeKey,
+            api.energyTypeKey,
             EnergyTypePersistentDataType.INSTANCE
         )
         return (if (pdcOptional.isEmpty) {
@@ -173,7 +181,7 @@ class EnergyManagerImpl(
      */
     override fun getMechanicClass(item: ItemStack): Optional<String?> {
         val pdcOptional =
-            this.getPersistentData<String, String>(item, energyLib.mechanicClassKey, PersistentDataType.STRING)
+            this.getPersistentData<String, String>(item, api.mechanicClassKey, PersistentDataType.STRING)
         return (if (pdcOptional.isEmpty) {
             Optional.ofNullable(ItemsFactory.getComponent(item).getOrNull()?.mechanic?.javaClass?.name)
         } else {
@@ -194,7 +202,7 @@ class EnergyManagerImpl(
         }
         require(EnergyMechanic::class.java.isAssignableFrom(clazz)) { "Class $mechanicClass is not an EnergyMechanic!" }
         val mechanicClazz: Class<out EnergyMechanic?> = clazz.asSubclass(EnergyMechanic::class.java)
-        val opt = this.getPersistentData<String, String>(item, energyLib.mechanicKey, PersistentDataType.STRING)
+        val opt = this.getPersistentData<String, String>(item, api.mechanicKey, PersistentDataType.STRING)
         if (opt.isEmpty) {
             return Optional.empty<EnergyMechanic?>()
         }
@@ -283,13 +291,13 @@ class EnergyManagerImpl(
     override fun loadNetworks(chunk: Chunk) {
         val chunkData: PersistentDataContainer? = chunk.persistentDataContainer
         if (chunkData?.has(
-                energyLib.networkKey,
+                api.networkKey,
                 PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING)
             ) == true
         ) {
             val networkDatas: MutableList<String?> =
                 chunkData.getOrDefault(
-                    energyLib.networkKey,
+                    api.networkKey,
                     PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
                     ArrayList<String?>()
                 )
