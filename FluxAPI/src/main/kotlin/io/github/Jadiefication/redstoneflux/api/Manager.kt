@@ -152,4 +152,112 @@ interface Manager<C : BaseComponent<C>> {
          */
         val managers: MutableSet<Manager<*>> = mutableSetOf()
     }
+
+    /**
+     * Check if th network must be split.
+     *
+     * @param network the network
+     */
+    private suspend fun splitNetworkIfNecessary(
+        network: BaseNetwork<C>,
+        originalComponents: Map<Location, C>
+    ) {
+        val visited: MutableSet<Location> = HashSet()
+        val newNetworks: MutableList<BaseNetwork<C>> = ArrayList()
+        val defers = mutableListOf<Deferred<Unit>>()
+        network.components.keys.forEach { component ->
+            val defer = api.scope.async {
+                asyncNetworkSplit(visited, component, newNetworks, originalComponents)
+            }
+            defers.add(defer)
+        }
+
+        defers.awaitAll().forEach { _ ->
+            this.deleteNetwork(network)
+            (this.networks as MutableSet<BaseNetwork<C>>).addAll(newNetworks)
+        }
+    }
+
+    private fun asyncNetworkSplit(
+        visited: MutableSet<Location>,
+        component: Location,
+        newNetworks: MutableList<BaseNetwork<C>>,
+        originalComponents: Map<Location, C>
+    ) {
+        if (!visited.contains(component)) {
+            val subNetworkComponents =
+                discoverSubNetwork(component, visited, originalComponents)
+            if (!subNetworkComponents.isEmpty()) {
+                val newNetwork = createNetwork<BaseNetwork<C>>(UUID.randomUUID())
+                for (subComponent in subNetworkComponents) {
+                    try {
+                        newNetwork.addComponent(subComponent.value, subComponent.key)
+                    } catch (e: SameEnergyTypeException) {
+                        throw RuntimeException(e)
+                    }
+                }
+                newNetworks.add(newNetwork)
+            }
+        }
+    }
+
+    /**
+     * Discover the sub network of a block.
+     *
+     * @param startBlock the start block
+     * @param visited    the set of visited blocks
+     * @return the set of components
+     */
+    private fun discoverSubNetwork(
+        startBlock: Location,
+        visited: MutableSet<Location>,
+        originalComponents: Map<Location, C>
+    ): MutableSet<MutableMap.MutableEntry<Location, C>> {
+        val subNetwork: MutableSet<MutableMap.MutableEntry<Location, C>> =
+            HashSet()
+        val queue: Queue<Location> = LinkedList()
+        queue.add(startBlock)
+
+        while (!queue.isEmpty()) {
+            val current = queue.poll()
+            if (!visited.contains(current)) {
+                visited.add(current)
+                val component = originalComponents[current]
+                if (component != null) {
+                    subNetwork.add(AbstractMap.SimpleEntry(current, component))
+                }
+
+                for (face in neighbours) {
+                    val neighbor = current.block.getRelative(face).location
+                    if (isBlockComponent(neighbor) && !visited.contains(neighbor)) {
+                        queue.add(neighbor)
+                    }
+                }
+            }
+        }
+
+        return subNetwork
+    }
+
+    /**
+     * Get the persistent data of an item.
+     *
+     * @param item the item
+     * @param key  the key
+     * @param type the type
+     * @param <C>  the type of the data
+     * @return the optional of the data
+    </C> */
+    private fun <P : Any, C : Any> getPersistentData(
+        item: ItemStack,
+        key: NamespacedKey,
+        type: PersistentDataType<P, C>
+    ): Optional<C?> {
+        val meta: ItemMeta? = item.itemMeta
+        if (meta == null) {
+            return Optional.empty<C?>() as Optional<C?>
+        }
+        val persistentDataContainer: PersistentDataContainer = meta.persistentDataContainer
+        return Optional.ofNullable<C?>(persistentDataContainer.get(key, type)) as Optional<C?>
+    }
 }
