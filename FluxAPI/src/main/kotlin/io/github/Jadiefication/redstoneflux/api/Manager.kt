@@ -62,7 +62,7 @@ interface Manager<C : BaseComponent<C>> {
     /**
      * The task that updates the networks.
      */
-    var updaterTask: Job
+    var updaterTask: Job?
 
     /**
      * Handle the placement of a component in the world.
@@ -84,7 +84,7 @@ interface Manager<C : BaseComponent<C>> {
         }
 
         if (networks.isEmpty()) {
-            val network = createNetwork<BaseNetwork<C>>(component, location)
+            val network = createNetwork(component, location)
             (this.networks as MutableSet<BaseNetwork<C>>).add(network)
         } else if (networks.size == 1) {
             networks.first().addComponent(component, location)
@@ -104,7 +104,7 @@ interface Manager<C : BaseComponent<C>> {
      * @param uuid the ID of the network.
      * @return the created network.
      */
-    fun <T : BaseNetwork<C>> createNetwork(uuid: UUID): T
+    fun createNetwork(uuid: UUID): BaseNetwork<C>
 
     /**
      * Helper function to create networks
@@ -112,7 +112,7 @@ interface Manager<C : BaseComponent<C>> {
      * @param location the location of the component.
      * @return the created network.
      */
-    fun <T : BaseNetwork<C>> createNetwork(component: C, location: Location): T
+    fun createNetwork(component: C, location: Location): BaseNetwork<C>
 
     /**
      * Handle the break of a component in the world.
@@ -313,7 +313,7 @@ interface Manager<C : BaseComponent<C>> {
             val subNetworkComponents =
                 discoverSubNetwork(component, visited, originalComponents)
             if (!subNetworkComponents.isEmpty()) {
-                val newNetwork = createNetwork<BaseNetwork<C>>(UUID.randomUUID())
+                val newNetwork = createNetwork(UUID.randomUUID())
                 for (subComponent in subNetworkComponents) {
                     try {
                         newNetwork.addComponent(subComponent.value, subComponent.key)
