@@ -283,7 +283,7 @@ interface Manager<C : BaseComponent<C>> {
      *
      * @param network the network
      */
-    private suspend fun splitNetworkIfNecessary(
+    suspend fun splitNetworkIfNecessary(
         network: BaseNetwork<C>,
         originalComponents: Map<Location, C>
     ) {
@@ -333,7 +333,7 @@ interface Manager<C : BaseComponent<C>> {
      * @param visited    the set of visited blocks
      * @return the set of components
      */
-    private fun discoverSubNetwork(
+    fun discoverSubNetwork(
         startBlock: Location,
         visited: MutableSet<Location>,
         originalComponents: Map<Location, C>
@@ -373,7 +373,7 @@ interface Manager<C : BaseComponent<C>> {
      * @param <C>  the type of the data
      * @return the optional of the data
     </C> */
-    private fun <P : Any, C : Any> getPersistentData(
+    fun <P : Any, C : Any> getPersistentData(
         item: ItemStack,
         key: NamespacedKey,
         type: PersistentDataType<P, C>
