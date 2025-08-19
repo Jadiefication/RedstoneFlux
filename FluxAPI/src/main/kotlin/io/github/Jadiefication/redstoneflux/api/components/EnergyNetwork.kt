@@ -20,6 +20,8 @@ import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
+import org.bukkit.persistence.PersistentDataContainer
+import org.bukkit.persistence.PersistentDataType
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
 import java.util.stream.Collectors
@@ -305,5 +307,69 @@ class EnergyNetwork(
                 )
             }
             .collect(Collectors.toMap({ it.key }, { it.value }))
+    }
+
+    /**
+     * Save the network in the chunk.
+     */
+    override fun save() {
+        val manager = this.api.managers.first { manager.isInstance(it) }
+        val container: PersistentDataContainer
+        try {
+            container = chunk.persistentDataContainer
+        } catch (_: Exception) {
+            delete()
+            return
+        }
+        val gson = manager.gson
+        val json: String? = gson.toJson(this, EnergyNetwork::class.java)
+
+        var networks =
+            container.getOrDefault(
+                networkKey,
+                PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+                ArrayList()
+            )
+        networks = ArrayList(networks)
+        networks.removeIf { network: String? ->
+            val energyNetwork = gson.fromJson(network, EnergyNetwork::class.java)
+            energyNetwork?.id == this.id
+        }
+        networks.add(json)
+
+        container.set(
+            networkKey,
+            PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+            networks
+        )
+    }
+
+    /**
+     * Delete the network from the chunk.
+     */
+    override fun delete() {
+        val container: PersistentDataContainer
+        try {
+            container = chunk.persistentDataContainer
+        } catch (_: Exception) {
+            api.managers.first { manager.isInstance(it) }.networks.remove(this)
+            return
+        }
+        var networks: MutableList<String?> =
+            container.getOrDefault(
+                networkKey,
+                PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+                mutableListOf()
+            )
+        networks = ArrayList(networks)
+        networks.removeIf { json: String? ->
+            val network = this.api.managers.first {manager.isInstance(it)}.gson.fromJson(json, EnergyNetwork::class.java)
+            network?.id == this.id
+        }
+        container.set(
+            networkKey,
+            PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+            networks
+        )
     }
 }
