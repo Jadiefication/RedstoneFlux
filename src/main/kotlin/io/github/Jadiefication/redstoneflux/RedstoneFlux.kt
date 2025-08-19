@@ -92,7 +92,7 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
         val pluginManager: PluginManager = this.server.pluginManager
         pluginManager.registerEvents(EnergyListener(this), this)
 
-        this.registerProvider(this, this::class.java as Class<EnergyAPI>)
+        this.registerProvider(this, EnergyAPI::class.java)
         this.registerProvider(this.managers.first { it is EnergyManager } as EnergyManager, EnergyManager::class.java)
 
         val commandManager = CommandManager(this)
