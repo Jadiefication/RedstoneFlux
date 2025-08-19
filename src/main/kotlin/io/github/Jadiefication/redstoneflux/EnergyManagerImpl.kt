@@ -75,14 +75,11 @@ class EnergyManagerImpl(
         )
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Throws(SameEnergyTypeException::class)
     override fun placeComponent(component: EnergyComponent<*>, location: Location) {
         var energyNetworks: MutableList<EnergyNetwork> = ArrayList()
-        for (neibhorFace in NEIGHBORS) {
-            val neighbor = location.block.getRelative(neibhorFace)
+        for (neighbour in neighbours) {
+            val neighbor = location.block.getRelative(neighbour)
             val networkNeighbor: Optional<EnergyNetwork?> =
                 this.networks.stream()
                     .filter { network: EnergyNetwork? -> network?.contains(neighbor.location) == true }
@@ -125,9 +122,6 @@ class EnergyManagerImpl(
         return EnergyNetwork(api, component, location)
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun breakComponent(player: Player, location: Location) {
         val network: EnergyNetwork? =
             this.networks.stream().filter { n -> n.contains(location) }.findFirst()
@@ -137,12 +131,10 @@ class EnergyManagerImpl(
         }
 
         val component: EnergyComponent<*>? = network.components[location]
-        val energyType: EnergyType? = component?.energyType
-        val mechanicType: MechanicType = MechanicType.fromComponent(component!!)
 
         location.block.type = Material.AIR
         if (player.gameMode != GameMode.CREATIVE) {
-            val result = this.createItemComponent(component, builder)
+            val result = this.createItemComponent(component!!, builder)
             player.world.dropItemNaturally(location, result)
         }
 
@@ -160,9 +152,6 @@ class EnergyManagerImpl(
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun getEnergyType(item: ItemStack): Optional<EnergyType?> {
         val pdcOptional = this.getPersistentData<String, EnergyType>(
             item,
@@ -176,9 +165,6 @@ class EnergyManagerImpl(
         }) as Optional<EnergyType?>
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun getMechanicClass(item: ItemStack): Optional<String?> {
         val pdcOptional =
             this.getPersistentData<String, String>(item, api.mechanicClassKey, PersistentDataType.STRING)
@@ -189,9 +175,6 @@ class EnergyManagerImpl(
         }) as Optional<String?>
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun getMechanic(item: ItemStack): Optional<out EnergyMechanic?> {
         val mechanicClass: String? = this.getMechanicClass(item).orElseThrow()
         val clazz: Class<*>?
@@ -210,16 +193,10 @@ class EnergyManagerImpl(
         return Optional.of(this.gson.fromJson(mechanicData, mechanicClazz))
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun isBlockComponent(location: Location): Boolean {
         return this.networks.stream().anyMatch { network: EnergyNetwork? -> network?.contains(location) == true }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun createComponent(item: ItemStack): EnergyComponent<*> {
         val component = ItemsFactory.getComponent(item)
         return if (component.isEmpty) {
@@ -231,9 +208,6 @@ class EnergyManagerImpl(
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun isComponent(item: ItemStack): Boolean {
         if (api.isDebug) {
             println("EnergyType: ${getEnergyType(item)}")
@@ -243,9 +217,6 @@ class EnergyManagerImpl(
         return this.getEnergyType(item).isPresent && this.getMechanicClass(item).isPresent && this.getMechanic(item).isPresent
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun <T : ItemComponentBuilder<EnergyComponent<*>>> createItemComponent(
         component: EnergyComponent<*>,
         builder: T
@@ -253,9 +224,6 @@ class EnergyManagerImpl(
         return (builder as EnergyComponentBuilder).buildItem(component)
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun startNetworkUpdater() {
         this.updaterTask = api.scope.launch {
             withContext(NonCancellable) {
@@ -265,9 +233,6 @@ class EnergyManagerImpl(
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun stopNetworkUpdater() {
         checkNotNull(this.updaterTask) { "Updater task is not running!" }
         this.updaterTask!!.cancel()
@@ -278,16 +243,10 @@ class EnergyManagerImpl(
         this.networks.remove(network as EnergyNetwork)
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun saveNetworks() {
         this.networks.forEach(Consumer { obj: EnergyNetwork? -> obj?.save() })
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun loadNetworks(chunk: Chunk) {
         val chunkData: PersistentDataContainer? = chunk.persistentDataContainer
         if (chunkData?.has(
@@ -310,9 +269,6 @@ class EnergyManagerImpl(
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun getComponentFromBlock(location: Location): Optional<EnergyComponent<*>> {
         val optionalEnergyNetwork: Optional<EnergyNetwork?> = this.networks.stream()
             .filter { network: EnergyNetwork? -> network?.contains(location) == true }
@@ -323,9 +279,6 @@ class EnergyManagerImpl(
         })
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun cleanUpNetworks() {
         networks.removeIf {
             if (it.components.isEmpty()) {
@@ -403,19 +356,5 @@ class EnergyManagerImpl(
         builder.registerTypeAdapter(EnergyNetwork::class.java, EnergyNetworkAdapter(this.api, temp2))
 
         return builder.create()
-    }
-
-    companion object {
-        /**
-         * The list of the 6 block faces.
-         */
-        private val NEIGHBORS = listOf(
-            BlockFace.UP,
-            BlockFace.DOWN,
-            BlockFace.NORTH,
-            BlockFace.EAST,
-            BlockFace.SOUTH,
-            BlockFace.WEST
-        )
     }
 }
