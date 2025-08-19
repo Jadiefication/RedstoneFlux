@@ -92,8 +92,8 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
         val pluginManager: PluginManager = this.server.pluginManager
         pluginManager.registerEvents(EnergyListener(this), this)
 
-        this.registerProvider(this, this::class.java as Class<RedstoneFlux?>)
-        this.registerProvider(this.managers.first { it is EnergyManager } as EnergyManager, EnergyManager::class.java as Class<EnergyManager?>)
+        this.registerProvider(this, this::class.java as Class<EnergyAPI>)
+        this.registerProvider(this.managers.first { it is EnergyManager } as EnergyManager, EnergyManager::class.java)
 
         val commandManager = CommandManager(this)
         commandManager.isDebug = this.isDebug
@@ -159,8 +159,8 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
      * @param clazz    the class of the provider
      * @param <T>      the type of the provider
     </T> */
-    private fun <T> registerProvider(instance: T?, clazz: Class<T?>) {
+    private fun <T> registerProvider(instance: T, clazz: Class<T>) {
         val servicesManager: ServicesManager = this.server.servicesManager
-        servicesManager.register<T?>(clazz, instance!!, this, ServicePriority.Normal)
+        servicesManager.register<T>(clazz, instance!!, this, ServicePriority.Normal)
     }
 }
