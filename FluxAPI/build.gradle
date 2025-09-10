@@ -16,6 +16,9 @@ publishing {
 
 
 shadowJar {
+    relocate("org.jetbrains.kotlinx.coroutines", "io.github.Jadiefication.shaded.kotlinx.coroutines")
+    archiveBaseName.set("RedstoneFlux")
+    archiveVersion.set(project.version.toString())
     destinationDirectory = rootProject.apiFolder
 }
 repositories {
