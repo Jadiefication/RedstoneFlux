@@ -226,7 +226,7 @@ class EnergyManagerImpl(
 
     override fun startNetworkUpdater() {
         this.updaterTask = api.scope.launch {
-            withContext(NonCancellable) {
+            while (isActive) {
                 UpdaterNetworksTask(this@EnergyManagerImpl).run()
                 delay(1000L)  // adjust delay as needed
             }
