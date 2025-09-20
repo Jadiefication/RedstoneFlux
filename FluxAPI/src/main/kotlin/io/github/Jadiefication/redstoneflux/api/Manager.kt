@@ -252,16 +252,14 @@ interface Manager<C : BaseComponent<C>> {
      * @param location The location of the block.
      * @return The component of the block.
      */
-    fun getComponentFromBlock(location: Location): Optional<C> {
-        val optionalEnergyNetwork =
+    fun getComponentFromBlock(location: Location): C? {
+        val energyNetwork =
             this.networks
-                .stream()
-                .filter { network -> network?.contains(location) == true }
-                .findFirst()
+                .asSequence()
+                .filter { network -> network.contains(location) }
+                .firstOrNull()
 
-        return optionalEnergyNetwork.map { energyNetwork ->
-            energyNetwork.components[location]
-        }
+        return energyNetwork?.components[location]
     }
 
     /**
@@ -287,13 +285,33 @@ interface Manager<C : BaseComponent<C>> {
 
     companion object {
         /**
-         * Used for keeping a track of which managers to register
+         * Used for keeping track of which managers to register
          */
         val managers: MutableSet<Manager<*>> = mutableSetOf()
+
+        /**
+         * The key to store the energy type in the item meta.
+         */
+        lateinit var energyTypeKey: NamespacedKey
+
+        /**
+         * The key to store the mechanic class in the item meta.
+         */
+        lateinit var mechanicClassKey: NamespacedKey
+
+        /**
+         * The key to store the mechanic in the item meta.
+         */
+        lateinit var mechanicKey: NamespacedKey
+
+        /**
+         * The key to store the network in the chunk.
+         */
+        lateinit var networkKey: NamespacedKey
     }
 
     /**
-     * Check if th network must be split.
+     * Check if the network must be split.
      *
      * @param network the network
      */
@@ -346,15 +364,15 @@ interface Manager<C : BaseComponent<C>> {
      *
      * @param startBlock the start block
      * @param visited    the set of visited blocks
-     * @return the set of components
+     * @return the map of components
      */
     fun discoverSubNetwork(
         startBlock: Location,
         visited: MutableSet<Location>,
         originalComponents: Map<Location, C>,
-    ): MutableSet<MutableMap.MutableEntry<Location, C>> {
-        val subNetwork: MutableSet<MutableMap.MutableEntry<Location, C>> =
-            HashSet()
+    ): MutableMap<Location, C> {
+        val subNetwork: MutableMap<Location, C> =
+            mutableMapOf()
         val queue: Queue<Location> = LinkedList()
         queue.add(startBlock)
 
@@ -364,7 +382,7 @@ interface Manager<C : BaseComponent<C>> {
                 visited.add(current)
                 val component = originalComponents[current]
                 if (component != null) {
-                    subNetwork.add(AbstractMap.SimpleEntry(current, component))
+                    subNetwork[current] = component
                 }
 
                 for (face in neighbours) {
@@ -392,12 +410,9 @@ interface Manager<C : BaseComponent<C>> {
         item: ItemStack,
         key: NamespacedKey,
         type: PersistentDataType<P, C>,
-    ): Optional<C?> {
-        val meta: ItemMeta? = item.itemMeta
-        if (meta == null) {
-            return Optional.empty<C?>() as Optional<C?>
-        }
+    ): C? {
+        val meta: ItemMeta = item.itemMeta ?: return null
         val persistentDataContainer: PersistentDataContainer = meta.persistentDataContainer
-        return Optional.ofNullable<C?>(persistentDataContainer.get(key, type)) as Optional<C?>
+        return persistentDataContainer.get(key, type)
     }
 }

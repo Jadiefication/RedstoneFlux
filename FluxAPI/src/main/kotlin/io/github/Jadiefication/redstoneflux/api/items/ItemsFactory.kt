@@ -1,6 +1,7 @@
 package io.github.Jadiefication.redstoneflux.api.items
 
 import com.google.gson.Gson
+import io.github.Jadiefication.redstoneflux.api.Manager
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import org.bukkit.NamespacedKey
@@ -14,25 +15,49 @@ import java.util.*
  * If you register an item with a class, you can get it with the class.
  * If you register an item with a material, you can get it with the class.
  */
+@Deprecated(
+    message = "Deprecated since 2.0.2, better suited for devs to manage this themselves",
+    level = DeprecationLevel.WARNING
+)
 object ItemsFactory {
     /**
      * The key to store the energy type in the item meta.
      */
+    @Deprecated(
+        message = "Deprecated since 2.0.2",
+        replaceWith = ReplaceWith("Manager.energyTypeKey"),
+        level = DeprecationLevel.ERROR
+    )
     lateinit var energyTypeKey: NamespacedKey
 
     /**
      * The key to store the mechanic class in the item meta.
      */
+    @Deprecated(
+        message = "Deprecated since 2.0.2",
+        replaceWith = ReplaceWith("Manager.mechanicClassKey"),
+        level = DeprecationLevel.ERROR
+    )
     lateinit var mechanicClassKey: NamespacedKey
 
     /**
      * The key to store the mechanic in the item meta.
      */
+    @Deprecated(
+        message = "Deprecated since 2.0.2",
+        replaceWith = ReplaceWith("Manager.mechanicKey"),
+        level = DeprecationLevel.ERROR
+    )
     lateinit var mechanicKey: NamespacedKey
 
     /**
      * The key to store the network in the chunk.
      */
+    @Deprecated(
+        message = "Deprecated since 2.0.2",
+        replaceWith = ReplaceWith("Manager.networkKey"),
+        level = DeprecationLevel.ERROR
+    )
     lateinit var networkKey: NamespacedKey
 
     /**
@@ -77,18 +102,18 @@ object ItemsFactory {
         if (!item.hasItemMeta()) return Optional.empty()
 
         val meta = item.itemMeta!!
-        if (!meta.persistentDataContainer.has(mechanicKey) || !meta.persistentDataContainer.has(mechanicClassKey)) return Optional.empty()
+        if (!meta.persistentDataContainer.has(Manager.mechanicKey) || !meta.persistentDataContainer.has(Manager.mechanicClassKey)) return Optional.empty()
 
         return try {
             val mechanicJson =
                 meta.persistentDataContainer.get(
-                    mechanicKey,
+                    Manager.mechanicKey,
                     PersistentDataType.STRING,
                 )
             val clazz =
                 Class.forName(
                     meta.persistentDataContainer.get(
-                        mechanicClassKey,
+                        Manager.mechanicClassKey,
                         PersistentDataType.STRING,
                     ),
                 )

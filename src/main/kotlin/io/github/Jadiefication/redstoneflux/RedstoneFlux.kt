@@ -81,10 +81,10 @@ class RedstoneFlux :
      */
     override fun onEnable() {
         saveDefaultConfig()
-        ItemsFactory.energyTypeKey = energyTypeKey
-        ItemsFactory.mechanicClassKey = mechanicClassKey
-        ItemsFactory.mechanicKey = mechanicKey
-        ItemsFactory.networkKey = networkKey
+        Manager.energyTypeKey = energyTypeKey
+        Manager.mechanicClassKey = mechanicClassKey
+        Manager.mechanicKey = mechanicKey
+        Manager.networkKey = networkKey
         Updater.update("RedstoneFlux")
 
         this.scheduler = FoliaLib(this).scheduler
