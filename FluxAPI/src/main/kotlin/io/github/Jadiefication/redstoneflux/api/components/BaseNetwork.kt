@@ -54,15 +54,14 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
         location: Location,
     ) {
         for (entry in this.components.entries
-            .stream()
             .filter { entry -> entry.key.distance(location) == 1.0 }
-            .toList()) {
+        ) {
             entry.value.connect(component)
         }
         if (!::chunk.isInitialized) {
             this.chunk = location.chunk
         }
-        this.components.put(location, component)
+        this.components[location] = component
     }
 
     /**
@@ -72,7 +71,6 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
      */
     fun removeComponent(location: Location) {
         this.components.entries
-            .stream()
             .filter { entry -> entry.key.distance(location) == 1.0 }
             .forEach { entry ->
                 entry.value.disconnect(this.components[location]!!)
@@ -113,8 +111,7 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
      */
     fun isInChunk(chunk: Chunk): Boolean =
         this.components.keys
-            .stream()
-            .anyMatch { location: Location? -> this.isSameChunk(chunk, location!!.chunk) }
+            .any { location: Location? -> this.isSameChunk(chunk, location!!.chunk) }
 
     /**
      * Save the network in the chunk.

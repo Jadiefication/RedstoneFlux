@@ -78,12 +78,9 @@ interface Manager<C : BaseComponent<C>> {
         for (neighbour in neighbours) {
             val neighbor = location.block.getRelative(neighbour)
             val networkNeighbor =
-                this.networks
-                    .stream()
-                    .filter { network -> network?.contains(neighbor.location) == true }
-                    .findFirst()
-            if (networkNeighbor.isPresent) {
-                if (!networks.contains(networkNeighbor.get())) networks.add(networkNeighbor.get())
+                this.networks.firstOrNull { network -> network.contains(neighbor.location) }
+            if (networkNeighbor != null) {
+                if (!networks.contains(networkNeighbor)) networks.add(networkNeighbor)
             }
         }
 
@@ -132,11 +129,7 @@ interface Manager<C : BaseComponent<C>> {
         location: Location,
     ) {
         val network =
-            this.networks
-                .stream()
-                .filter { n -> n.contains(location) }
-                .findFirst()
-                .orElse(null)
+            this.networks.firstOrNull { n -> n.contains(location) }
         if (network == null) {
             return
         }
@@ -169,7 +162,7 @@ interface Manager<C : BaseComponent<C>> {
      * @param location The location to check.
      * @return True if the location is a block component, false otherwise.
      */
-    fun isBlockComponent(location: Location): Boolean = this.networks.stream().anyMatch { network -> network?.contains(location) == true }
+    fun isBlockComponent(location: Location): Boolean = this.networks.any { network -> network.contains(location) }
 
     /**
      * Create a component from an item.
@@ -236,7 +229,7 @@ interface Manager<C : BaseComponent<C>> {
      * Save the networks.
      */
     fun saveNetworks() {
-        this.networks.forEach { obj -> obj.save() }
+        this.networks.forEach { network -> network.save() }
     }
 
     /**
@@ -324,14 +317,12 @@ interface Manager<C : BaseComponent<C>> {
         originalComponents: Map<Location, C>,
     ) {
         val visited: MutableSet<Location> = HashSet()
-        val newNetworks: MutableList<BaseNetwork<C>> = ArrayList()
+        val newNetworks: MutableList<BaseNetwork<C>> = mutableListOf()
         val defers = mutableListOf<Deferred<Unit>>()
         network.components.keys.forEach { component ->
-            val defer =
-                api.scope.async {
-                    asyncNetworkSplit(visited, component, newNetworks, originalComponents)
-                }
-            defers.add(defer)
+            defers.add(api.scope.async {
+                asyncNetworkSplit(visited, component, newNetworks, originalComponents)
+            })
         }
 
         defers.awaitAll().forEach { _ ->

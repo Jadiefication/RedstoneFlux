@@ -55,7 +55,7 @@ class EnergyNetwork(
      * @param location  The location of the component.
      */
     constructor(api: EnergyAPI, component: EnergyComponent<*>, location: Location) : this(api, UUID.randomUUID()) {
-        this.components.put(location, component)
+        this.components[location] = component
         this.chunk = location.chunk
     }
 
@@ -75,16 +75,14 @@ class EnergyNetwork(
         val producers = this.getComponentByType(MechanicType.PRODUCER)
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
-            val defer =
-                api.scope.async {
-                    val produceEvent =
-                        EnergyProduceEvent(
-                            (producer.mechanic as EnergyProducer).produce(location),
-                            producer as EnergyComponent<EnergyProducer>,
-                        )
-                    Bukkit.getServer().pluginManager.callEvent(produceEvent)
-                }
-            defers.add(defer)
+            defers.add(api.scope.async {
+                val produceEvent =
+                    EnergyProduceEvent(
+                        (producer.mechanic as EnergyProducer).produce(location),
+                        producer as EnergyComponent<EnergyProducer>,
+                    )
+                Bukkit.getServer().pluginManager.callEvent(produceEvent)
+            })
         }
         return defers.awaitAll()
     }
@@ -96,11 +94,9 @@ class EnergyNetwork(
         val producers = getComponentByType(MechanicType.PRODUCER)
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
-            val defer =
-                api.scope.async {
-                    asyncExcessEnergy(producer)
-                }
-            defers.add(defer)
+            defers.add(api.scope.async {
+                asyncExcessEnergy(producer)
+            })
         }
         return defers.awaitAll()
     }
@@ -146,11 +142,9 @@ class EnergyNetwork(
         val consumers = this.getComponentByType(MechanicType.CONSUMER)
         val defers = mutableListOf<Deferred<Unit>>()
         consumers.forEach { (location, consumerComponent) ->
-            val future =
-                api.scope.async {
-                    asyncConsumerUpdate(consumerComponent)
-                }
-            defers.add(future)
+            defers.add(api.scope.async {
+                asyncConsumerUpdate(consumerComponent)
+            })
         }
         return defers.awaitAll()
     }
@@ -295,7 +289,7 @@ class EnergyNetwork(
 
         for (neighbor in component.connectedComponents) {
             if (!visited.contains(neighbor) && (
-                    MechanicType.TRANSPORTER.isInstance(neighbor!!) ||
+                    MechanicType.TRANSPORTER.isInstance(neighbor) ||
                         type.isInstance(
                             neighbor,
                         )
@@ -317,7 +311,7 @@ class EnergyNetwork(
             .stream()
             .filter { entry ->
                 type.clazz.isAssignableFrom(
-                    entry!!.value.mechanic!!.javaClass,
+                    entry!!.value.mechanic.javaClass,
                 )
             }.collect(Collectors.toMap({ it.key }, { it.value }))
 
