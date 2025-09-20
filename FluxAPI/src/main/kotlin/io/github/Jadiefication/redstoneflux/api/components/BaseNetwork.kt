@@ -53,7 +53,8 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
         component: C,
         location: Location,
     ) {
-        for (entry in this.components.entries
+        for (
+        entry in this.components.entries
             .filter { entry -> entry.key.distance(location) == 1.0 }
         ) {
             entry.value.connect(component)

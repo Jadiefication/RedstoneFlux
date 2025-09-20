@@ -75,14 +75,16 @@ class EnergyNetwork(
         val producers = this.getComponentByType(MechanicType.PRODUCER)
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
-            defers.add(api.scope.async {
-                val produceEvent =
-                    EnergyProduceEvent(
-                        (producer.mechanic as EnergyProducer).produce(location),
-                        producer as EnergyComponent<EnergyProducer>,
-                    )
-                Bukkit.getServer().pluginManager.callEvent(produceEvent)
-            })
+            defers.add(
+                api.scope.async {
+                    val produceEvent =
+                        EnergyProduceEvent(
+                            (producer.mechanic as EnergyProducer).produce(location),
+                            producer as EnergyComponent<EnergyProducer>,
+                        )
+                    Bukkit.getServer().pluginManager.callEvent(produceEvent)
+                },
+            )
         }
         return defers.awaitAll()
     }
@@ -94,9 +96,11 @@ class EnergyNetwork(
         val producers = getComponentByType(MechanicType.PRODUCER)
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
-            defers.add(api.scope.async {
-                asyncExcessEnergy(producer)
-            })
+            defers.add(
+                api.scope.async {
+                    asyncExcessEnergy(producer)
+                },
+            )
         }
         return defers.awaitAll()
     }
@@ -142,9 +146,11 @@ class EnergyNetwork(
         val consumers = this.getComponentByType(MechanicType.CONSUMER)
         val defers = mutableListOf<Deferred<Unit>>()
         consumers.forEach { (location, consumerComponent) ->
-            defers.add(api.scope.async {
-                asyncConsumerUpdate(consumerComponent)
-            })
+            defers.add(
+                api.scope.async {
+                    asyncConsumerUpdate(consumerComponent)
+                },
+            )
         }
         return defers.awaitAll()
     }

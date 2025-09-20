@@ -320,9 +320,11 @@ interface Manager<C : BaseComponent<C>> {
         val newNetworks: MutableList<BaseNetwork<C>> = mutableListOf()
         val defers = mutableListOf<Deferred<Unit>>()
         network.components.keys.forEach { component ->
-            defers.add(api.scope.async {
-                asyncNetworkSplit(visited, component, newNetworks, originalComponents)
-            })
+            defers.add(
+                api.scope.async {
+                    asyncNetworkSplit(visited, component, newNetworks, originalComponents)
+                },
+            )
         }
 
         defers.awaitAll().forEach { _ ->
