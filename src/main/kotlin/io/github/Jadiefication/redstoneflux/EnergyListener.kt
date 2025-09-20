@@ -20,9 +20,8 @@ class EnergyListener(
     /**
      * The energy API
      */
-    private val api: EnergyAPI
+    private val api: EnergyAPI,
 ) : Listener {
-
     /**
      * The energy manager
      */
@@ -81,19 +80,11 @@ class EnergyListener(
      */
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
-        val block = event.clickedBlock
-        if (block == null) {
-            return
-        }
+        val block = event.clickedBlock ?: return
 
         val location = block.location
-        val optComponent = this.energyManager.getComponentFromBlock(location)
+        val component = this.energyManager.getComponentFromBlock(location) ?: return
 
-        if (optComponent.isEmpty) {
-            return
-        }
-
-        val component = optComponent.get()
         if (component.mechanic !is InteractableMechanic) {
             return
         }

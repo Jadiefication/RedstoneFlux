@@ -17,6 +17,7 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
      * The API instance.
      */
     abstract val api: EnergyAPI
+
     /**
      * The network's unique identifier.
      */
@@ -48,16 +49,20 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
      * @param component The component to add.
      * @param location  The location of the component.
      */
-    fun addComponent(component: C, location: Location) {
-        for (entry in this.components.entries.stream()
+    fun addComponent(
+        component: C,
+        location: Location,
+    ) {
+        for (
+        entry in this.components.entries
             .filter { entry -> entry.key.distance(location) == 1.0 }
-            .toList()) {
+        ) {
             entry.value.connect(component)
         }
         if (!::chunk.isInitialized) {
             this.chunk = location.chunk
         }
-        this.components.put(location, component)
+        this.components[location] = component
     }
 
     /**
@@ -66,7 +71,7 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
      * @param location The location of the component.
      */
     fun removeComponent(location: Location) {
-        this.components.entries.stream()
+        this.components.entries
             .filter { entry -> entry.key.distance(location) == 1.0 }
             .forEach { entry ->
                 entry.value.disconnect(this.components[location]!!)
@@ -80,9 +85,7 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
      * @param location The location to check.
      * @return If the network contains the location.
      */
-    fun contains(location: Location): Boolean {
-        return this.components.containsKey(location)
-    }
+    fun contains(location: Location): Boolean = this.components.containsKey(location)
 
     /**
      * Merge the network with another network.
@@ -107,12 +110,9 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
      * @param chunk The chunk to check.
      * @return If the network is in the chunk.
      */
-    fun isInChunk(chunk: Chunk): Boolean {
-        return this.components.keys
-            .stream()
-            .anyMatch { location: Location? -> this.isSameChunk(chunk, location!!.chunk) }
-    }
-
+    fun isInChunk(chunk: Chunk): Boolean =
+        this.components.keys
+            .any { location: Location? -> this.isSameChunk(chunk, location!!.chunk) }
 
     /**
      * Save the network in the chunk.
@@ -124,10 +124,12 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
      */
     abstract fun delete()
 
-    private fun isSameChunk(chunk: Chunk, chunk1: Chunk): Boolean {
-        return chunk.x == chunk1.x && chunk.z == chunk1.z && chunk.world
+    private fun isSameChunk(
+        chunk: Chunk,
+        chunk1: Chunk,
+    ): Boolean =
+        chunk.x == chunk1.x && chunk.z == chunk1.z && chunk.world
             .name == chunk1.world.name
-    }
 
     abstract suspend fun update()
 
@@ -138,5 +140,4 @@ abstract class BaseNetwork<C : BaseComponent<C>> {
          * @return The root component.
          */
         get() = this.components.values.firstOrNull()
-
 }

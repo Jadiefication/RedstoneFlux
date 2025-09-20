@@ -8,6 +8,10 @@ import net.kyori.adventure.text.Component
 /**
  * Base for holding custom energy items.
  */
+@Deprecated(
+    message = "Deprecated since 2.0.2, better suited for devs to manage this themselves",
+    level = DeprecationLevel.WARNING,
+)
 internal interface ItemCreation<T : EnergyMechanic> {
     val name: Component?
     val lore: ItemLore?

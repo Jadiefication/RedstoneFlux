@@ -20,9 +20,10 @@ interface EnergyType {
                 !TYPES.stream().anyMatch { t: EnergyType? ->
                     t!!.name.equals(
                         type.name,
-                        ignoreCase = true
+                        ignoreCase = true,
                     )
-                }) { "EnergyType with name " + type.name + " already exists!" }
+                },
+            ) { "EnergyType with name " + type.name + " already exists!" }
             TYPES.add(type)
         }
 

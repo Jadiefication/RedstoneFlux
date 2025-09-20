@@ -17,11 +17,12 @@ class EnergyComponentAdapter
 /**
  * Creates a new EnergyComponentAdapter with the given Gson instance.
  * @param gson The Gson instance used to serialize and deserialize the EnergyMechanic.
- */(
+ */
+(
     /**
      * The Gson instance used to serialize and deserialize the EnergyMechanic.
      */
-    private val gson: Gson
+    private val gson: Gson,
 ) : TypeAdapter<EnergyComponent<*>?>() {
     /**
      * Serializes the given EnergyComponent to the given JsonWriter.
@@ -29,7 +30,10 @@ class EnergyComponentAdapter
      * @param value The EnergyComponent to serialize.
      * @throws IOException If an error occurs while writing to the JsonWriter.
      */
-    override fun write(out: JsonWriter, value: EnergyComponent<*>?) {
+    override fun write(
+        out: JsonWriter,
+        value: EnergyComponent<*>?,
+    ) {
         out.beginObject()
 
         out.name("energyType")

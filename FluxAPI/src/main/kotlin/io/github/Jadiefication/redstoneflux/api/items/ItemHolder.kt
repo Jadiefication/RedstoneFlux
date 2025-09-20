@@ -1,5 +1,6 @@
 package io.github.Jadiefication.redstoneflux.api.items
 
+import io.github.Jadiefication.redstoneflux.api.Manager
 import io.github.Jadiefication.redstoneflux.api.components.EnergyComponent
 import io.github.Jadiefication.redstoneflux.api.mechanics.EnergyMechanic
 import io.github.Jadiefication.redstoneflux.api.persistents.EnergyTypePersistentDataType
@@ -13,6 +14,10 @@ import org.bukkit.persistence.PersistentDataType
 /**
  * Holder of items defined by ItemStack
  */
+@Deprecated(
+    message = "Deprecated since 2.0.2, better suited for devs to manage this themselves",
+    level = DeprecationLevel.WARNING,
+)
 data class ItemHolder<T : EnergyMechanic>(
     var item: ItemStack? = null,
     override var name: Component? = null,
@@ -21,7 +26,7 @@ data class ItemHolder<T : EnergyMechanic>(
     /**
      * Applicable modify function to affect the mechanic.
      */
-    override var modify: (T.() -> Unit)? = null
+    override var modify: (T.() -> Unit)? = null,
 ) : ItemCreation<T> {
     internal fun modify() {
         if (modify != null && mechanic != null) {
@@ -36,19 +41,19 @@ data class ItemHolder<T : EnergyMechanic>(
 
         val meta = item!!.itemMeta
         meta.persistentDataContainer.set(
-            ItemsFactory.energyTypeKey,
+            Manager.energyTypeKey,
             EnergyTypePersistentDataType.INSTANCE,
-            mechanic!!.energyType!!
+            mechanic!!.energyType!!,
         )
         meta.persistentDataContainer.set(
-            ItemsFactory.mechanicClassKey,
+            Manager.mechanicClassKey,
             PersistentDataType.STRING,
-            mechanic!!.mechanic!!.javaClass.name
+            mechanic!!.mechanic!!.javaClass.name,
         )
         meta.persistentDataContainer.set(
-            ItemsFactory.mechanicKey,
+            Manager.mechanicKey,
             PersistentDataType.STRING,
-            ItemsFactory.gson.toJson(mechanic!!.mechanic!!)
+            ItemsFactory.gson.toJson(mechanic!!.mechanic!!),
         )
         item!!.itemMeta = meta
     }
@@ -57,6 +62,10 @@ data class ItemHolder<T : EnergyMechanic>(
 /**
  * Holder of items defined by Material
  */
+@Deprecated(
+    message = "Deprecated since 2.0.2, better suited for devs to manage this themselves",
+    level = DeprecationLevel.WARNING,
+)
 data class MaterialHolder<T : EnergyMechanic>(
     var item: Material? = null,
     override var name: Component? = null,
@@ -65,10 +74,10 @@ data class MaterialHolder<T : EnergyMechanic>(
     /**
      * Applicable modify function to affect the mechanic.
      */
-    override var modify: (T.() -> Unit)? = null
+    override var modify: (T.() -> Unit)? = null,
 ) : ItemCreation<T> {
-
     internal var actualItem: ItemStack? = null
+
     internal fun modify() {
         actualItem = ItemStack.of(item!!)
         if (modify != null && mechanic != null) {
@@ -82,12 +91,12 @@ data class MaterialHolder<T : EnergyMechanic>(
         }
         val meta = actualItem!!.itemMeta
         val container = meta.persistentDataContainer
-        container.set(ItemsFactory.energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
-        container.set(ItemsFactory.mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
+        container.set(Manager.energyTypeKey, EnergyTypePersistentDataType.INSTANCE, mechanic!!.energyType!!)
+        container.set(Manager.mechanicClassKey, PersistentDataType.STRING, mechanic!!.mechanic!!.javaClass.name)
         container.set(
-            ItemsFactory.mechanicKey,
+            Manager.mechanicKey,
             PersistentDataType.STRING,
-            ItemsFactory.gson.toJson(mechanic!!.mechanic!!)
+            ItemsFactory.gson.toJson(mechanic!!.mechanic!!),
         )
         actualItem!!.itemMeta = meta
     }

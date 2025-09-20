@@ -13,5 +13,4 @@ enum class EnergyTypes : EnergyType {
      * Represents the energy type of the European Union.
      */
     EU,
-    ;
 }

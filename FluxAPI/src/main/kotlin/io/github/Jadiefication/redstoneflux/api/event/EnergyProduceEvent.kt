@@ -12,10 +12,7 @@ import org.bukkit.event.HandlerList
  */
 class EnergyProduceEvent(
     val energyProduced: Double,
-    val producer: EnergyComponent<EnergyProducer>
+    val producer: EnergyComponent<EnergyProducer>,
 ) : Event(true) {
-
-    override fun getHandlers(): HandlerList {
-        return HandlerList()
-    }
+    override fun getHandlers(): HandlerList = HandlerList()
 }

@@ -14,10 +14,7 @@ import org.bukkit.event.HandlerList
 class EnergyConsumeEvent(
     val energyConsumed: Double,
     val target: EnergyComponent<*>,
-    val consumer: EnergyComponent<EnergyConsumer>
+    val consumer: EnergyComponent<EnergyConsumer>,
 ) : Event(true) {
-
-    override fun getHandlers(): HandlerList {
-        return HandlerList()
-    }
+    override fun getHandlers(): HandlerList = HandlerList()
 }

@@ -11,21 +11,31 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import java.util.function.Supplier
 
+@Deprecated(
+    "Deprecated since 2.0.2",
+    ReplaceWith("buildItem()"),
+    DeprecationLevel.WARNING,
+)
 class EnergyComponentBuilder(
     val gson: Gson,
     val energyTypeKey: NamespacedKey,
     val mechanicClassKey: NamespacedKey,
-    val mechanicKey: NamespacedKey
+    val mechanicKey: NamespacedKey,
 ) : ItemComponentBuilder<EnergyComponent<*>> {
-
-    override fun buildItem(component: EnergyComponent<*>): ItemStack {
+    override fun invoke(component: EnergyComponent<*>): ItemStack {
         val mechanic = component.mechanic
         val mechanicType = MechanicType.fromComponent(component)
         val type = component.energyType
-        require(mechanic.javaClass.isAssignableFrom(mechanicType.clazz)) { "Mechanic type " + mechanicType.clazz + " is not compatible with mechanic " + mechanic.javaClass }
+        require(mechanic.javaClass.isAssignableFrom(mechanicType.clazz)) {
+            "Mechanic type " + mechanicType.clazz +
+                " is not compatible with mechanic " +
+                mechanic.javaClass
+        }
 
-        val item: ItemStack = ItemsFactory.getItem(component)
-            .orElseThrow(Supplier { IllegalArgumentException("Item not found for mechanic " + mechanic.javaClass) })
+        val item: ItemStack =
+            ItemsFactory
+                .getItem(component)
+                .orElseThrow(Supplier { IllegalArgumentException("Item not found for mechanic " + mechanic.javaClass) })
 
         val meta: ItemMeta? = item.itemMeta
         requireNotNull(meta) { "ItemMeta is null!" }
@@ -33,20 +43,19 @@ class EnergyComponentBuilder(
         persistentDataContainer.set(
             energyTypeKey,
             EnergyTypePersistentDataType.INSTANCE,
-            type
+            type,
         )
         persistentDataContainer.set(
             mechanicClassKey,
             PersistentDataType.STRING,
-            mechanic.javaClass.getName()
+            mechanic.javaClass.getName(),
         )
         persistentDataContainer.set(
             mechanicKey,
             PersistentDataType.STRING,
-            this.gson.toJson(mechanic, mechanic.javaClass)
+            this.gson.toJson(mechanic, mechanic.javaClass),
         )
         item.setItemMeta(meta)
         return item
     }
-
 }

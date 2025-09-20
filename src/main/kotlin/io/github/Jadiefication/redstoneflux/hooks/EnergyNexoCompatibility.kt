@@ -15,9 +15,9 @@ import org.bukkit.event.EventHandler
  */
 class EnergyNexoCompatibility : CompatibilityProvider<EnergyLib?>() {
     /**
-     * Handle the event when a player places a custom not block from oraxen
-     * @param event the event
-     */
+ * Handle the event when a player places a custom not block from oraxen
+ * @param event the event
+ */
     @EventHandler
     fun onPlace(event: OraxenNoteBlockPlaceEvent) {
         val api: EnergyAPI = this.getPlugin() as EnergyLib
@@ -37,9 +37,9 @@ class EnergyNexoCompatibility : CompatibilityProvider<EnergyLib?>() {
     }
 
     /**
-     * Handle the event when a player breaks a custom not block from oraxen
-     * @param event the event
-     */
+ * Handle the event when a player breaks a custom not block from oraxen
+ * @param event the event
+ */
     @EventHandler
     fun onBreak(event: OraxenNoteBlockBreakEvent) {
         val api: EnergyAPI = this.getPlugin() as EnergyLib

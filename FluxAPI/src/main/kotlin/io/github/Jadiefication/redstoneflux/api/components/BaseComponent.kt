@@ -1,7 +1,6 @@
 package io.github.Jadiefication.redstoneflux.api.components
 
 abstract class BaseComponent<C : BaseComponent<C>> {
-
     /**
      * The components that this component is connected to.
      */

@@ -25,7 +25,8 @@ class EnergyNetworkAdapter
  *
  * @param api The EnergyAPI instance.
  * @param gson The Gson instance.
- */(
+ */
+(
     /**
      * The EnergyAPI instance.
      */
@@ -33,7 +34,7 @@ class EnergyNetworkAdapter
     /**
      * The Gson instance.
      */
-    private val gson: Gson
+    private val gson: Gson,
 ) : TypeAdapter<EnergyNetwork?>() {
     /**
      * Writes an EnergyNetwork to a JsonWriter.
@@ -42,7 +43,10 @@ class EnergyNetworkAdapter
      * @param value The EnergyNetwork.
      * @throws IOException If an I/O error occurs.
      */
-    override fun write(out: JsonWriter, value: EnergyNetwork?) {
+    override fun write(
+        out: JsonWriter,
+        value: EnergyNetwork?,
+    ) {
         out.beginObject()
         out.name("components")
         out.beginObject()
@@ -93,7 +97,6 @@ class EnergyNetworkAdapter
             } catch (e: SameEnergyTypeException) {
                 throw RuntimeException(e)
             }
-
         }
 
         return network
@@ -111,7 +114,7 @@ class EnergyNetworkAdapter
             if (parts[0] == "null") null else Bukkit.getServer().getWorld(UUID.fromString(parts[0])),
             parts[1]!!.toDouble(),
             parts[2]!!.toDouble(),
-            parts[3]!!.toDouble()
+            parts[3]!!.toDouble(),
         )
     }
 
@@ -126,4 +129,3 @@ class EnergyNetworkAdapter
         return world + "," + location.x + "," + location.y + "," + location.z
     }
 }
-

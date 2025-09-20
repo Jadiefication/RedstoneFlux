@@ -35,19 +35,19 @@ import java.util.stream.Collectors
  * The Manager is the principale class of the API, it is used to manage each separate type of components and networks.
  */
 interface Manager<C : BaseComponent<C>> {
-
     /**
      * The list of the 6 block faces.
      */
     val neighbours: List<BlockFace>
-        get() = listOf(
-            BlockFace.UP,
-            BlockFace.DOWN,
-            BlockFace.NORTH,
-            BlockFace.EAST,
-            BlockFace.SOUTH,
-            BlockFace.WEST
-        )
+        get() =
+            listOf(
+                BlockFace.UP,
+                BlockFace.DOWN,
+                BlockFace.NORTH,
+                BlockFace.EAST,
+                BlockFace.SOUTH,
+                BlockFace.WEST,
+            )
 
     /**
      * The RedstoneFlux instance for getting certain values.
@@ -70,16 +70,17 @@ interface Manager<C : BaseComponent<C>> {
      * @param component The component to place.
      * @param location  The location where the component will be placed.
      */
-    fun placeComponent(component: C, location: Location) {
+    fun placeComponent(
+        component: C,
+        location: Location,
+    ) {
         var networks: MutableList<BaseNetwork<C>> = ArrayList()
         for (neighbour in neighbours) {
             val neighbor = location.block.getRelative(neighbour)
             val networkNeighbor =
-                this.networks.stream()
-                    .filter { network -> network?.contains(neighbor.location) == true }
-                    .findFirst()
-            if (networkNeighbor.isPresent) {
-                if (!networks.contains(networkNeighbor.get())) networks.add(networkNeighbor.get())
+                this.networks.firstOrNull { network -> network.contains(neighbor.location) }
+            if (networkNeighbor != null) {
+                if (!networks.contains(networkNeighbor)) networks.add(networkNeighbor)
             }
         }
 
@@ -112,7 +113,10 @@ interface Manager<C : BaseComponent<C>> {
      * @param location the location of the component.
      * @return the created network.
      */
-    fun createNetwork(component: C, location: Location): BaseNetwork<C>
+    fun createNetwork(
+        component: C,
+        location: Location,
+    ): BaseNetwork<C>
 
     /**
      * Handle the break of a component in the world.
@@ -120,10 +124,12 @@ interface Manager<C : BaseComponent<C>> {
      * @param player
      * @param location The location of the component to break.
      */
-    fun breakComponent(player: Player, location: Location) {
+    fun breakComponent(
+        player: Player,
+        location: Location,
+    ) {
         val network =
-            this.networks.stream().filter { n -> n.contains(location) }.findFirst()
-                .orElse(null)
+            this.networks.firstOrNull { n -> n.contains(location) }
         if (network == null) {
             return
         }
@@ -156,9 +162,7 @@ interface Manager<C : BaseComponent<C>> {
      * @param location The location to check.
      * @return True if the location is a block component, false otherwise.
      */
-    fun isBlockComponent(location: Location): Boolean {
-        return this.networks.stream().anyMatch { network -> network?.contains(location) == true }
-    }
+    fun isBlockComponent(location: Location): Boolean = this.networks.any { network -> network.contains(location) }
 
     /**
      * Create a component from an item.
@@ -182,9 +186,10 @@ interface Manager<C : BaseComponent<C>> {
      * @param builder the builder for the item.
      * @return The item created.
      */
-    fun <T : ItemComponentBuilder<C>> createItemComponent(component: C, builder: T): ItemStack {
-        return builder.buildItem(component)
-    }
+    fun <T : ItemComponentBuilder<C>> createItemComponent(
+        component: C,
+        builder: T,
+    ): ItemStack = builder(component)
 
     /**
      * Start the network updater.
@@ -224,7 +229,7 @@ interface Manager<C : BaseComponent<C>> {
      * Save the networks.
      */
     fun saveNetworks() {
-        this.networks.forEach { obj -> obj.save() }
+        this.networks.forEach { network -> network.save() }
     }
 
     /**
@@ -240,14 +245,14 @@ interface Manager<C : BaseComponent<C>> {
      * @param location The location of the block.
      * @return The component of the block.
      */
-    fun getComponentFromBlock(location: Location): Optional<C> {
-        val optionalEnergyNetwork = this.networks.stream()
-            .filter { network -> network?.contains(location) == true }
-            .findFirst()
+    fun getComponentFromBlock(location: Location): C? {
+        val energyNetwork =
+            this.networks
+                .asSequence()
+                .filter { network -> network.contains(location) }
+                .firstOrNull()
 
-        return optionalEnergyNetwork.map { energyNetwork ->
-            energyNetwork.components[location]
-        }
+        return energyNetwork?.components[location]
     }
 
     /**
@@ -273,28 +278,53 @@ interface Manager<C : BaseComponent<C>> {
 
     companion object {
         /**
-         * Used for keeping a track of which managers to register
+         * Used for keeping track of which managers to register
          */
+        @Deprecated(
+            message = "Deprecated since 2.0.2, use EnergyAPI#addManager(manager)",
+            level = DeprecationLevel.WARNING,
+        )
         val managers: MutableSet<Manager<*>> = mutableSetOf()
+
+        /**
+         * The key to store the energy type in the item meta.
+         */
+        lateinit var energyTypeKey: NamespacedKey
+
+        /**
+         * The key to store the mechanic class in the item meta.
+         */
+        lateinit var mechanicClassKey: NamespacedKey
+
+        /**
+         * The key to store the mechanic in the item meta.
+         */
+        lateinit var mechanicKey: NamespacedKey
+
+        /**
+         * The key to store the network in the chunk.
+         */
+        lateinit var networkKey: NamespacedKey
     }
 
     /**
-     * Check if th network must be split.
+     * Check if the network must be split.
      *
      * @param network the network
      */
     suspend fun splitNetworkIfNecessary(
         network: BaseNetwork<C>,
-        originalComponents: Map<Location, C>
+        originalComponents: Map<Location, C>,
     ) {
         val visited: MutableSet<Location> = HashSet()
-        val newNetworks: MutableList<BaseNetwork<C>> = ArrayList()
+        val newNetworks: MutableList<BaseNetwork<C>> = mutableListOf()
         val defers = mutableListOf<Deferred<Unit>>()
         network.components.keys.forEach { component ->
-            val defer = api.scope.async {
-                asyncNetworkSplit(visited, component, newNetworks, originalComponents)
-            }
-            defers.add(defer)
+            defers.add(
+                api.scope.async {
+                    asyncNetworkSplit(visited, component, newNetworks, originalComponents)
+                },
+            )
         }
 
         defers.awaitAll().forEach { _ ->
@@ -307,7 +337,7 @@ interface Manager<C : BaseComponent<C>> {
         visited: MutableSet<Location>,
         component: Location,
         newNetworks: MutableList<BaseNetwork<C>>,
-        originalComponents: Map<Location, C>
+        originalComponents: Map<Location, C>,
     ) {
         if (!visited.contains(component)) {
             val subNetworkComponents =
@@ -331,15 +361,15 @@ interface Manager<C : BaseComponent<C>> {
      *
      * @param startBlock the start block
      * @param visited    the set of visited blocks
-     * @return the set of components
+     * @return the map of components
      */
     fun discoverSubNetwork(
         startBlock: Location,
         visited: MutableSet<Location>,
-        originalComponents: Map<Location, C>
-    ): MutableSet<MutableMap.MutableEntry<Location, C>> {
-        val subNetwork: MutableSet<MutableMap.MutableEntry<Location, C>> =
-            HashSet()
+        originalComponents: Map<Location, C>,
+    ): MutableMap<Location, C> {
+        val subNetwork: MutableMap<Location, C> =
+            mutableMapOf()
         val queue: Queue<Location> = LinkedList()
         queue.add(startBlock)
 
@@ -349,7 +379,7 @@ interface Manager<C : BaseComponent<C>> {
                 visited.add(current)
                 val component = originalComponents[current]
                 if (component != null) {
-                    subNetwork.add(AbstractMap.SimpleEntry(current, component))
+                    subNetwork[current] = component
                 }
 
                 for (face in neighbours) {
@@ -372,17 +402,14 @@ interface Manager<C : BaseComponent<C>> {
      * @param type the type
      * @param <C>  the type of the data
      * @return the optional of the data
-    </C> */
+     </C> */
     fun <P : Any, C : Any> getPersistentData(
         item: ItemStack,
         key: NamespacedKey,
-        type: PersistentDataType<P, C>
-    ): Optional<C?> {
-        val meta: ItemMeta? = item.itemMeta
-        if (meta == null) {
-            return Optional.empty<C?>() as Optional<C?>
-        }
+        type: PersistentDataType<P, C>,
+    ): C? {
+        val meta: ItemMeta = item.itemMeta ?: return null
         val persistentDataContainer: PersistentDataContainer = meta.persistentDataContainer
-        return Optional.ofNullable<C?>(persistentDataContainer.get(key, type)) as Optional<C?>
+        return persistentDataContainer.get(key, type)
     }
 }

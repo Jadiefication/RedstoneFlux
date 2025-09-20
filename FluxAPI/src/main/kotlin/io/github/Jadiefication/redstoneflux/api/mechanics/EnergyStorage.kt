@@ -40,7 +40,7 @@ interface EnergyStorage : EnergyMechanic {
     @Deprecated(
         message = "Weird naming, deprecated since 1.3.3",
         replaceWith = ReplaceWith("grabEnergy"),
-        level = DeprecationLevel.HIDDEN
+        level = DeprecationLevel.HIDDEN,
     )
     fun consumeEnergy(energyTaken: Double): Double
 

@@ -18,7 +18,7 @@ interface EnergyManager : Manager<EnergyComponent<*>> {
      * @param item The item to get the energy type from.
      * @return The energy type of the item.
      */
-    fun getEnergyType(item: ItemStack): Optional<EnergyType?>
+    fun getEnergyType(item: ItemStack): EnergyType?
 
     /**
      * Get the mechanic type of an item.
@@ -26,7 +26,7 @@ interface EnergyManager : Manager<EnergyComponent<*>> {
      * @param item The item to get the mechanic type from.
      * @return The mechanic type of the item.
      */
-    fun getMechanicClass(item: ItemStack): Optional<String?>
+    fun getMechanicClass(item: ItemStack): String?
 
     /**
      * Get the mechanic of an item.
@@ -34,7 +34,7 @@ interface EnergyManager : Manager<EnergyComponent<*>> {
      * @param item The item to get the mechanic from.
      * @return The mechanic of the item.
      */
-    fun getMechanic(item: ItemStack): Optional<out EnergyMechanic?>
+    fun getMechanic(item: ItemStack): EnergyMechanic?
 
     /**
      * Delete a network.
