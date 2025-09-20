@@ -2,7 +2,6 @@ package io.github.Jadiefication.redstoneflux.api.components
 
 import org.bukkit.inventory.ItemStack
 
-
 /**
  * A builder for converting a component into a corresponding [ItemStack].
  *
@@ -11,7 +10,6 @@ import org.bukkit.inventory.ItemStack
  * @param C The type of the component being converted.
  */
 fun interface ItemComponentBuilder<C : BaseComponent<C>> {
-
     /**
      * Builds an [ItemStack] representation of the given component.
      *
@@ -32,7 +30,4 @@ fun interface ItemComponentBuilder<C : BaseComponent<C>> {
  * @param builder The [ItemComponentBuilder] to use for building the item.
  * @return The [ItemStack] produced by the builder.
  */
-fun <C : BaseComponent<C>> C.buildItemWith(builder: ItemComponentBuilder<C>): ItemStack {
-    return builder(this)
-}
-
+fun <C : BaseComponent<C>> C.buildItemWith(builder: ItemComponentBuilder<C>): ItemStack = builder(this)

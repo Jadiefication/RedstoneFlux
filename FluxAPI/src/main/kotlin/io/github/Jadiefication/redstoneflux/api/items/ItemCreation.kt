@@ -10,7 +10,7 @@ import net.kyori.adventure.text.Component
  */
 @Deprecated(
     message = "Deprecated since 2.0.2, better suited for devs to manage this themselves",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.WARNING,
 )
 internal interface ItemCreation<T : EnergyMechanic> {
     val name: Component?

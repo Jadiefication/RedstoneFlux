@@ -5,7 +5,7 @@ import io.github.Jadiefication.redstoneflux.api.Manager
 
 @Deprecated(
     message = "Deprecated since 2.0.2, write inline update functions.",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.WARNING,
 )
 class UpdaterNetworksTask(
     private val manager: Manager<*>,

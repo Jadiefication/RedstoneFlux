@@ -14,7 +14,7 @@ import java.util.function.Supplier
 @Deprecated(
     "Deprecated since 2.0.2",
     ReplaceWith("buildItem()"),
-    DeprecationLevel.WARNING
+    DeprecationLevel.WARNING,
 )
 class EnergyComponentBuilder(
     val gson: Gson,

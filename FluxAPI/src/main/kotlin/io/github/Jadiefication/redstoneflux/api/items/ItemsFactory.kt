@@ -17,7 +17,7 @@ import java.util.*
  */
 @Deprecated(
     message = "Deprecated since 2.0.2, better suited for devs to manage this themselves",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.WARNING,
 )
 object ItemsFactory {
     /**
@@ -26,7 +26,7 @@ object ItemsFactory {
     @Deprecated(
         message = "Deprecated since 2.0.2",
         replaceWith = ReplaceWith("Manager.energyTypeKey"),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.ERROR,
     )
     lateinit var energyTypeKey: NamespacedKey
 
@@ -36,7 +36,7 @@ object ItemsFactory {
     @Deprecated(
         message = "Deprecated since 2.0.2",
         replaceWith = ReplaceWith("Manager.mechanicClassKey"),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.ERROR,
     )
     lateinit var mechanicClassKey: NamespacedKey
 
@@ -46,7 +46,7 @@ object ItemsFactory {
     @Deprecated(
         message = "Deprecated since 2.0.2",
         replaceWith = ReplaceWith("Manager.mechanicKey"),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.ERROR,
     )
     lateinit var mechanicKey: NamespacedKey
 
@@ -56,7 +56,7 @@ object ItemsFactory {
     @Deprecated(
         message = "Deprecated since 2.0.2",
         replaceWith = ReplaceWith("Manager.networkKey"),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.ERROR,
     )
     lateinit var networkKey: NamespacedKey
 
@@ -102,7 +102,11 @@ object ItemsFactory {
         if (!item.hasItemMeta()) return Optional.empty()
 
         val meta = item.itemMeta!!
-        if (!meta.persistentDataContainer.has(Manager.mechanicKey) || !meta.persistentDataContainer.has(Manager.mechanicClassKey)) return Optional.empty()
+        if (!meta.persistentDataContainer.has(Manager.mechanicKey) ||
+            !meta.persistentDataContainer.has(Manager.mechanicClassKey)
+        ) {
+            return Optional.empty()
+        }
 
         return try {
             val mechanicJson =

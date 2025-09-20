@@ -16,7 +16,7 @@ import org.bukkit.persistence.PersistentDataType
  */
 @Deprecated(
     message = "Deprecated since 2.0.2, better suited for devs to manage this themselves",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.WARNING,
 )
 data class ItemHolder<T : EnergyMechanic>(
     var item: ItemStack? = null,
@@ -64,7 +64,7 @@ data class ItemHolder<T : EnergyMechanic>(
  */
 @Deprecated(
     message = "Deprecated since 2.0.2, better suited for devs to manage this themselves",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.WARNING,
 )
 data class MaterialHolder<T : EnergyMechanic>(
     var item: Material? = null,

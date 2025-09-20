@@ -289,7 +289,7 @@ interface Manager<C : BaseComponent<C>> {
          */
         @Deprecated(
             message = "Deprecated since 2.0.2, use EnergyAPI#addManager(manager)",
-            level = DeprecationLevel.WARNING
+            level = DeprecationLevel.WARNING,
         )
         val managers: MutableSet<Manager<*>> = mutableSetOf()
 
