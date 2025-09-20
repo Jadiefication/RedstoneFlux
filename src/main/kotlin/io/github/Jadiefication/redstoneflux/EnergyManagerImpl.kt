@@ -19,8 +19,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
-import java.util.function.Consumer
-import java.util.function.Function
 import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
 
@@ -75,24 +73,20 @@ class EnergyManagerImpl(
         component: EnergyComponent<*>,
         location: Location,
     ) {
-        var energyNetworks: MutableList<EnergyNetwork> = ArrayList()
+        var energyNetworks: MutableList<EnergyNetwork> = mutableListOf()
         for (neighbour in neighbours) {
             val neighbor = location.block.getRelative(neighbour)
-            val networkNeighbor: Optional<EnergyNetwork?> =
-                this.networks
-                    .stream()
-                    .filter { network: EnergyNetwork? -> network?.contains(neighbor.location) == true }
-                    .findFirst()
-            if (networkNeighbor.isPresent) {
-                if (!energyNetworks.contains(networkNeighbor.get())) energyNetworks.add(networkNeighbor.get())
+            val networkNeighbor =
+                this.networks.firstOrNull { network -> network.contains(neighbor.location) }
+            if (networkNeighbor != null) {
+                if (!energyNetworks.contains(networkNeighbor)) energyNetworks.add(networkNeighbor)
             }
         }
 
         energyNetworks =
             energyNetworks
-                .stream()
-                .filter { network: EnergyNetwork? -> network?.energyType === component.energyType }
-                .collect(Collectors.toList())
+                .filter { network -> network.energyType === component.energyType }
+                .toMutableList()
 
         if (energyNetworks.isEmpty()) {
             val network = EnergyNetwork(this.api, component, location)
@@ -241,21 +235,21 @@ class EnergyManagerImpl(
     }
 
     override fun loadNetworks(chunk: Chunk) {
-        val chunkData: PersistentDataContainer? = chunk.persistentDataContainer
-        if (chunkData?.has(
+        val chunkData: PersistentDataContainer = chunk.persistentDataContainer
+        if (chunkData.has(
                 api.networkKey,
-                PersistentDataType.LIST.listTypeFrom<String?, String?>(PersistentDataType.STRING),
-            ) == true
+                PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
+            )
         ) {
-            val networkDatas: MutableList<String?> =
+            val networkData: MutableList<String?> =
                 chunkData.getOrDefault(
                     api.networkKey,
                     PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
                     ArrayList<String?>(),
                 )
-            for (networkData in networkDatas) {
+            for (networkData in networkData) {
                 val network: EnergyNetwork = this.gson.fromJson<EnergyNetwork>(networkData, EnergyNetwork::class.java)
-                if (this.networks.stream().noneMatch { n: EnergyNetwork? -> n?.id == network.id }) {
+                if (this.networks.none { it.id ==  network.id }) {
                     this.networks.add(network)
                 }
             }
@@ -293,14 +287,12 @@ class EnergyManagerImpl(
         originalComponents: Map<Location, EnergyComponent<*>>,
     ) {
         val visited: MutableSet<Location> = HashSet()
-        val newNetworks: MutableList<EnergyNetwork> = ArrayList()
+        val newNetworks: MutableList<EnergyNetwork> = mutableListOf()
         val defers = mutableListOf<Deferred<Unit>>()
         network.components.keys.forEach { component ->
-            val defer =
-                api.scope.async {
-                    asyncNetworkSplit(visited, component, newNetworks, originalComponents)
-                }
-            defers.add(defer)
+            defers.add(api.scope.async {
+                asyncNetworkSplit(visited, component, newNetworks, originalComponents)
+            })
         }
 
         defers.awaitAll().forEach { _ ->
