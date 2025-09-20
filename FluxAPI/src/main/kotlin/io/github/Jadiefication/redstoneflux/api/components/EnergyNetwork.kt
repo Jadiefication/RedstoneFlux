@@ -43,7 +43,7 @@ class EnergyNetwork(
     /**
      * The key to store the network in the chunk.
      */
-    override var networkKey: NamespacedKey = ItemsFactory.networkKey
+    override var networkKey: NamespacedKey = Manager.networkKey
 
     override val manager: KClass<out Manager<EnergyComponent<*>>> = EnergyManager::class
 
