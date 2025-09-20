@@ -20,9 +20,8 @@ class EnergyListener(
     /**
      * The energy API
      */
-    private val api: EnergyAPI
+    private val api: EnergyAPI,
 ) : Listener {
-
     /**
      * The energy manager
      */

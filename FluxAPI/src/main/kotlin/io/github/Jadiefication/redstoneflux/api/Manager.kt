@@ -35,19 +35,19 @@ import java.util.stream.Collectors
  * The Manager is the principale class of the API, it is used to manage each separate type of components and networks.
  */
 interface Manager<C : BaseComponent<C>> {
-
     /**
      * The list of the 6 block faces.
      */
     val neighbours: List<BlockFace>
-        get() = listOf(
-            BlockFace.UP,
-            BlockFace.DOWN,
-            BlockFace.NORTH,
-            BlockFace.EAST,
-            BlockFace.SOUTH,
-            BlockFace.WEST
-        )
+        get() =
+            listOf(
+                BlockFace.UP,
+                BlockFace.DOWN,
+                BlockFace.NORTH,
+                BlockFace.EAST,
+                BlockFace.SOUTH,
+                BlockFace.WEST,
+            )
 
     /**
      * The RedstoneFlux instance for getting certain values.
@@ -70,12 +70,16 @@ interface Manager<C : BaseComponent<C>> {
      * @param component The component to place.
      * @param location  The location where the component will be placed.
      */
-    fun placeComponent(component: C, location: Location) {
+    fun placeComponent(
+        component: C,
+        location: Location,
+    ) {
         var networks: MutableList<BaseNetwork<C>> = ArrayList()
         for (neighbour in neighbours) {
             val neighbor = location.block.getRelative(neighbour)
             val networkNeighbor =
-                this.networks.stream()
+                this.networks
+                    .stream()
                     .filter { network -> network?.contains(neighbor.location) == true }
                     .findFirst()
             if (networkNeighbor.isPresent) {
@@ -112,7 +116,10 @@ interface Manager<C : BaseComponent<C>> {
      * @param location the location of the component.
      * @return the created network.
      */
-    fun createNetwork(component: C, location: Location): BaseNetwork<C>
+    fun createNetwork(
+        component: C,
+        location: Location,
+    ): BaseNetwork<C>
 
     /**
      * Handle the break of a component in the world.
@@ -120,9 +127,15 @@ interface Manager<C : BaseComponent<C>> {
      * @param player
      * @param location The location of the component to break.
      */
-    fun breakComponent(player: Player, location: Location) {
+    fun breakComponent(
+        player: Player,
+        location: Location,
+    ) {
         val network =
-            this.networks.stream().filter { n -> n.contains(location) }.findFirst()
+            this.networks
+                .stream()
+                .filter { n -> n.contains(location) }
+                .findFirst()
                 .orElse(null)
         if (network == null) {
             return
@@ -156,9 +169,7 @@ interface Manager<C : BaseComponent<C>> {
      * @param location The location to check.
      * @return True if the location is a block component, false otherwise.
      */
-    fun isBlockComponent(location: Location): Boolean {
-        return this.networks.stream().anyMatch { network -> network?.contains(location) == true }
-    }
+    fun isBlockComponent(location: Location): Boolean = this.networks.stream().anyMatch { network -> network?.contains(location) == true }
 
     /**
      * Create a component from an item.
@@ -182,9 +193,10 @@ interface Manager<C : BaseComponent<C>> {
      * @param builder the builder for the item.
      * @return The item created.
      */
-    fun <T : ItemComponentBuilder<C>> createItemComponent(component: C, builder: T): ItemStack {
-        return builder.buildItem(component)
-    }
+    fun <T : ItemComponentBuilder<C>> createItemComponent(
+        component: C,
+        builder: T,
+    ): ItemStack = builder.buildItem(component)
 
     /**
      * Start the network updater.
@@ -241,9 +253,11 @@ interface Manager<C : BaseComponent<C>> {
      * @return The component of the block.
      */
     fun getComponentFromBlock(location: Location): Optional<C> {
-        val optionalEnergyNetwork = this.networks.stream()
-            .filter { network -> network?.contains(location) == true }
-            .findFirst()
+        val optionalEnergyNetwork =
+            this.networks
+                .stream()
+                .filter { network -> network?.contains(location) == true }
+                .findFirst()
 
         return optionalEnergyNetwork.map { energyNetwork ->
             energyNetwork.components[location]
@@ -285,15 +299,16 @@ interface Manager<C : BaseComponent<C>> {
      */
     suspend fun splitNetworkIfNecessary(
         network: BaseNetwork<C>,
-        originalComponents: Map<Location, C>
+        originalComponents: Map<Location, C>,
     ) {
         val visited: MutableSet<Location> = HashSet()
         val newNetworks: MutableList<BaseNetwork<C>> = ArrayList()
         val defers = mutableListOf<Deferred<Unit>>()
         network.components.keys.forEach { component ->
-            val defer = api.scope.async {
-                asyncNetworkSplit(visited, component, newNetworks, originalComponents)
-            }
+            val defer =
+                api.scope.async {
+                    asyncNetworkSplit(visited, component, newNetworks, originalComponents)
+                }
             defers.add(defer)
         }
 
@@ -307,7 +322,7 @@ interface Manager<C : BaseComponent<C>> {
         visited: MutableSet<Location>,
         component: Location,
         newNetworks: MutableList<BaseNetwork<C>>,
-        originalComponents: Map<Location, C>
+        originalComponents: Map<Location, C>,
     ) {
         if (!visited.contains(component)) {
             val subNetworkComponents =
@@ -336,7 +351,7 @@ interface Manager<C : BaseComponent<C>> {
     fun discoverSubNetwork(
         startBlock: Location,
         visited: MutableSet<Location>,
-        originalComponents: Map<Location, C>
+        originalComponents: Map<Location, C>,
     ): MutableSet<MutableMap.MutableEntry<Location, C>> {
         val subNetwork: MutableSet<MutableMap.MutableEntry<Location, C>> =
             HashSet()
@@ -372,11 +387,11 @@ interface Manager<C : BaseComponent<C>> {
      * @param type the type
      * @param <C>  the type of the data
      * @return the optional of the data
-    </C> */
+     </C> */
     fun <P : Any, C : Any> getPersistentData(
         item: ItemStack,
         key: NamespacedKey,
-        type: PersistentDataType<P, C>
+        type: PersistentDataType<P, C>,
     ): Optional<C?> {
         val meta: ItemMeta? = item.itemMeta
         if (meta == null) {

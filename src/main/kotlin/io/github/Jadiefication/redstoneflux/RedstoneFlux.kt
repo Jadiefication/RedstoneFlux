@@ -26,7 +26,9 @@ import java.util.function.Consumer
  * This class is the main class of the plugin.
  * It is responsible for the initialization of the plugin.
  */
-class RedstoneFlux : JavaPlugin(), EnergyAPI {
+class RedstoneFlux :
+    JavaPlugin(),
+    EnergyAPI {
     /**
      * The scheduler of the plugin.
      */
@@ -48,6 +50,7 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
     /**
      * {@inheritDoc}
      */
+
     /**
      * The debug state of the plugin.
      */
@@ -100,27 +103,36 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
         commandManager.registerConverter(
             BaseNetwork::class.java,
             "network",
-            NetworkArgument(this.managers)
+            NetworkArgument(this.managers),
         )
         commandManager.registerCommand(EnergyCommand(this))
 
         this.scheduler?.runNextTick { t ->
-            this.server.worlds.forEach(Consumer { world ->
-                Arrays.stream(world.loadedChunks)
-                    .forEach { chunk -> this.managers.forEach {
-                        it.loadNetworks(chunk)
-                    } }
-            })
+            this.server.worlds.forEach(
+                Consumer { world ->
+                    Arrays
+                        .stream(world.loadedChunks)
+                        .forEach { chunk ->
+                            this.managers.forEach {
+                                it.loadNetworks(chunk)
+                            }
+                        }
+                },
+            )
 
             this.managers.forEach {
                 it.startNetworkUpdater()
             }
-            this.scheduler!!.runTimerAsync({ _ -> this.managers.forEach {
-                it.saveNetworks()
-            } }, 1, 1, TimeUnit.HOURS)
-            this.scheduler!!.runTimerAsync({ _ -> this.managers.forEach {
-                it.cleanUpNetworks()
-            } }, 1, 1, TimeUnit.HOURS)
+            this.scheduler!!.runTimerAsync({ _ ->
+                this.managers.forEach {
+                    it.saveNetworks()
+                }
+            }, 1, 1, TimeUnit.HOURS)
+            this.scheduler!!.runTimerAsync({ _ ->
+                this.managers.forEach {
+                    it.cleanUpNetworks()
+                }
+            }, 1, 1, TimeUnit.HOURS)
         }
     }
 
@@ -158,8 +170,11 @@ class RedstoneFlux : JavaPlugin(), EnergyAPI {
      * @param instance the instance of the provider
      * @param clazz    the class of the provider
      * @param <T>      the type of the provider
-    </T> */
-    private fun <T> registerProvider(instance: T, clazz: Class<T>) {
+     </T> */
+    private fun <T> registerProvider(
+        instance: T,
+        clazz: Class<T>,
+    ) {
         val servicesManager: ServicesManager = this.server.servicesManager
         servicesManager.register<T>(clazz, instance!!, this, ServicePriority.Normal)
     }

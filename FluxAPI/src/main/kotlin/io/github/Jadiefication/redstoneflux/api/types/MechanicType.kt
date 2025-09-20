@@ -10,11 +10,12 @@ enum class MechanicType
 /**
  * Constructor of MechanicType.
  * @param clazz the class of the mechanic.
- */(
+ */
+(
     /**
      * The class of the mechanic.
      */
-    val clazz: Class<out EnergyMechanic?>
+    val clazz: Class<out EnergyMechanic?>,
 ) {
     /**
      * Represents an energy producer.
@@ -44,7 +45,8 @@ enum class MechanicType
     /**
      * Represents an energy converter
      */
-    CONVERTER(EnergyConverter::class.java);
+    CONVERTER(EnergyConverter::class.java),
+    ;
 
     /**
      * Get the class of the mechanic.
@@ -56,9 +58,7 @@ enum class MechanicType
      * @param component the component to check.
      * @return true if the mechanic is an instance of the given component, false otherwise.
      */
-    fun isInstance(component: EnergyComponent<*>): Boolean {
-        return this.clazz.isInstance(component.mechanic)
-    }
+    fun isInstance(component: EnergyComponent<*>): Boolean = this.clazz.isInstance(component.mechanic)
 
     companion object {
         fun fromComponent(component: EnergyComponent<*>): MechanicType {

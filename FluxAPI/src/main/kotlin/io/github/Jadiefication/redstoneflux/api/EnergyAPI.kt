@@ -29,6 +29,7 @@ interface EnergyAPI {
      * Get if the API is in debug mode.
      * @return true if the API is in debug mode.
      */
+
     /**
      * Set the debug mode of the API.
      * @param debug the new debug mode.

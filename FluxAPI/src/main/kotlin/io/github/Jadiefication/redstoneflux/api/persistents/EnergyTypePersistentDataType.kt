@@ -12,17 +12,13 @@ class EnergyTypePersistentDataType : PersistentDataType<String, EnergyType> {
      * Get the primitive type of the class
      * @return the primitive type
      */
-    override fun getPrimitiveType(): Class<String?> {
-        return String::class.java as Class<String?>
-    }
+    override fun getPrimitiveType(): Class<String?> = String::class.java as Class<String?>
 
     /**
      * Get the complex type of the class
      * @return the complex type
      */
-    override fun getComplexType(): Class<EnergyType?> {
-        return EnergyType::class.java as Class<EnergyType?>
-    }
+    override fun getComplexType(): Class<EnergyType?> = EnergyType::class.java as Class<EnergyType?>
 
     /**
      * Convert the EnergyType to a primitive type
@@ -32,10 +28,8 @@ class EnergyTypePersistentDataType : PersistentDataType<String, EnergyType> {
      */
     override fun toPrimitive(
         energyType: EnergyType,
-        persistentDataAdapterContext: PersistentDataAdapterContext
-    ): String {
-        return energyType.name!!
-    }
+        persistentDataAdapterContext: PersistentDataAdapterContext,
+    ): String = energyType.name!!
 
     /**
      * Convert the primitive type to a EnergyType
@@ -43,12 +37,15 @@ class EnergyTypePersistentDataType : PersistentDataType<String, EnergyType> {
      * @param persistentDataAdapterContext the context
      * @return the EnergyType
      */
-    override fun fromPrimitive(s: String, persistentDataAdapterContext: PersistentDataAdapterContext): EnergyType {
-        return EnergyType.Companion.TYPES.stream()
+    override fun fromPrimitive(
+        s: String,
+        persistentDataAdapterContext: PersistentDataAdapterContext,
+    ): EnergyType =
+        EnergyType.Companion.TYPES
+            .stream()
             .filter { type: EnergyType? -> type!!.name == s }
             .findFirst()
             .orElseThrow()!!
-    }
 
     companion object {
         /**

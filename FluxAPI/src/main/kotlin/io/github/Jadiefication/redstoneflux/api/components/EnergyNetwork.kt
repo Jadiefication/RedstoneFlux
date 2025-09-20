@@ -38,9 +38,8 @@ class EnergyNetwork(
     /**
      * The network's unique identifier.
      */
-    override val id: UUID?
-): BaseNetwork<EnergyComponent<*>>() {
-
+    override val id: UUID?,
+) : BaseNetwork<EnergyComponent<*>>() {
     /**
      * The key to store the network in the chunk.
      */
@@ -76,13 +75,15 @@ class EnergyNetwork(
         val producers = this.getComponentByType(MechanicType.PRODUCER)
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
-            val defer = api.scope.async {
-                val produceEvent = EnergyProduceEvent(
-                    (producer.mechanic as EnergyProducer).produce(location),
-                    producer as EnergyComponent<EnergyProducer>
-                )
-                Bukkit.getServer().pluginManager.callEvent(produceEvent)
-            }
+            val defer =
+                api.scope.async {
+                    val produceEvent =
+                        EnergyProduceEvent(
+                            (producer.mechanic as EnergyProducer).produce(location),
+                            producer as EnergyComponent<EnergyProducer>,
+                        )
+                    Bukkit.getServer().pluginManager.callEvent(produceEvent)
+                }
             defers.add(defer)
         }
         return defers.awaitAll()
@@ -95,9 +96,10 @@ class EnergyNetwork(
         val producers = getComponentByType(MechanicType.PRODUCER)
         val defers = mutableListOf<Deferred<Unit>>()
         producers.forEach { (location, producer) ->
-            val defer = api.scope.async {
-                asyncExcessEnergy(producer)
-            }
+            val defer =
+                api.scope.async {
+                    asyncExcessEnergy(producer)
+                }
             defers.add(defer)
         }
         return defers.awaitAll()
@@ -118,11 +120,12 @@ class EnergyNetwork(
             for (storageComponent in connectedStorages) {
                 val storage = storageComponent.mechanic as EnergyStorage
                 val energyStored = storage.storeEnergy(excessEnergy)
-                val storeEvent = StoreEnergyEvent(
-                    energyStored,
-                    storageComponent as EnergyComponent<EnergyStorage>,
-                    producerC as EnergyComponent<EnergyProducer>
-                )
+                val storeEvent =
+                    StoreEnergyEvent(
+                        energyStored,
+                        storageComponent as EnergyComponent<EnergyStorage>,
+                        producerC as EnergyComponent<EnergyProducer>,
+                    )
                 Bukkit.getServer().pluginManager.callEvent(storeEvent)
                 excessEnergy -= energyStored
 
@@ -143,9 +146,10 @@ class EnergyNetwork(
         val consumers = this.getComponentByType(MechanicType.CONSUMER)
         val defers = mutableListOf<Deferred<Unit>>()
         consumers.forEach { (location, consumerComponent) ->
-            val future = api.scope.async {
-                asyncConsumerUpdate(consumerComponent)
-            }
+            val future =
+                api.scope.async {
+                    asyncConsumerUpdate(consumerComponent)
+                }
             defers.add(future)
         }
         return defers.awaitAll()
@@ -163,11 +167,12 @@ class EnergyNetwork(
         for (producerComponent in connectedProducers) {
             val producer = producerComponent.mechanic as EnergyProducer
             val energyAvailable = producer.extractEnergy(requiredEnergy)
-            val produceEvent = EnergyConsumeEvent(
-                energyAvailable,
-                producerComponent,
-                consumerComponent as EnergyComponent<EnergyConsumer>
-            )
+            val produceEvent =
+                EnergyConsumeEvent(
+                    energyAvailable,
+                    producerComponent,
+                    consumerComponent as EnergyComponent<EnergyConsumer>,
+                )
             Bukkit.getServer().pluginManager.callEvent(produceEvent)
             requiredEnergy -= energyAvailable
             providedEnergy += energyAvailable
@@ -183,11 +188,12 @@ class EnergyNetwork(
             for (storageComponent in connectedStorages) {
                 val storage = storageComponent.mechanic as EnergyStorage
                 val energyFromStorage = storage.grabEnergy(requiredEnergy)
-                val produceEvent = EnergyConsumeEvent(
-                    energyFromStorage,
-                    storageComponent,
-                    consumerComponent as EnergyComponent<EnergyConsumer>
-                )
+                val produceEvent =
+                    EnergyConsumeEvent(
+                        energyFromStorage,
+                        storageComponent,
+                        consumerComponent as EnergyComponent<EnergyConsumer>,
+                    )
                 Bukkit.getServer().pluginManager.callEvent(produceEvent)
                 requiredEnergy -= energyFromStorage
                 providedEnergy += energyFromStorage
@@ -200,11 +206,12 @@ class EnergyNetwork(
 
         consumer.receiveEnergy(providedEnergy)
         if (requiredEnergy > 0) {
-            val notEnoughEnergyEvent = NotEnoughEnergyEvent(
-                requiredEnergy,
-                providedEnergy,
-                consumerComponent as EnergyComponent<EnergyConsumer>
-            )
+            val notEnoughEnergyEvent =
+                NotEnoughEnergyEvent(
+                    requiredEnergy,
+                    providedEnergy,
+                    consumerComponent as EnergyComponent<EnergyConsumer>,
+                )
             Bukkit.getServer().pluginManager.callEvent(notEnoughEnergyEvent)
             if (api.isDebug) {
                 println("The consumer $consumerComponent did not receive enough energy.")
@@ -230,10 +237,12 @@ class EnergyNetwork(
      * @param chunk1 The second chunk.
      * @return If the chunks are the same.
      */
-    private fun isSameChunk(chunk: Chunk, chunk1: Chunk): Boolean {
-        return chunk.x == chunk1.x && chunk.z == chunk1.z && chunk.world
+    private fun isSameChunk(
+        chunk: Chunk,
+        chunk1: Chunk,
+    ): Boolean =
+        chunk.x == chunk1.x && chunk.z == chunk1.z && chunk.world
             .name == chunk1.world.name
-    }
 
     private val root: EnergyComponent<*>?
         /**
@@ -252,7 +261,7 @@ class EnergyNetwork(
      */
     private fun getConnectedComponents(
         component: EnergyComponent<*>,
-        type: MechanicType
+        type: MechanicType,
     ): MutableList<EnergyComponent<*>> {
         val visited: MutableSet<EnergyComponent<*>?> = HashSet()
         val connectedComponents: MutableList<EnergyComponent<*>> = ArrayList()
@@ -269,8 +278,10 @@ class EnergyNetwork(
      * @param type                The type of the component.
      */
     private fun dfsConnectedComponents(
-        component: EnergyComponent<*>, visited: MutableSet<EnergyComponent<*>?>,
-        connectedComponents: MutableList<EnergyComponent<*>>, type: MechanicType
+        component: EnergyComponent<*>,
+        visited: MutableSet<EnergyComponent<*>?>,
+        connectedComponents: MutableList<EnergyComponent<*>>,
+        type: MechanicType,
     ) {
         if (visited.contains(component)) {
             return
@@ -283,9 +294,12 @@ class EnergyNetwork(
         }
 
         for (neighbor in component.connectedComponents) {
-            if (!visited.contains(neighbor) && (MechanicType.TRANSPORTER.isInstance(neighbor!!) || type.isInstance(
-                    neighbor
-                ))
+            if (!visited.contains(neighbor) && (
+                    MechanicType.TRANSPORTER.isInstance(neighbor!!) ||
+                        type.isInstance(
+                            neighbor,
+                        )
+                )
             ) {
                 this.dfsConnectedComponents(neighbor, visited, connectedComponents, type)
             }
@@ -298,16 +312,14 @@ class EnergyNetwork(
      * @param type The type of the component.
      * @return The components by type.
      */
-    private fun getComponentByType(type: MechanicType): MutableMap<Location, EnergyComponent<*>> {
-        return this.components.entries
+    private fun getComponentByType(type: MechanicType): MutableMap<Location, EnergyComponent<*>> =
+        this.components.entries
             .stream()
             .filter { entry ->
                 type.clazz.isAssignableFrom(
-                    entry!!.value.mechanic!!.javaClass
+                    entry!!.value.mechanic!!.javaClass,
                 )
-            }
-            .collect(Collectors.toMap({ it.key }, { it.value }))
-    }
+            }.collect(Collectors.toMap({ it.key }, { it.value }))
 
     /**
      * Save the network in the chunk.
@@ -328,7 +340,7 @@ class EnergyNetwork(
             container.getOrDefault(
                 networkKey,
                 PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
-                ArrayList()
+                ArrayList(),
             )
         networks = ArrayList(networks)
         networks.removeIf { network: String? ->
@@ -340,7 +352,7 @@ class EnergyNetwork(
         container.set(
             networkKey,
             PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
-            networks
+            networks,
         )
     }
 
@@ -352,24 +364,31 @@ class EnergyNetwork(
         try {
             container = chunk.persistentDataContainer
         } catch (_: Exception) {
-            api.managers.first { manager.isInstance(it) }.networks.remove(this)
+            api.managers
+                .first { manager.isInstance(it) }
+                .networks
+                .remove(this)
             return
         }
         var networks: MutableList<String?> =
             container.getOrDefault(
                 networkKey,
                 PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
-                mutableListOf()
+                mutableListOf(),
             )
         networks = ArrayList(networks)
         networks.removeIf { json: String? ->
-            val network = this.api.managers.first {manager.isInstance(it)}.gson.fromJson(json, EnergyNetwork::class.java)
+            val network =
+                this.api.managers
+                    .first { manager.isInstance(it) }
+                    .gson
+                    .fromJson(json, EnergyNetwork::class.java)
             network?.id == this.id
         }
         container.set(
             networkKey,
             PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING),
-            networks
+            networks,
         )
     }
 }

@@ -14,20 +14,20 @@ import org.bukkit.event.block.BlockPlaceEvent
  */
 class EnergyItemsAdderCompatibility(
     /**
-     * The EnergyAPI instance.
-     */
+ * The EnergyAPI instance.
+ */
     private val api: EnergyAPI
 ) : Listener {
 
     /**
-     * The EnergyManager instance.
-     */
+ * The EnergyManager instance.
+ */
     private val energyManager: EnergyManager = api.manager!!
 
     /**
-     * Handle the place of a custom block.
-     * @param event The event.
-     */
+ * Handle the place of a custom block.
+ * @param event The event.
+ */
     @EventHandler
     fun onPlace(event: BlockPlaceEvent) {
         val item = event.getItemInHand().clone()
@@ -45,9 +45,9 @@ class EnergyItemsAdderCompatibility(
     }
 
     /**
-     * Handle the break of a custom block.
-     * @param event The event.
-     */
+ * Handle the break of a custom block.
+ * @param event The event.
+ */
     @EventHandler
     fun onBreak(event: BlockBreakEvent) {
         val location = event.getBlock().location

@@ -21,7 +21,7 @@ data class ItemHolder<T : EnergyMechanic>(
     /**
      * Applicable modify function to affect the mechanic.
      */
-    override var modify: (T.() -> Unit)? = null
+    override var modify: (T.() -> Unit)? = null,
 ) : ItemCreation<T> {
     internal fun modify() {
         if (modify != null && mechanic != null) {
@@ -38,17 +38,17 @@ data class ItemHolder<T : EnergyMechanic>(
         meta.persistentDataContainer.set(
             ItemsFactory.energyTypeKey,
             EnergyTypePersistentDataType.INSTANCE,
-            mechanic!!.energyType!!
+            mechanic!!.energyType!!,
         )
         meta.persistentDataContainer.set(
             ItemsFactory.mechanicClassKey,
             PersistentDataType.STRING,
-            mechanic!!.mechanic!!.javaClass.name
+            mechanic!!.mechanic!!.javaClass.name,
         )
         meta.persistentDataContainer.set(
             ItemsFactory.mechanicKey,
             PersistentDataType.STRING,
-            ItemsFactory.gson.toJson(mechanic!!.mechanic!!)
+            ItemsFactory.gson.toJson(mechanic!!.mechanic!!),
         )
         item!!.itemMeta = meta
     }
@@ -65,10 +65,10 @@ data class MaterialHolder<T : EnergyMechanic>(
     /**
      * Applicable modify function to affect the mechanic.
      */
-    override var modify: (T.() -> Unit)? = null
+    override var modify: (T.() -> Unit)? = null,
 ) : ItemCreation<T> {
-
     internal var actualItem: ItemStack? = null
+
     internal fun modify() {
         actualItem = ItemStack.of(item!!)
         if (modify != null && mechanic != null) {
@@ -87,7 +87,7 @@ data class MaterialHolder<T : EnergyMechanic>(
         container.set(
             ItemsFactory.mechanicKey,
             PersistentDataType.STRING,
-            ItemsFactory.gson.toJson(mechanic!!.mechanic!!)
+            ItemsFactory.gson.toJson(mechanic!!.mechanic!!),
         )
         actualItem!!.itemMeta = meta
     }

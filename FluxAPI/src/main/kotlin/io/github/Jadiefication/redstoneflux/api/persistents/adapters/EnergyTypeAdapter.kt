@@ -20,7 +20,10 @@ class EnergyTypeAdapter : TypeAdapter<EnergyType?>() {
      * @throws IOException If an I/O error occurs.
      */
     @Throws(IOException::class)
-    override fun write(jsonWriter: JsonWriter, value: EnergyType?) {
+    override fun write(
+        jsonWriter: JsonWriter,
+        value: EnergyType?,
+    ) {
         jsonWriter.beginObject()
         jsonWriter.name("name").value(value?.name)
         jsonWriter.endObject()
@@ -45,8 +48,10 @@ class EnergyTypeAdapter : TypeAdapter<EnergyType?>() {
         }
         jsonReader.endObject()
         val finalName = name
-        return EnergyType.Companion.TYPES.stream().filter { type: EnergyType? -> type!!.name == finalName }
-            .findFirst().orElseThrow(
-                Supplier { IOException("EnergyType not found.") })
+        return EnergyType.Companion.TYPES
+            .stream()
+            .filter { type: EnergyType? -> type!!.name == finalName }
+            .findFirst()
+            .orElseThrow(Supplier { IOException("EnergyType not found.") })
     }
 }

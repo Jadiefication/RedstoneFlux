@@ -71,9 +71,7 @@ object ItemsFactory {
     /**
      * This method is used to get an item for a class.
      */
-    fun getItem(component: EnergyComponent<*>): Optional<ItemStack> {
-        return Optional.ofNullable(ITEM_STACKS_MAP[component])
-    }
+    fun getItem(component: EnergyComponent<*>): Optional<ItemStack> = Optional.ofNullable(ITEM_STACKS_MAP[component])
 
     fun getComponent(item: ItemStack): Optional<EnergyComponent<*>> {
         if (!item.hasItemMeta()) return Optional.empty()
@@ -82,16 +80,18 @@ object ItemsFactory {
         if (!meta.persistentDataContainer.has(mechanicKey) || !meta.persistentDataContainer.has(mechanicClassKey)) return Optional.empty()
 
         return try {
-            val mechanicJson = meta.persistentDataContainer.get(
-                mechanicKey,
-                PersistentDataType.STRING
-            )
-            val clazz = Class.forName(
+            val mechanicJson =
                 meta.persistentDataContainer.get(
-                    mechanicClassKey,
-                    PersistentDataType.STRING
+                    mechanicKey,
+                    PersistentDataType.STRING,
                 )
-            )
+            val clazz =
+                Class.forName(
+                    meta.persistentDataContainer.get(
+                        mechanicClassKey,
+                        PersistentDataType.STRING,
+                    ),
+                )
             val mechanicClazz: Class<out EnergyMechanic?> = clazz.asSubclass(EnergyMechanic::class.java)
             val mechanic = gson.fromJson(mechanicJson, mechanicClazz)
 

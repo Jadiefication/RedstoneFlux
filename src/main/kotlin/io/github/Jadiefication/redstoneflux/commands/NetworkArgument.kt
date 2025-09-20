@@ -7,17 +7,20 @@ import io.github.Jadiefication.redstoneflux.api.components.BaseNetwork
 import org.bukkit.command.CommandSender
 import java.util.*
 
-class NetworkArgument(private val manager: Set<Manager<*>>) : ArgumentConverter<BaseNetwork<*>?>,
+class NetworkArgument(
+    private val manager: Set<Manager<*>>,
+) : ArgumentConverter<BaseNetwork<*>?>,
     TabCompleter<CommandSender> {
     override fun apply(s: String): BaseNetwork<*>? {
         try {
             val uuid = UUID.fromString(s)
             var foundNetwork: BaseNetwork<*>? = null
             this.manager.forEach {
-                val network = it.networks
-                    .stream()
-                    .filter { network -> network!!.id!! == uuid }
-                    .findFirst()
+                val network =
+                    it.networks
+                        .stream()
+                        .filter { network -> network!!.id!! == uuid }
+                        .findFirst()
                 if (network.isPresent) {
                     foundNetwork = network.get()
                 }
@@ -28,9 +31,12 @@ class NetworkArgument(private val manager: Set<Manager<*>>) : ArgumentConverter<
         }
     }
 
-    override fun onCompletion(commandSender: CommandSender, args: MutableList<String>): MutableList<String> {
-        return manager
+    override fun onCompletion(
+        commandSender: CommandSender,
+        args: MutableList<String>,
+    ): MutableList<String> =
+        manager
             .flatMap { it.networks }
-            .map { it.id.toString() }.toMutableList()
-    }
+            .map { it.id.toString() }
+            .toMutableList()
 }

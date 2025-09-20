@@ -8,7 +8,6 @@ import io.github.Jadiefication.redstoneflux.api.types.EnergyType
  * It can also consume energy.
  */
 interface EnergyConverter : EnergyMechanic {
-
     /**
      * The type of energy the converted accepts, null if accepts all types.
      * @return The type of energy the converted accepts, null if accepts all types.

@@ -5,8 +5,9 @@ import fr.traqueur.commands.api.models.Command
 import io.github.Jadiefication.redstoneflux.RedstoneFlux
 import org.bukkit.command.CommandSender
 
-class ReloadCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(plugin, "reload") {
-
+class ReloadCommand(
+    plugin: RedstoneFlux,
+) : Command<RedstoneFlux?, CommandSender>(plugin, "reload") {
     init {
         this.permission = "energy.admin.reload"
         this.usage = "/energy-admin reload"
@@ -15,7 +16,7 @@ class ReloadCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender
 
     override fun execute(
         sender: CommandSender?,
-        arguments: Arguments?
+        arguments: Arguments?,
     ) {
         plugin?.isDebug = plugin?.config?.getBoolean("debug", false)!!
     }

@@ -12,7 +12,9 @@ import net.kyori.adventure.text.format.Style
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-class DeleteCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(plugin, "delete") {
+class DeleteCommand(
+    plugin: RedstoneFlux,
+) : Command<RedstoneFlux?, CommandSender>(plugin, "delete") {
     private val manager: Set<Manager<out BaseComponent<*>>> = plugin.managers
 
     init {
@@ -22,7 +24,10 @@ class DeleteCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender
         this.addArgs("network:network")
     }
 
-    override fun execute(commandSender: CommandSender, arguments: Arguments) {
+    override fun execute(
+        commandSender: CommandSender,
+        arguments: Arguments,
+    ) {
         val network = arguments.get<BaseNetwork<*>>("network")
         manager.forEach { mgr ->
             (mgr.networks as Set<BaseNetwork<BaseComponent<*>>>).forEach { network ->
@@ -30,13 +35,16 @@ class DeleteCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender
             }
         }
         commandSender.sendMessage(
-            "§aThe network §e" + network.id + " §ain chunk §e" + network.chunk
-                .x + " " + network.chunk.z + " §ahas been deleted."
+            "§aThe network §e" + network.id + " §ain chunk §e" +
+                network.chunk
+                    .x + " " + network.chunk.z + " §ahas been deleted.",
         )
     }
 }
 
-class DeleteAllCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSender>(plugin, "deleteAll") {
+class DeleteAllCommand(
+    plugin: RedstoneFlux,
+) : Command<RedstoneFlux?, CommandSender>(plugin, "deleteAll") {
     private val manager: Set<Manager<out BaseComponent<*>>> = plugin.managers
 
     init {
@@ -45,21 +53,31 @@ class DeleteAllCommand(plugin: RedstoneFlux) : Command<RedstoneFlux?, CommandSen
         this.description = "Deletes all networks."
     }
 
-    override fun execute(commandSender: CommandSender, arguments: Arguments) {
+    override fun execute(
+        commandSender: CommandSender,
+        arguments: Arguments,
+    ) {
         manager.forEach { mgr ->
             @Suppress("UNCHECKED_CAST")
             (mgr.networks as Set<BaseNetwork<BaseComponent<*>>>).forEach { network ->
                 (mgr as Manager<BaseComponent<*>>).deleteNetwork(network)
             }
-            commandSender.sendMessage(Component.text {
-                it.append(Component.text("All networks ", Style.style(NamedTextColor.GREEN)))
-                it.append(Component.text(if (commandSender is Player) {
-                    "at ${commandSender.chunk}"
-                } else {
-                    ""
-                }, Style.style(NamedTextColor.YELLOW)))
-                it.append(Component.text(" have been deleted.", Style.style(NamedTextColor.GREEN)))
-            })
+            commandSender.sendMessage(
+                Component.text {
+                    it.append(Component.text("All networks ", Style.style(NamedTextColor.GREEN)))
+                    it.append(
+                        Component.text(
+                            if (commandSender is Player) {
+                                "at ${commandSender.chunk}"
+                            } else {
+                                ""
+                            },
+                            Style.style(NamedTextColor.YELLOW),
+                        ),
+                    )
+                    it.append(Component.text(" have been deleted.", Style.style(NamedTextColor.GREEN)))
+                },
+            )
         }
     }
 }

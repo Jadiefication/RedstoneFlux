@@ -19,7 +19,7 @@ open class EnergyComponent<T : EnergyMechanic>(
     /**
      * The mechanic that this component uses.
      */
-    var mechanic: T
+    var mechanic: T,
 ) : BaseComponent<EnergyComponent<*>>() {
     /**
      * The components that this component is connected to.

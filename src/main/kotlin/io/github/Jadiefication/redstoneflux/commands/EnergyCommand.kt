@@ -6,7 +6,9 @@ import io.github.Jadiefication.redstoneflux.RedstoneFlux
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-class EnergyCommand(plugin: RedstoneFlux?) : Command<RedstoneFlux?, CommandSender>(plugin, "energy-admin") {
+class EnergyCommand(
+    plugin: RedstoneFlux?,
+) : Command<RedstoneFlux?, CommandSender>(plugin, "energy-admin") {
     init {
         this.description = "The admin command of the plugin energylib."
         this.permission = "energy.admin"
@@ -17,13 +19,16 @@ class EnergyCommand(plugin: RedstoneFlux?) : Command<RedstoneFlux?, CommandSende
             ListCommand(plugin),
             ShowCommand(plugin),
             ReloadCommand(plugin),
-            DeleteAllCommand(plugin)
+            DeleteAllCommand(plugin),
         )
 
         this.setGameOnly(true)
     }
 
-    override fun execute(sender: CommandSender, arguments: Arguments) {
+    override fun execute(
+        sender: CommandSender,
+        arguments: Arguments,
+    ) {
         val player = sender as Player
         player.sendMessage("§cUsage: /energy-admin <delete/list/show>")
     }
