@@ -53,13 +53,11 @@ dependencies {
 
 ---
 
-## 🧱 Status
+## 🧱 Project Status
 
-This project is currently under active development. Usage documentation and public APIs will be stabilized and
-documented in future releases.
+This project is under active development. While the core systems are evolving, the latest usage documentation and API references are maintained in the project's [wiki](https://github.com/Jadiefication/RedstoneFlux/wiki).
 
-For now, you can explore the codebase directly or check the [`Nodal`](https://github.com/Jadiefication/Nodal) for
-example usage.
+For practical examples and guidance, please refer to the wiki, which provides up-to-date instructions and tutorials for working with RedstoneFlux.
 
 ---
 
