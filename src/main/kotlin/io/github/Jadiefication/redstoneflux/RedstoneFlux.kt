@@ -101,6 +101,7 @@ class RedstoneFlux :
         commandManager.isDebug = this.isDebug
         commandManager.registerConverter(
             BaseNetwork::class.java,
+            "network",
             NetworkArgument(this.managers),
         )
         commandManager.registerCommand(EnergyCommand(this))
