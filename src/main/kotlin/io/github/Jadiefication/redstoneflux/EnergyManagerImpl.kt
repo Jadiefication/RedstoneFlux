@@ -210,14 +210,21 @@ class EnergyManagerImpl(
     ): ItemStack = (builder as EnergyComponentBuilder).buildItem(component)
 
     override fun startNetworkUpdater() {
-        this.updaterTask =
-            api.scope.launch {
-                while (isActive) {
-                    UpdaterNetworksTask(this@EnergyManagerImpl).run()
-                    delay(1000L) // adjust delay as needed
-                }
+        updaterTask = api.scope.launch {
+            while (isActive) {
+                delay(50L)
+
+                networks.map { energyNetwork ->
+                    async {
+                        if (energyNetwork.chunk.isLoaded) {
+                            energyNetwork.update()
+                        }
+                    }
+                }.awaitAll()
             }
+        }
     }
+
 
     override fun stopNetworkUpdater() {
         checkNotNull(this.updaterTask) { "Updater task is not running!" }
@@ -230,7 +237,7 @@ class EnergyManagerImpl(
     }
 
     override fun saveNetworks() {
-        this.networks.forEach(Consumer { obj: EnergyNetwork? -> obj?.save() })
+        this.networks.forEach { network -> network.save() }
     }
 
     override fun loadNetworks(chunk: Chunk) {
