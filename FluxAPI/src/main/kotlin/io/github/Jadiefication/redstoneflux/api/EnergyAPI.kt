@@ -35,4 +35,8 @@ interface EnergyAPI {
      * @param debug the new debug mode.
      */
     var isDebug: Boolean
+
+    fun addManager(manager: Manager<*>) {
+        managers.add(manager)
+    }
 }

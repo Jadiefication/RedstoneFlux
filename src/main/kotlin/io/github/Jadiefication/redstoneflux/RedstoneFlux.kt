@@ -88,7 +88,6 @@ class RedstoneFlux :
         Updater.update("RedstoneFlux")
 
         this.scheduler = FoliaLib(this).scheduler
-        this.managers.addAll(Manager.managers)
         this.managers.add(EnergyManagerImpl(this))
         this.isDebug = false
 
@@ -102,7 +101,6 @@ class RedstoneFlux :
         commandManager.isDebug = this.isDebug
         commandManager.registerConverter(
             BaseNetwork::class.java,
-            "network",
             NetworkArgument(this.managers),
         )
         commandManager.registerCommand(EnergyCommand(this))
