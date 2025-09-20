@@ -11,13 +11,18 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import java.util.function.Supplier
 
+@Deprecated(
+    "Deprecated since 2.0.2",
+    ReplaceWith("buildItem()"),
+    DeprecationLevel.WARNING
+)
 class EnergyComponentBuilder(
     val gson: Gson,
     val energyTypeKey: NamespacedKey,
     val mechanicClassKey: NamespacedKey,
     val mechanicKey: NamespacedKey,
 ) : ItemComponentBuilder<EnergyComponent<*>> {
-    override fun buildItem(component: EnergyComponent<*>): ItemStack {
+    override fun invoke(component: EnergyComponent<*>): ItemStack {
         val mechanic = component.mechanic
         val mechanicType = MechanicType.fromComponent(component)
         val type = component.energyType

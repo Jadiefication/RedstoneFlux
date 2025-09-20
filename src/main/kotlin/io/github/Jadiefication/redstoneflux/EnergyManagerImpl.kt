@@ -12,13 +12,16 @@ import io.github.Jadiefication.redstoneflux.api.persistents.adapters.EnergyCompo
 import io.github.Jadiefication.redstoneflux.api.persistents.adapters.EnergyNetworkAdapter
 import io.github.Jadiefication.redstoneflux.api.persistents.adapters.EnergyTypeAdapter
 import io.github.Jadiefication.redstoneflux.api.types.EnergyType
+import io.github.Jadiefication.redstoneflux.api.types.MechanicType
 import kotlinx.coroutines.*
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
+import java.util.function.Supplier
 import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
 
@@ -47,7 +50,25 @@ class EnergyManagerImpl(
     /**
      * Items builder for energy components.
      */
-    override val builder: EnergyComponentBuilder
+    override val builder = ItemComponentBuilder<EnergyComponent<*>> { component ->
+        val mechanicType = MechanicType.fromComponent(component)
+        require(mechanicType.clazz.isAssignableFrom(component.mechanic.javaClass)) {
+            "Mechanic type ${mechanicType.clazz} is not compatible with mechanic ${component.mechanic.javaClass}"
+        }
+
+        val item = ItemsFactory.getItem(component)
+            .orElseThrow { IllegalArgumentException("Item not found for mechanic ${component.mechanic.javaClass}") }
+
+        item.apply {
+            itemMeta = itemMeta?.apply {
+                persistentDataContainer.apply {
+                    set(api.energyTypeKey, EnergyTypePersistentDataType.INSTANCE, component.energyType)
+                    set(api.mechanicClassKey, PersistentDataType.STRING, component.mechanic.javaClass.name)
+                    set(api.mechanicKey, PersistentDataType.STRING, gson.toJson(component.mechanic, component.mechanic.javaClass))
+                }
+            } ?: throw IllegalStateException("ItemMeta is null!")
+        }
+    }
 
     /**
      * Create a new EnergyManagerImpl instance.
@@ -58,14 +79,6 @@ class EnergyManagerImpl(
         this.gson = this.createGson()
         ItemsFactory.gson = this.gson
         this.networks = HashSet<EnergyNetwork>()
-
-        builder =
-            EnergyComponentBuilder(
-                gson,
-                api.energyTypeKey,
-                api.mechanicClassKey,
-                api.mechanicKey,
-            )
     }
 
     @Throws(SameEnergyTypeException::class)
@@ -201,7 +214,7 @@ class EnergyManagerImpl(
     override fun <T : ItemComponentBuilder<EnergyComponent<*>>> createItemComponent(
         component: EnergyComponent<*>,
         builder: T,
-    ): ItemStack = (builder as EnergyComponentBuilder).buildItem(component)
+    ): ItemStack = builder(component)
 
     override fun startNetworkUpdater() {
         updaterTask = api.scope.launch {

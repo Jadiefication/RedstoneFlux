@@ -196,7 +196,7 @@ interface Manager<C : BaseComponent<C>> {
     fun <T : ItemComponentBuilder<C>> createItemComponent(
         component: C,
         builder: T,
-    ): ItemStack = builder.buildItem(component)
+    ): ItemStack = builder(component)
 
     /**
      * Start the network updater.
